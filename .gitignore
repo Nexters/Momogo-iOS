@@ -99,3 +99,23 @@ iOSInjectionProject/
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.toptal.com/developers/gitignore/api/swift,xcode
+
+### Claude Code / AI tooling ###
+# Claude Code settings & local files
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.claude.json
+.mcp.json
+
+# BMAD
+.bmad-core/
+.bmad/
+bmad/
+
+# Harness / skills
+.harness/
+harness/
+.skills/
+skills/
+.ai/
