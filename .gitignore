@@ -100,6 +100,14 @@ iOSInjectionProject/
 
 # End of https://www.toptal.com/developers/gitignore/api/swift,xcode
 
+### Tuist ###
+*.xcodeproj
+*.xcworkspace
+graph.dot
+graph.png
+Derived/
+Tuist/.build
+
 ### Claude Code / AI tooling ###
 # Claude Code settings & local files
 .claude/
