@@ -1,0 +1,46 @@
+# SwiftLint 설정 - Momogo-iOS
+# 규칙 참고: https://realm.github.io/SwiftLint/rule-directory.html
+
+# 검사 대상: 실제 소스 코드만
+included:
+  - Projects
+
+# 검사 제외: 빌드 산출물, Tuist 매니페스트, 플러그인
+excluded:
+  - "**/Derived"
+  - "**/.build"
+  - "**/Project.swift"
+  - Tuist
+  - Plugins
+
+# 기본 활성화 규칙에 더해 켜는 opt-in 규칙
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - contains_over_first_not_nil
+  - redundant_nil_coalescing
+  - toggle_bool
+  - unused_import
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_comments: true
+  ignores_urls: true
+
+type_body_length:
+  warning: 300
+  error: 400
+
+file_length:
+  warning: 500
+  error: 800
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - x
+    - y
+    - to

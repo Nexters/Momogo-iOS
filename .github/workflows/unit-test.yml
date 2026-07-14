@@ -1,0 +1,70 @@
+name: UnitTest
+
+# PR이 생성/업데이트될 때 자동으로 유닛 테스트를 실행합니다.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [develop, main]
+
+# 같은 PR에 새 커밋이 푸시되면 이전 실행은 취소합니다.
+concurrency:
+  group: unit-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-test:
+    name: Run Unit Tests
+    runs-on: macos-15
+
+    env:
+      SCHEME: Momogo
+      # 필요에 맞게 시뮬레이터 기종/OS를 조정하세요.
+      DESTINATION: 'platform=iOS Simulator,name=iPhone 16,OS=latest'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      # mise.toml에 고정된 버전으로 Tuist를 설치합니다.
+      - name: Setup mise (Tuist)
+        uses: jdx/mise-action@v2
+
+      - name: Install xcbeautify
+        run: brew install xcbeautify
+
+      # Xcode 프로젝트는 gitignore 대상이므로 CI에서 직접 생성합니다.
+      - name: Tuist install & generate
+        run: |
+          tuist install
+          tuist generate --no-open
+
+      - name: Show environment
+        run: |
+          xcodebuild -version
+          tuist version
+          xcrun simctl list devices available | grep -i iphone || true
+
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -workspace Momogo.xcworkspace \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -resultBundlePath TestResults.xcresult \
+            -enableCodeCoverage YES \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
+
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: TestResults.xcresult
+          if-no-files-found: ignore

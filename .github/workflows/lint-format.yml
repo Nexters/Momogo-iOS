@@ -1,0 +1,32 @@
+name: Lint & Format
+
+# PR이 생성/업데이트될 때 코드 스타일을 검사합니다.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [develop, main]
+
+concurrency:
+  group: lint-format-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-format:
+    name: SwiftLint & SwiftFormat
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # mise.toml에 고정된 swiftlint / swiftformat 버전을 설치합니다.
+      - name: Setup mise (SwiftLint, SwiftFormat)
+        uses: jdx/mise-action@v2
+
+      # 포맷 위반 시 실패 (수정하지 않고 검사만). 로컬에선 --lint 없이 실행하면 자동 수정됩니다.
+      - name: SwiftFormat (lint mode)
+        run: swiftformat --lint .
+
+      # 경고를 에러로 승격시켜, 위반이 있으면 CI가 실패합니다.
+      - name: SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging
