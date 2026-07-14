@@ -30,3 +30,25 @@ jobs:
       # 경고를 에러로 승격시켜, 위반이 있으면 CI가 실패합니다.
       - name: SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
+
+      # 위 스텝 중 하나라도 실패하면 Discord로 알림을 보냅니다.
+      - name: Notify Discord on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ACTOR: ${{ github.actor }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg title "❌ [$WORKFLOW_NAME] 실패" \
+              --arg desc "PR #$PR_NUMBER: $PR_TITLE" \
+              --arg actor "$ACTOR" \
+              --arg run_url "$RUN_URL" \
+              --arg pr_url "$PR_URL" \
+              '{embeds: [{title: $title, description: $desc, url: $run_url, color: 15158332, fields: [{name: "실행자", value: $actor, inline: true}, {name: "PR", value: $pr_url, inline: true}]}]}')"
