@@ -1,10 +1,10 @@
-import ProjectDescription
 import DependencyPlugin
+import ProjectDescription
 
 let targets: [Target] = [
     .feature(factory: .init(
         dependencies: [
-            .feature(implements: .home),
+            .feature(implements: .home)
         ]
     ))
 ]

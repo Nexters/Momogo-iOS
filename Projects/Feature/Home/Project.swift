@@ -1,5 +1,5 @@
-import ProjectDescription
 import DependencyPlugin
+import ProjectDescription
 
 let project = Project.makeModule(
     name: ModulePath.Feature.name + ModulePath.Feature.home.rawValue,
@@ -7,22 +7,22 @@ let project = Project.makeModule(
         .feature(implements: .home, factory: .init(
             dependencies: [
                 .dependencies,
-                .swiftUINavigation,
+                .swiftUINavigation
             ]
         )),
         .feature(tests: .home, factory: .init(
             dependencies: [
                 .feature(implements: .home),
-                .dependencies,
+                .dependencies
             ]
         )),
         .feature(example: .home, factory: .init(
             dependencies: [
                 .feature(implements: .home),
                 .domainInterface,
-                .dependencies,
+                .dependencies
             ]
-        )),
+        ))
     ],
     schemes: [
         .scheme(
