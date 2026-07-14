@@ -1,5 +1,5 @@
-import ProjectDescription
 import DependencyPlugin
+import ProjectDescription
 
 let project = Project.makeModule(
     name: "Domain",
@@ -12,7 +12,7 @@ let project = Project.makeModule(
                 .domainInterface,
                 .core,
                 .dependencies,
-                .moya,
+                .moya
             ]
         )),
         .domain(tests: .init(
@@ -20,8 +20,8 @@ let project = Project.makeModule(
                 .domain,
                 .domainInterface,
                 .core,
-                .dependencies,
+                .dependencies
             ]
-        )),
+        ))
     ]
 )

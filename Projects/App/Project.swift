@@ -1,5 +1,5 @@
-import ProjectDescription
 import DependencyPlugin
+import ProjectDescription
 
 let project = Project.makeModule(
     name: env.appName,

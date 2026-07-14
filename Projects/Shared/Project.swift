@@ -1,5 +1,5 @@
-import ProjectDescription
 import DependencyPlugin
+import ProjectDescription
 
 let targets: [Target] = [
     .shared(factory: .init(dependencies: []))
