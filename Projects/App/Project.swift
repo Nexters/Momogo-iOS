@@ -6,7 +6,17 @@ let project = Project.makeModule(
     targets: [
         .app(factory: .init(
             sources: ["Sources/**"],
-            dependencies: [.feature, .domain]
+            resources: ["Resources/**"],
+            scripts: [
+                .post(
+                    script: """
+                    "${SRCROOT}/../../Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
+                    """,
+                    name: "Firebase Crashlytics Upload Symbols",
+                    inputPaths: ["$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(TARGET_NAME)"]
+                )
+            ],
+            dependencies: [.feature, .domain, .firebaseAnalytics, .firebaseCrashlytics]
         ))
     ],
     schemes: [
