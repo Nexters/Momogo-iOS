@@ -21,8 +21,10 @@ private struct NoOpAnalyticsLogger: AnalyticsLogging {
                 case is String, is Bool, is Int, is Double:
                     continue
                 default:
-                    print("⚠️ [NoOpAnalyticsLogger] 허용되지 않은 파라미터 타입 - event: \(name), "
-                        + "key: \(key), type: \(type(of: value))")
+                    print(
+                        "⚠️ [NoOpAnalyticsLogger] 허용되지 않은 파라미터 타입 - event: \(name), "
+                            + "key: \(key), type: \(type(of: value))"
+                    )
                 }
             }
             print("📊 [NoOpAnalyticsLogger] event: \(name), parameters: \(parameters)")
