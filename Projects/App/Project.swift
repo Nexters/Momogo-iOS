@@ -16,7 +16,8 @@ let project = Project.makeModule(
                     inputPaths: ["$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(TARGET_NAME)"]
                 )
             ],
-            dependencies: [.feature, .domain, .firebaseAnalytics, .firebaseCrashlytics]
+            dependencies: [.feature, .domain, .firebaseAnalytics, .firebaseCrashlytics],
+            settings: .settings(base: ["OTHER_LDFLAGS": ["-ObjC"]])
         ))
     ],
     schemes: [
