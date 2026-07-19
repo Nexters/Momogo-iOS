@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.kangdev.Momogo</string>
+	<string>com.mogumogu.momogo</string>
 	<key>PROJECT_ID</key>
 	<string>momogo-30162</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:655071850887:ios:dc2758d4ff23e48f3ca322</string>
+	<string>1:655071850887:ios:16f30e19bc76db823ca322</string>
 </dict>
 </plist>
