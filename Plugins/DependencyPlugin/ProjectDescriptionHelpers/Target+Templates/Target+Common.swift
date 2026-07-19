@@ -2,6 +2,11 @@ import ProjectDescription
 
 public extension Target {
     static func make(factory: TargetFactory) -> Self {
+        var scripts = factory.scripts
+        if factory.sources != nil {
+            scripts.append(.swiftLint)
+        }
+
         return .target(
             name: factory.name,
             destinations: factory.destinations,
@@ -13,7 +18,7 @@ public extension Target {
             sources: factory.sources,
             resources: factory.resources,
             entitlements: factory.entitlements,
-            scripts: factory.scripts,
+            scripts: scripts,
             dependencies: factory.dependencies,
             settings: factory.settings,
             coreDataModels: factory.coreDataModels,
