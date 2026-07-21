@@ -10,7 +10,19 @@ let project = Project.makeModule(
             scripts: [
                 .post(
                     script: """
-                    "${SRCROOT}/../../Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
+                    if [ "$CONFIGURATION" != "Release" ]; then
+                      echo "Skipping Crashlytics symbol upload for $CONFIGURATION configuration."
+                      exit 0
+                    fi
+
+                    CRASHLYTICS_RUN="${SRCROOT}/../../Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
+
+                    if [ ! -f "$CRASHLYTICS_RUN" ]; then
+                      echo "error: Crashlytics run 스크립트를 찾을 수 없습니다: $CRASHLYTICS_RUN (Tuist SPM 체크아웃 경로가 변경되었을 수 있습니다)"
+                      exit 1
+                    fi
+
+                    "$CRASHLYTICS_RUN"
                     """,
                     name: "Firebase Crashlytics Upload Symbols",
                     inputPaths: [
