@@ -8,4 +8,6 @@ enum OnboardingColor {
     static let placeholder = Color(red: 168 / 255, green: 168 / 255, blue: 160 / 255)
     static let accent = Color(red: 255 / 255, green: 200 / 255, blue: 18 / 255)
     static let accentText = Color(red: 65 / 255, green: 36 / 255, blue: 2 / 255)
+    static let guestButtonBackground = Color(red: 23 / 255, green: 23 / 255, blue: 25 / 255)
+    static let secondaryText = Color(red: 208 / 255, green: 208 / 255, blue: 208 / 255)
 }

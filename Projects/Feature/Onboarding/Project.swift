@@ -7,7 +7,8 @@ let project = Project.makeModule(
         .feature(implements: .onboarding, factory: .init(
             dependencies: [
                 .dependencies,
-                .swiftUINavigation
+                .swiftUINavigation,
+                .feature(implements: .group)
             ]
         )),
         .feature(tests: .onboarding, factory: .init(

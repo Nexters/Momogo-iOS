@@ -1,40 +1,50 @@
 import SwiftUI
 
+import FeatureGroup
+import SwiftUINavigation
+
 struct GroupSelectView: View {
-    let onCreateGroup: () -> Void
-    let onJoinWithCode: () -> Void
+    @Bindable private var viewModel: GroupSelectViewModel
+
+    init(viewModel: GroupSelectViewModel) {
+        self.viewModel = viewModel
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모모님, 모부터\n시작할까?")
-                .font(.system(size: 32, weight: .medium))
-                .foregroundColor(.white)
+                .font(.largeTitle.weight(.medium))
+                .foregroundStyle(.white)
 
             Spacer()
 
             VStack(spacing: 12) {
-                Button(action: onCreateGroup) {
+                Button {
+                    viewModel.createGroupTapped()
+                } label: {
                     Text("그룹 만들기")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(OnboardingColor.accentText)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(OnboardingColor.accentText)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 48)
+                        .frame(minHeight: 48)
                         .background(OnboardingColor.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .clipShape(.rect(cornerRadius: 24))
                 }
 
-                Button(action: onJoinWithCode) {
+                Button {
+                    viewModel.joinWithCodeTapped()
+                } label: {
                     Text("초대코드로 참여하기")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(OnboardingColor.accent)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(OnboardingColor.accent)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 48)
+                        .frame(minHeight: 48)
                         .background(OnboardingColor.secondaryBackground)
-                        .overlay(
+                        .overlay {
                             RoundedRectangle(cornerRadius: 24)
                                 .strokeBorder(OnboardingColor.accent, lineWidth: 1.5)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        }
+                        .clipShape(.rect(cornerRadius: 24))
                 }
             }
         }
@@ -42,7 +52,14 @@ struct GroupSelectView: View {
         .padding(.top, 72)
         .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(OnboardingColor.background)
-        .ignoresSafeArea()
+        .ignoresSafeArea(edges: .bottom)
+        .background(OnboardingColor.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(item: $viewModel.destination.groupName) { groupNameViewModel in
+            GroupNameView(viewModel: groupNameViewModel)
+        }
+        .navigationDestination(item: $viewModel.destination.inviteCode) { inviteCodeViewModel in
+            InviteCodeInputView(viewModel: inviteCodeViewModel)
+        }
     }
 }
