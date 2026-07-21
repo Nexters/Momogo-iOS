@@ -15,7 +15,8 @@ let project = Project.makeModule(
                     name: "Firebase Crashlytics Upload Symbols",
                     inputPaths: [
                         "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(TARGET_NAME)"
-                    ]
+                    ],
+                    basedOnDependencyAnalysis: false
                 )
             ],
             dependencies: [.feature, .domain, .firebaseAnalytics, .firebaseCrashlytics],

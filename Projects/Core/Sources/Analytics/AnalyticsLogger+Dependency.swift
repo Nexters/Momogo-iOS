@@ -16,17 +16,7 @@ private struct NoOpAnalyticsLogger: AnalyticsLogging {
     func log(_ event: AnalyticsEvent) {
         switch event {
         case let .custom(name, parameters):
-            for (key, value) in parameters {
-                switch value {
-                case is String, is Bool, is Int, is Double:
-                    continue
-                default:
-                    print(
-                        "⚠️ [NoOpAnalyticsLogger] 허용되지 않은 파라미터 타입 - event: \(name), "
-                            + "key: \(key), type: \(type(of: value))"
-                    )
-                }
-            }
+            AnalyticsEvent.warnIfInvalidParameters(parameters, eventName: name)
             print("📊 [NoOpAnalyticsLogger] event: \(name), parameters: \(parameters)")
         }
     }

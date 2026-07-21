@@ -7,6 +7,7 @@ public struct FirebaseAnalyticsLogger: AnalyticsLogging {
     public func log(_ event: AnalyticsEvent) {
         switch event {
         case let .custom(name, parameters):
+            AnalyticsEvent.warnIfInvalidParameters(parameters, eventName: name)
             Analytics.logEvent(name, parameters: parameters)
         }
     }
