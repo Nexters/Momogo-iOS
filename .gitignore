@@ -121,6 +121,7 @@ CLAUDE.local.md
 .bmad/
 bmad/
 _bmad/
+_bmad-output/
 .github/agents/
 
 # Harness / skills
