@@ -1,9 +1,10 @@
 name: Claude Code Review
 
-# PR이 생성/업데이트될 때 Claude가 자동으로 코드 리뷰를 남깁니다.
+# PR이 처음 생성될 때 한 번만 Claude가 자동으로 코드 리뷰를 남깁니다.
+# 이후 커밋 push에 대한 재리뷰는 claude.yml의 @claude 멘션 트리거를 사용합니다.
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
     branches: [develop, main]
 
 concurrency:
