@@ -6,7 +6,8 @@ let targets: [Target] = [
         dependencies: [
             .feature(implements: .home),
             .core,
-            .feature(implements: .onboarding)
+            .feature(implements: .onboarding),
+            .feature(implements: .group)
         ]
     ))
 ]
