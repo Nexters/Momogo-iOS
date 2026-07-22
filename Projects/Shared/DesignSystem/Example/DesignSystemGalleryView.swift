@@ -3,6 +3,10 @@ import SwiftUI
 import SharedDesignSystem
 
 struct DesignSystemGalleryView: View {
+    @State private var normalText = ""
+    @State private var focusedText = "Placeholder"
+    @State private var errorText = "Placeholder"
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignSystem.GridIOS.margin) {
@@ -10,6 +14,8 @@ struct DesignSystemGalleryView: View {
                 typographySection
                 radiusSection
                 shadowSection
+                componentSection
+                inputSection
             }
             .padding(DesignSystem.GridIOS.margin)
         }
@@ -96,6 +102,42 @@ struct DesignSystemGalleryView: View {
                 .fill(DesignSystem.Color.white)
                 .frame(width: 120, height: 80)
                 .momogoShadow()
+        }
+    }
+
+    private var componentSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Components").momogoTypography(.heading24)
+
+            HStack(spacing: 8) {
+                Button("Solid") {}.buttonStyle(.momogoButton(kind: .solid, tone: .primary))
+                Button("Outlined") {}.buttonStyle(.momogoButton(kind: .outlined, tone: .primary))
+                Button("Text") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+            }
+            Button("Disabled") {}.buttonStyle(.momogoButton()).disabled(true)
+
+            HStack(spacing: 8) {
+                DSChip("Gray", tone: .gray)
+                DSChip("Primary", tone: .primary)
+                DSChip("Secondary", tone: .secondary)
+                DSChip("Green", tone: .green)
+                DSChip("Blue", tone: .blue)
+                DSChip("Red", tone: .red)
+            }
+
+            DSRadioButton("Selected", isSelected: .constant(true))
+            DSRadioButton("Unselected", isSelected: .constant(false))
+        }
+    }
+
+    private var inputSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Input").momogoTypography(.heading24)
+            DSTextField("Placeholder", text: $normalText, comment: "Comment")
+            DSTextField("Placeholder", text: $focusedText, characterLimit: 20, state: .focused)
+            DSTextField("Placeholder", text: $errorText, comment: "Comment", state: .error)
+            DSTextField("Placeholder", text: .constant(""), comment: "Comment")
+                .disabled(true)
         }
     }
 }
