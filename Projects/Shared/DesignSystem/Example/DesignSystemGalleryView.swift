@@ -16,6 +16,10 @@ struct DesignSystemGalleryView: View {
                 shadowSection
                 componentSection
                 inputSection
+                modalSection
+                alertSection
+                bottomSheetSection
+                navigationSection
             }
             .padding(DesignSystem.GridIOS.margin)
         }
@@ -138,6 +142,52 @@ struct DesignSystemGalleryView: View {
             DSTextField("Placeholder", text: $errorText, comment: "Comment", state: .error)
             DSTextField("Placeholder", text: .constant(""), comment: "Comment")
                 .disabled(true)
+        }
+    }
+
+    private var modalSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Modal").momogoTypography(.heading24)
+            DSModal(
+                title: "Title",
+                description: "Description",
+                primaryTitle: "Button",
+                primaryAction: {},
+                secondaryTitle: "Button",
+                secondaryAction: {}
+            )
+        }
+    }
+
+    private var alertSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Alert").momogoTypography(.heading24)
+            VStack(alignment: .leading, spacing: 8) {
+                DSToast("Notice", tone: .notice)
+                DSToast("Error", tone: .error)
+                DSToast("Success", tone: .success)
+            }
+            DSTooltip("Tooltip", arrowDirection: .down)
+        }
+    }
+
+    private var bottomSheetSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Bottom Sheet").momogoTypography(.heading24)
+            DSBottomSheet(title: "Title", onClose: {}, content: {
+                Button("Button") {}.buttonStyle(.momogoButton(kind: .solid, tone: .primary))
+            })
+        }
+    }
+
+    private var navigationSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Navigation").momogoTypography(.heading24)
+            VStack(spacing: 8) {
+                DSTopNavigationBar(title: "Page Title", leading: { DSBackButton(action: {}) })
+                DSTopNavigationBar(leading: { DSNavigationLogo() })
+            }
+            .background(DesignSystem.Color.gray800)
         }
     }
 }
