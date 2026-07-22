@@ -27,7 +27,7 @@ public final class InviteCodeInputViewModel {
     func joinTapped() {
         Task {
             guard let info = try? await groupClient.fetchGroupInfo(code) else { return }
-            guard (try? await groupClient.joinGroup(info.inviteCode)) != nil else { return }
+            guard await (try? groupClient.joinGroup(info.inviteCode)) != nil else { return }
             destination = .joinConfirm(JoinConfirmViewModel(onFinish: onFinish))
         }
     }
