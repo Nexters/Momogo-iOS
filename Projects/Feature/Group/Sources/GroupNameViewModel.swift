@@ -1,7 +1,5 @@
 import Foundation
 
-import Dependencies
-import DomainInterface
 import SwiftUINavigation
 
 @Observable
@@ -9,9 +7,6 @@ import SwiftUINavigation
 public final class GroupNameViewModel {
     var groupName: String = ""
     var destination: Destination?
-
-    @ObservationIgnored
-    @Dependency(\.groupClient) private var groupClient
 
     private let onFinish: () -> Void
 
@@ -25,9 +20,7 @@ public final class GroupNameViewModel {
     }
 
     func createGroupTapped() {
-        Task {
-            guard let group = try? await groupClient.createGroup(groupName) else { return }
-            destination = .inviteShare(InviteShareViewModel(inviteCode: group.inviteCode, onFinish: onFinish))
-        }
+        let inviteCode = String(UUID().uuidString.prefix(6)).uppercased()
+        destination = .inviteShare(InviteShareViewModel(inviteCode: inviteCode, onFinish: onFinish))
     }
 }

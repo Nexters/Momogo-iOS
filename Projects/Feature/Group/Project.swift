@@ -6,22 +6,17 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .group, factory: .init(
             dependencies: [
-                .dependencies,
-                .domainInterface,
                 .swiftUINavigation
             ]
         )),
         .feature(tests: .group, factory: .init(
             dependencies: [
-                .feature(implements: .group),
-                .dependencies
+                .feature(implements: .group)
             ]
         )),
         .feature(example: .group, factory: .init(
             dependencies: [
-                .feature(implements: .group),
-                .domainInterface,
-                .dependencies
+                .feature(implements: .group)
             ]
         ))
     ],

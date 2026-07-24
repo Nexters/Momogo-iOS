@@ -6,22 +6,18 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .onboarding, factory: .init(
             dependencies: [
-                .dependencies,
                 .swiftUINavigation,
                 .feature(implements: .group)
             ]
         )),
         .feature(tests: .onboarding, factory: .init(
             dependencies: [
-                .feature(implements: .onboarding),
-                .dependencies
+                .feature(implements: .onboarding)
             ]
         )),
         .feature(example: .onboarding, factory: .init(
             dependencies: [
-                .feature(implements: .onboarding),
-                .domainInterface,
-                .dependencies
+                .feature(implements: .onboarding)
             ]
         ))
     ],
