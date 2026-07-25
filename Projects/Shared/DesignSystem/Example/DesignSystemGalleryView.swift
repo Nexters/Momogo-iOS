@@ -12,6 +12,7 @@ struct DesignSystemGalleryView: View {
             VStack(alignment: .leading, spacing: DesignSystem.GridIOS.margin) {
                 colorSection
                 typographySection
+                iconSection
                 radiusSection
                 shadowSection
                 componentSection
@@ -82,6 +83,33 @@ struct DesignSystemGalleryView: View {
             Text("Heading 32").momogoTypography(.heading32)
             Text("MD Semistrong 16").momogoTypography(.mdSemistrong)
             Text("XS Medium 12").momogoTypography(.xsMedium)
+        }
+    }
+
+    private var iconSection: some View {
+        let icons: [(SharedDesignSystemImages, String)] = [
+            (SharedDesignSystemAsset.iconChevronLeft, "chevronLeft"),
+            (SharedDesignSystemAsset.iconCloseBold, "closeBold"),
+            (SharedDesignSystemAsset.iconCloseOutline, "closeOutline"),
+            (SharedDesignSystemAsset.iconShare, "share"),
+            (SharedDesignSystemAsset.iconSettings, "settings"),
+            (SharedDesignSystemAsset.iconEllipsis, "ellipsis")
+        ]
+        let columns = [GridItem(.adaptive(minimum: 64), spacing: 16)]
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Icons").momogoTypography(.heading24)
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(icons, id: \.1) { asset, name in
+                    VStack(spacing: 6) {
+                        asset.swiftUIImage
+                            .foregroundStyle(DesignSystem.Color.white)
+                            .frame(width: 24, height: 24)
+                        Text(name)
+                            .momogoTypography(.xsMedium)
+                            .foregroundStyle(DesignSystem.Color.gray400)
+                    }
+                }
+            }
         }
     }
 
