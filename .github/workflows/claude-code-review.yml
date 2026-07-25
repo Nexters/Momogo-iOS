@@ -35,7 +35,14 @@ jobs:
           # 레포 Settings > Secrets and variables > Actions 에 CLAUDE_CODE_OAUTH_TOKEN 로 등록
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            이 PR의 변경 사항을 코드 리뷰해 주세요. 모든 응답은 한국어로 작성합니다.
+            이 PR(#${{ github.event.pull_request.number }}, 저장소: ${{ github.repository }})의
+            변경 사항을 코드 리뷰해 주세요. 모든 응답은 한국어로 작성합니다.
+
+            PR 번호와 저장소는 이미 위에 주어졌습니다. `gh pr list`, `env`, `printenv`, `gh auth status`,
+            `which gh` 등으로 PR 번호나 컨텍스트를 직접 알아내려 하지 말고, 항상
+            `gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }}`처럼
+            PR 번호와 `--repo`를 명시해서 gh 명령을 호출하세요 (checkout이 detached HEAD 상태라
+            인자 없이 호출하면 PR을 자동으로 인식하지 못할 수 있습니다).
 
             [리뷰 관점]
             - 버그 및 잠재적 런타임 오류
