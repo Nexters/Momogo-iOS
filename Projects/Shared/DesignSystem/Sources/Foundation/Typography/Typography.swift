@@ -31,19 +31,19 @@ public extension DesignSystem {
             }
         }
 
-        public var weight: Font.Weight {
+        private var fontConvertible: SharedDesignSystemFontConvertible {
             switch self {
             case .heading32, .heading26, .heading24, .heading20:
-                .bold
+                SharedDesignSystemFontFamily.WantedSans.bold
             case .xlSemistrong, .lgSemistrong, .mdSemistrong, .smSemistrong, .xsSemistrong:
-                .semibold
+                SharedDesignSystemFontFamily.WantedSans.semiBold
             case .xlMedium, .lgMedium, .mdMedium, .smMedium, .xsMedium:
-                .medium
+                SharedDesignSystemFontFamily.WantedSans.medium
             }
         }
 
         public var font: Font {
-            .custom("Wanted Sans", size: size).weight(weight)
+            fontConvertible.swiftUIFont(size: size)
         }
 
         // Figma 스펙: lineHeight 150%, letterSpacing -2% — SwiftUI Font에는 line-height API가 없어 근사치로 적용

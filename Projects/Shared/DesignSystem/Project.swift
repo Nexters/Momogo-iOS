@@ -5,6 +5,7 @@ let project = Project.makeModule(
     name: ModulePath.Shared.name + ModulePath.Shared.designSystem.rawValue,
     targets: [
         .shared(implements: .designSystem, factory: .init(
+            resources: ["Resources/**"],
             dependencies: []
         )),
         .shared(tests: .designSystem, factory: .init(
