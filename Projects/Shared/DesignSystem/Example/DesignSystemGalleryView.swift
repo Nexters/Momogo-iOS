@@ -196,6 +196,28 @@ struct DesignSystemGalleryView: View {
             Text("Navigation").momogoTypography(.heading24)
             VStack(spacing: 8) {
                 DSTopNavigationBar(title: "Page Title", leading: { DSBackButton(action: {}) })
+                DSTopNavigationBar(
+                    title: "Page Title",
+                    leading: { DSBackButton(action: {}) },
+                    trailing: {
+                        HStack(spacing: 8) {
+                            DSIconButton(.share, action: {})
+                            DSIconButton(.settings, action: {})
+                        }
+                    }
+                )
+                DSTopNavigationBar(
+                    title: "Page Title",
+                    leading: { DSBackButton(action: {}) },
+                    trailing: {
+                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+                    }
+                )
+                DSTopNavigationBar(
+                    title: "Page Title",
+                    leading: { DSBackButton(action: {}) },
+                    trailing: { DSIconButton(.more, action: {}) }
+                )
                 DSTopNavigationBar(leading: { DSNavigationLogo() })
             }
             .background(DesignSystem.Color.gray800)

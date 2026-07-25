@@ -46,4 +46,10 @@ struct SharedDesignSystemTests {
         let states: [DSBottomSheetAtom.State] = [.activate, .deactivate]
         #expect(states.count == 2)
     }
+
+    @Test
+    func iconButtonIconCasesAreExhaustive() {
+        let icons: [DSIconButton.Icon] = [.share, .settings, .more]
+        #expect(icons.count == 3)
+    }
 }
