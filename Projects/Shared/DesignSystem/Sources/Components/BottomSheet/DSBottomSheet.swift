@@ -71,7 +71,7 @@ public struct DSBottomSheet<Content: View>: View {
                 Spacer()
                 if let onClose {
                     Button(action: onClose) {
-                        Image(systemName: "xmark")
+                        Image(asset: SharedDesignSystemAsset.iconCloseOutline)
                             .foregroundStyle(DesignSystem.Color.gray300)
                     }
                 }

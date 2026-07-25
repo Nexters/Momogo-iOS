@@ -81,7 +81,7 @@ public struct DSBackButton: View {
 
     public var body: some View {
         Button(action: action) {
-            Image(systemName: "chevron.left")
+            Image(asset: SharedDesignSystemAsset.iconChevronLeft)
                 .foregroundStyle(DesignSystem.Color.white)
         }
     }

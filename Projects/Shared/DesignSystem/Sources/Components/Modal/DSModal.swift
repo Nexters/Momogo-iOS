@@ -55,7 +55,7 @@ public struct DSModal: View {
 
             if let onClose {
                 Button(action: onClose) {
-                    Image(systemName: "xmark")
+                    Image(asset: SharedDesignSystemAsset.iconCloseBold)
                         .foregroundStyle(DesignSystem.Color.gray300)
                 }
                 .padding(16)
