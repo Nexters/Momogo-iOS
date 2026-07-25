@@ -12,28 +12,61 @@ public struct DSButtonStyle: ButtonStyle {
         case gray
     }
 
+    /// Figma 스펙: XL(기본, 54px)/L/S 3가지 사이즈
+    public enum Size {
+        case xl
+        case large
+        case small
+    }
+
     @Environment(\.isEnabled) private var isEnabled
 
     private let kind: Kind
     private let tone: Tone
+    private let size: Size
     private let isFullWidth: Bool
 
-    public init(kind: Kind = .solid, tone: Tone = .primary, isFullWidth: Bool = false) {
+    public init(kind: Kind = .solid, tone: Tone = .primary, size: Size = .xl, isFullWidth: Bool = false) {
         self.kind = kind
         self.tone = tone
+        self.size = size
         self.isFullWidth = isFullWidth
     }
 
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .momogoTypography(.lgSemistrong)
+            .momogoTypography(typography)
             .foregroundStyle(foregroundColor)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
             .frame(maxWidth: isFullWidth ? .infinity : nil)
-            .frame(height: 44)
             .background(backgroundColor(isPressed: configuration.isPressed))
             .clipShape(Capsule())
             .overlay(borderOverlay)
+    }
+
+    private var typography: DesignSystem.Typography {
+        switch size {
+        case .xl: .lgSemistrong
+        case .large: .mdSemistrong
+        case .small: .xsSemistrong
+        }
+    }
+
+    private var horizontalPadding: CGFloat {
+        switch size {
+        case .xl: 32
+        case .large: 24
+        case .small: 16
+        }
+    }
+
+    private var verticalPadding: CGFloat {
+        switch size {
+        case .xl: 14
+        case .large: 12
+        case .small: 8
+        }
     }
 
     private var foregroundColor: Color {
@@ -80,8 +113,9 @@ public extension ButtonStyle where Self == DSButtonStyle {
     static func momogoButton(
         kind: DSButtonStyle.Kind = .solid,
         tone: DSButtonStyle.Tone = .primary,
+        size: DSButtonStyle.Size = .xl,
         isFullWidth: Bool = false
     ) -> DSButtonStyle {
-        DSButtonStyle(kind: kind, tone: tone, isFullWidth: isFullWidth)
+        DSButtonStyle(kind: kind, tone: tone, size: size, isFullWidth: isFullWidth)
     }
 }

@@ -52,4 +52,10 @@ struct SharedDesignSystemTests {
         let icons: [DSIconButton.Icon] = [.share, .settings, .more]
         #expect(icons.count == 3)
     }
+
+    @Test
+    func buttonSizeCasesAreExhaustive() {
+        let sizes: [DSButtonStyle.Size] = [.xl, .large, .small]
+        #expect(sizes.count == 3)
+    }
 }

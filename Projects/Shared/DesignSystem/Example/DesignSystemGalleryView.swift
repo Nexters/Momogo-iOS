@@ -239,7 +239,7 @@ struct DesignSystemGalleryView: View {
                 DSTopNavigationBar(
                     leading: { DSBackButton(action: {}) },
                     trailing: {
-                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .gray, size: .large))
                     }
                 )
             }
@@ -262,7 +262,7 @@ struct DesignSystemGalleryView: View {
                     title: "Page Title",
                     leading: { DSBackButton(action: {}) },
                     trailing: {
-                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .gray, size: .large))
                     }
                 )
             }
@@ -286,7 +286,7 @@ struct DesignSystemGalleryView: View {
                     alignment: .leading,
                     leading: { DSBackButton(action: {}) },
                     trailing: {
-                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .gray, size: .large))
                     }
                 )
             }

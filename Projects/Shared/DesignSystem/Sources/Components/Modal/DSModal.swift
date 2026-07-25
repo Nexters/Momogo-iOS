@@ -42,9 +42,12 @@ public struct DSModal: View {
                     if let secondaryTitle, let secondaryAction {
                         Button(secondaryTitle, action: secondaryAction)
                             .buttonStyle(.momogoButton(kind: .outlined, tone: .gray, isFullWidth: true))
+                        Button(primaryTitle, action: primaryAction)
+                            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                    } else {
+                        Button(primaryTitle, action: primaryAction)
+                            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .large, isFullWidth: true))
                     }
-                    Button(primaryTitle, action: primaryAction)
-                        .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
                 }
                 .padding(.top, 8)
             }
