@@ -145,12 +145,27 @@ struct DesignSystemGalleryView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Components").momogoTypography(.heading24)
 
-            HStack(spacing: 8) {
-                Button("Solid") {}.buttonStyle(.momogoButton(kind: .solid, tone: .primary))
-                Button("Outlined") {}.buttonStyle(.momogoButton(kind: .outlined, tone: .primary))
-                Button("Text") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    Button("Solid") {}.buttonStyle(.momogoButton(kind: .solid, tone: .primary))
+                    Button("Outlined") {}.buttonStyle(.momogoButton(kind: .outlined, tone: .primary))
+                    Button("Text") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+                }
             }
             Button("Disabled") {}.buttonStyle(.momogoButton()).disabled(true)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    Button("Button") {}.buttonStyle(.momogoButton(showsLeadingIcon: true))
+                    Button("Button") {}.buttonStyle(.momogoButton(showsTrailingIcon: true))
+                    Button("Button") {}.buttonStyle(.momogoButton(showsLeadingIcon: true, showsTrailingIcon: true))
+                }
+            }
+
+            HStack(spacing: 8) {
+                Button("Button") {}.buttonStyle(.momogoButton(size: .large))
+                Button("Button") {}.buttonStyle(.momogoButton(size: .small))
+            }
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {

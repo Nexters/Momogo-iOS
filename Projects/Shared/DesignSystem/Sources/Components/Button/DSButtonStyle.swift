@@ -24,25 +24,49 @@ public struct DSButtonStyle: ButtonStyle {
     private let kind: Kind
     private let tone: Tone
     private let size: Size
+    private let showsLeadingIcon: Bool
+    private let showsTrailingIcon: Bool
     private let isFullWidth: Bool
 
-    public init(kind: Kind = .solid, tone: Tone = .primary, size: Size = .xl, isFullWidth: Bool = false) {
+    public init(
+        kind: Kind = .solid,
+        tone: Tone = .primary,
+        size: Size = .xl,
+        showsLeadingIcon: Bool = false,
+        showsTrailingIcon: Bool = false,
+        isFullWidth: Bool = false
+    ) {
         self.kind = kind
         self.tone = tone
         self.size = size
+        self.showsLeadingIcon = showsLeadingIcon
+        self.showsTrailingIcon = showsTrailingIcon
         self.isFullWidth = isFullWidth
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .momogoTypography(typography)
-            .foregroundStyle(foregroundColor)
-            .padding(.horizontal, horizontalPadding)
-            .padding(.vertical, verticalPadding)
-            .frame(maxWidth: isFullWidth ? .infinity : nil)
-            .background(backgroundColor(isPressed: configuration.isPressed))
-            .clipShape(Capsule())
-            .overlay(borderOverlay)
+        HStack(spacing: iconGap) {
+            if showsLeadingIcon {
+                Image(asset: SharedDesignSystemAsset.iconChevronLeft)
+                    .resizable()
+                    .frame(width: iconSize, height: iconSize)
+            }
+            configuration.label
+                .momogoTypography(typography)
+                .fixedSize()
+            if showsTrailingIcon {
+                Image(asset: SharedDesignSystemAsset.iconChevronRight)
+                    .resizable()
+                    .frame(width: iconSize, height: iconSize)
+            }
+        }
+        .foregroundStyle(foregroundColor)
+        .padding(.horizontal, horizontalPadding)
+        .padding(.vertical, verticalPadding)
+        .frame(maxWidth: isFullWidth ? .infinity : nil)
+        .background(backgroundColor(isPressed: configuration.isPressed))
+        .clipShape(Capsule())
+        .overlay(borderOverlay)
     }
 
     private var typography: DesignSystem.Typography {
@@ -67,6 +91,14 @@ public struct DSButtonStyle: ButtonStyle {
         case .large: 12
         case .small: 8
         }
+    }
+
+    private var iconSize: CGFloat {
+        size == .small ? 18 : 20
+    }
+
+    private var iconGap: CGFloat {
+        size == .small ? 2 : 6
     }
 
     private var foregroundColor: Color {
@@ -114,8 +146,17 @@ public extension ButtonStyle where Self == DSButtonStyle {
         kind: DSButtonStyle.Kind = .solid,
         tone: DSButtonStyle.Tone = .primary,
         size: DSButtonStyle.Size = .xl,
+        showsLeadingIcon: Bool = false,
+        showsTrailingIcon: Bool = false,
         isFullWidth: Bool = false
     ) -> DSButtonStyle {
-        DSButtonStyle(kind: kind, tone: tone, size: size, isFullWidth: isFullWidth)
+        DSButtonStyle(
+            kind: kind,
+            tone: tone,
+            size: size,
+            showsLeadingIcon: showsLeadingIcon,
+            showsTrailingIcon: showsTrailingIcon,
+            isFullWidth: isFullWidth
+        )
     }
 }
