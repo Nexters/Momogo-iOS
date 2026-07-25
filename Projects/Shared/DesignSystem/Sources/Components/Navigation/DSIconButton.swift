@@ -24,9 +24,9 @@ public struct DSIconButton: View {
 
     private var image: Image {
         switch icon {
-        case .share: Image(asset: SharedDesignSystemAsset.iconShare)
-        case .settings: Image(asset: SharedDesignSystemAsset.iconSettings)
-        case .more: Image(asset: SharedDesignSystemAsset.iconEllipsis)
+        case .share: Image(asset: SharedDesignSystemAsset.share2)
+        case .settings: Image(asset: SharedDesignSystemAsset.settings)
+        case .more: Image(asset: SharedDesignSystemAsset.ellipsisVertical)
         }
     }
 }

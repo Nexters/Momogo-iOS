@@ -1,6 +1,6 @@
 {
   "images" : [
-    { "filename" : "iconEllipsis.svg", "idiom" : "universal" }
+    { "filename" : "settings.svg", "idiom" : "universal" }
   ],
   "info" : { "author" : "xcode", "version" : 1 },
   "properties" : {

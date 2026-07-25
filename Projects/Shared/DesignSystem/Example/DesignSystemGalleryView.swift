@@ -88,12 +88,12 @@ struct DesignSystemGalleryView: View {
 
     private var iconSection: some View {
         let icons: [(SharedDesignSystemImages, String)] = [
-            (SharedDesignSystemAsset.iconChevronLeft, "chevronLeft"),
-            (SharedDesignSystemAsset.iconCloseBold, "closeBold"),
-            (SharedDesignSystemAsset.iconCloseOutline, "closeOutline"),
-            (SharedDesignSystemAsset.iconShare, "share"),
-            (SharedDesignSystemAsset.iconSettings, "settings"),
-            (SharedDesignSystemAsset.iconEllipsis, "ellipsis")
+            (SharedDesignSystemAsset.chevronLeft, "chevronLeft"),
+            (SharedDesignSystemAsset.chevronRight, "chevronRight"),
+            (SharedDesignSystemAsset.x, "x"),
+            (SharedDesignSystemAsset.share2, "share2"),
+            (SharedDesignSystemAsset.settings, "settings"),
+            (SharedDesignSystemAsset.ellipsisVertical, "ellipsisVertical")
         ]
         let columns = [GridItem(.adaptive(minimum: 64), spacing: 16)]
         return VStack(alignment: .leading, spacing: 8) {

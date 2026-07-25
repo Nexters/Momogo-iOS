@@ -47,7 +47,7 @@ public struct DSButtonStyle: ButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: iconGap) {
             if showsLeadingIcon {
-                Image(asset: SharedDesignSystemAsset.iconChevronLeft)
+                Image(asset: SharedDesignSystemAsset.chevronLeft)
                     .resizable()
                     .frame(width: iconSize, height: iconSize)
             }
@@ -55,7 +55,7 @@ public struct DSButtonStyle: ButtonStyle {
                 .momogoTypography(typography)
                 .fixedSize()
             if showsTrailingIcon {
-                Image(asset: SharedDesignSystemAsset.iconChevronRight)
+                Image(asset: SharedDesignSystemAsset.chevronRight)
                     .resizable()
                     .frame(width: iconSize, height: iconSize)
             }
