@@ -11,9 +11,13 @@ public extension TargetDependency {
         target: "Core",
         path: .relativeToRoot("Projects/Core")
     )
-    static let shared: TargetDependency = .project(
-        target: "Shared",
-        path: .relativeToRoot("Projects/Shared")
+    static let data: TargetDependency = .project(
+        target: "Data",
+        path: .relativeToRoot("Projects/Data")
+    )
+    static let designSystem: TargetDependency = .project(
+        target: "DesignSystem",
+        path: .relativeToRoot("Projects/DesignSystem")
     )
 }
 
@@ -27,6 +31,19 @@ public extension TargetDependency {
     static let domain: TargetDependency = .project(
         target: "Domain",
         path: .relativeToRoot("Projects/Domain")
+    )
+}
+
+// MARK: - Networking shorthands
+
+public extension TargetDependency {
+    static let networkingInterface: TargetDependency = .project(
+        target: "NetworkingInterface",
+        path: .relativeToRoot("Projects/Data")
+    )
+    static let networking: TargetDependency = .project(
+        target: "Networking",
+        path: .relativeToRoot("Projects/Data")
     )
 }
 

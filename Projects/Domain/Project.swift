@@ -11,8 +11,7 @@ let project = Project.makeModule(
             dependencies: [
                 .domainInterface,
                 .core,
-                .dependencies,
-                .moya
+                .dependencies
             ]
         )),
         .domain(tests: .init(
