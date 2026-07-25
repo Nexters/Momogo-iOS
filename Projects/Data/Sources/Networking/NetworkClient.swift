@@ -15,12 +15,6 @@ public struct NetworkClient: Sendable {
     }
 }
 
-extension NetworkClient: TestDependencyKey {
-    public static let testValue = NetworkClient(
-        request: unimplemented("\(Self.self).request")
-    )
-}
-
 public extension DependencyValues {
     var networkClient: NetworkClient {
         get { self[NetworkClient.self] }

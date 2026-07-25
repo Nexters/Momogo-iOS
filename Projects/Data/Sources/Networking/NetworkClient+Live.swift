@@ -1,12 +1,15 @@
 import Foundation
 
-import NetworkingInterface
 import Moya
 
 import Dependencies
 
 extension NetworkClient: DependencyKey {
     public static let liveValue = NetworkClient(request: performRequest)
+
+    public static let testValue = NetworkClient(
+        request: unimplemented("\(Self.self).request")
+    )
 
     /// SwiftUI 프리뷰에서 실제 네트워크를 타지 않도록 빈 응답을 반환한다.
     public static let previewValue = NetworkClient(
@@ -16,6 +19,7 @@ extension NetworkClient: DependencyKey {
 
 private let provider = MoyaProvider<MultiTarget>()
 
+@Sendable
 private func performRequest(_ target: any TargetType) async throws -> Data {
     let response: Response = try await withCheckedThrowingContinuation { continuation in
         provider.request(MultiTarget(target)) { result in

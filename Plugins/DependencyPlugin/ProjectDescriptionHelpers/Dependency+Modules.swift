@@ -34,16 +34,12 @@ public extension TargetDependency {
     )
 }
 
-// MARK: - Networking shorthands
+// MARK: - Analytics shorthands
 
 public extension TargetDependency {
-    static let networkingInterface: TargetDependency = .project(
-        target: "NetworkingInterface",
-        path: .relativeToRoot("Projects/Data")
-    )
-    static let networking: TargetDependency = .project(
-        target: "Networking",
-        path: .relativeToRoot("Projects/Data")
+    static let analytics: TargetDependency = .project(
+        target: "Analytics",
+        path: .relativeToRoot("Projects/Core")
     )
 }
 
