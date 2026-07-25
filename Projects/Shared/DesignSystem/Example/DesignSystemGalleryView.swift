@@ -154,7 +154,8 @@ struct DesignSystemGalleryView: View {
                 primaryTitle: "Button",
                 primaryAction: {},
                 secondaryTitle: "Button",
-                secondaryAction: {}
+                secondaryAction: {},
+                onClose: {}
             )
         }
     }
@@ -174,8 +175,18 @@ struct DesignSystemGalleryView: View {
     private var bottomSheetSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Bottom Sheet").momogoTypography(.heading24)
-            DSBottomSheet(title: "Title", onClose: {}, content: {
+            DSBottomSheet(title: "Title", headerAlignment: .center, onClose: {}, content: {
+                VStack(spacing: 0) {
+                    DSBottomSheetAtom("Atom", state: .activate)
+                    DSBottomSheetAtom("Atom", state: .deactivate)
+                }
                 Button("Button") {}.buttonStyle(.momogoButton(kind: .solid, tone: .primary))
+            })
+            DSBottomSheet(title: "Title", headerAlignment: .left, onClose: {}, content: {
+                EmptyView()
+            })
+            DSBottomSheet(title: "Title", onClose: {}, isLoading: true, content: {
+                EmptyView()
             })
         }
     }

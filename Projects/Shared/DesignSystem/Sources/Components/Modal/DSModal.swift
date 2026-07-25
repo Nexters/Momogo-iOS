@@ -7,6 +7,7 @@ public struct DSModal: View {
     private let primaryAction: () -> Void
     private let secondaryTitle: String?
     private let secondaryAction: (() -> Void)?
+    private let onClose: (() -> Void)?
 
     public init(
         title: String,
@@ -14,7 +15,8 @@ public struct DSModal: View {
         primaryTitle: String,
         primaryAction: @escaping () -> Void,
         secondaryTitle: String? = nil,
-        secondaryAction: (() -> Void)? = nil
+        secondaryAction: (() -> Void)? = nil,
+        onClose: (() -> Void)? = nil
     ) {
         self.title = title
         self.description = description
@@ -22,32 +24,45 @@ public struct DSModal: View {
         self.primaryAction = primaryAction
         self.secondaryTitle = secondaryTitle
         self.secondaryAction = secondaryAction
+        self.onClose = onClose
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .momogoTypography(.xlSemistrong)
-                .foregroundStyle(DesignSystem.Color.white)
-            if let description {
-                Text(description)
-                    .momogoTypography(.mdMedium)
-                    .foregroundStyle(DesignSystem.Color.gray300)
-            }
-            HStack(spacing: 8) {
-                if let secondaryTitle, let secondaryAction {
-                    Button(secondaryTitle, action: secondaryAction)
-                        .buttonStyle(.momogoButton(kind: .outlined, tone: .gray))
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .center, spacing: 8) {
+                Text(title)
+                    .momogoTypography(.xlSemistrong)
+                    .foregroundStyle(DesignSystem.Color.gray50)
+                if let description {
+                    Text(description)
+                        .momogoTypography(.mdMedium)
+                        .foregroundStyle(DesignSystem.Color.gray300)
                 }
-                Button(primaryTitle, action: primaryAction)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary))
+                HStack(spacing: 8) {
+                    if let secondaryTitle, let secondaryAction {
+                        Button(secondaryTitle, action: secondaryAction)
+                            .buttonStyle(.momogoButton(kind: .outlined, tone: .gray, isFullWidth: true))
+                    }
+                    Button(primaryTitle, action: primaryAction)
+                        .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                }
+                .padding(.top, 8)
             }
-            .padding(.top, 8)
+            .padding(.top, 24)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
+            .frame(maxWidth: .infinity, alignment: .center)
+
+            if let onClose {
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .foregroundStyle(DesignSystem.Color.gray300)
+                }
+                .padding(16)
+            }
         }
-        .padding(24)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignSystem.Color.gray800)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r20))
+        .background(DesignSystem.Color.gray900)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r24))
         .momogoShadow()
     }
 }

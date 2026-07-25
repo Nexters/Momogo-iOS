@@ -1,6 +1,7 @@
 import SwiftUI
 
 extension DesignSystem.Color {
+    public static let gray950 = SwiftUI.Color(momogoHex: 0x151414)
     public static let gray900 = SwiftUI.Color(momogoHex: 0x1D1C1C)
     public static let gray800 = SwiftUI.Color(momogoHex: 0x302F2E)
     public static let gray700 = SwiftUI.Color(momogoHex: 0x464443)

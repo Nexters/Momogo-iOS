@@ -36,7 +36,7 @@ public struct DSTooltip: View {
         DSTooltipArrow()
             .fill(DesignSystem.Color.gray700)
             .frame(width: 12, height: 6)
-            .rotationEffect(.degrees(arrowDirection == .up ? 180 : 0))
+            .rotationEffect(.degrees(arrowDirection == .down ? 180 : 0))
     }
 }
 

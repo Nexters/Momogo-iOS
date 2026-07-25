@@ -1,3 +1,4 @@
+import SwiftUI
 import Testing
 
 @testable import SharedDesignSystem
@@ -32,5 +33,17 @@ struct SharedDesignSystemTests {
     func tooltipArrowDirectionCasesAreExhaustive() {
         let directions: [DSTooltip.ArrowDirection] = [.up, .down]
         #expect(directions.count == 2)
+    }
+
+    @Test
+    func bottomSheetHeaderAlignmentCasesAreExhaustive() {
+        let alignments: [DSBottomSheet<EmptyView>.HeaderAlignment] = [.center, .left]
+        #expect(alignments.count == 2)
+    }
+
+    @Test
+    func bottomSheetAtomStateCasesAreExhaustive() {
+        let states: [DSBottomSheetAtom.State] = [.activate, .deactivate]
+        #expect(states.count == 2)
     }
 }

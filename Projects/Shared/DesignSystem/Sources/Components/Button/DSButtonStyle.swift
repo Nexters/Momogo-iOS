@@ -16,10 +16,12 @@ public struct DSButtonStyle: ButtonStyle {
 
     private let kind: Kind
     private let tone: Tone
+    private let isFullWidth: Bool
 
-    public init(kind: Kind = .solid, tone: Tone = .primary) {
+    public init(kind: Kind = .solid, tone: Tone = .primary, isFullWidth: Bool = true) {
         self.kind = kind
         self.tone = tone
+        self.isFullWidth = isFullWidth
     }
 
     public func makeBody(configuration: Configuration) -> some View {
@@ -27,6 +29,7 @@ public struct DSButtonStyle: ButtonStyle {
             .momogoTypography(.mdSemistrong)
             .foregroundStyle(foregroundColor)
             .padding(.horizontal, 20)
+            .frame(maxWidth: isFullWidth ? .infinity : nil)
             .frame(height: 44)
             .background(backgroundColor(isPressed: configuration.isPressed))
             .clipShape(Capsule())
@@ -76,8 +79,9 @@ public struct DSButtonStyle: ButtonStyle {
 extension ButtonStyle where Self == DSButtonStyle {
     public static func momogoButton(
         kind: DSButtonStyle.Kind = .solid,
-        tone: DSButtonStyle.Tone = .primary
+        tone: DSButtonStyle.Tone = .primary,
+        isFullWidth: Bool = true
     ) -> DSButtonStyle {
-        DSButtonStyle(kind: kind, tone: tone)
+        DSButtonStyle(kind: kind, tone: tone, isFullWidth: true)
     }
 }
