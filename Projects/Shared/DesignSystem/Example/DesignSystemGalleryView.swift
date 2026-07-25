@@ -194,6 +194,24 @@ struct DesignSystemGalleryView: View {
     private var navigationSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Navigation").momogoTypography(.heading24)
+
+            Text("Nav/Top (title 없음)").momogoTypography(.smMedium)
+            VStack(spacing: 8) {
+                DSTopNavigationBar(leading: { DSBackButton(action: {}) })
+                DSTopNavigationBar(
+                    leading: { DSBackButton(action: {}) },
+                    trailing: { DSIconButton(.settings, action: {}) }
+                )
+                DSTopNavigationBar(
+                    leading: { DSBackButton(action: {}) },
+                    trailing: {
+                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+                    }
+                )
+            }
+            .background(DesignSystem.Color.gray800)
+
+            Text("Nav/Top/Text-Center").momogoTypography(.smMedium)
             VStack(spacing: 8) {
                 DSTopNavigationBar(title: "Page Title", leading: { DSBackButton(action: {}) })
                 DSTopNavigationBar(
@@ -213,14 +231,36 @@ struct DesignSystemGalleryView: View {
                         Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
                     }
                 )
+            }
+            .background(DesignSystem.Color.gray800)
+
+            Text("Nav/Top/Text-Left").momogoTypography(.smMedium)
+            VStack(spacing: 8) {
                 DSTopNavigationBar(
                     title: "Page Title",
+                    alignment: .leading,
+                    leading: { DSBackButton(action: {}) }
+                )
+                DSTopNavigationBar(
+                    title: "Page Title",
+                    alignment: .leading,
                     leading: { DSBackButton(action: {}) },
                     trailing: { DSIconButton(.more, action: {}) }
                 )
-                DSTopNavigationBar(leading: { DSNavigationLogo() })
+                DSTopNavigationBar(
+                    title: "Page Title",
+                    alignment: .leading,
+                    leading: { DSBackButton(action: {}) },
+                    trailing: {
+                        Button("저장하기") {}.buttonStyle(.momogoButton(kind: .text, tone: .primary))
+                    }
+                )
             }
             .background(DesignSystem.Color.gray800)
+
+            Text("Nav/Top/Logo (로고 확정 시 교체 예정)").momogoTypography(.smMedium)
+            DSTopNavigationBar(leading: { DSNavigationLogo() })
+                .background(DesignSystem.Color.gray800)
         }
     }
 }
