@@ -25,7 +25,7 @@ public struct DSRadioButton: View {
                     .frame(width: 20, height: 20)
                 Text(title)
                     .momogoTypography(.mdMedium)
-                    .foregroundStyle(DesignSystem.Color.white)
+                    .foregroundStyle(DesignSystem.Color.gray50)
             }
         }
         .buttonStyle(.plain)

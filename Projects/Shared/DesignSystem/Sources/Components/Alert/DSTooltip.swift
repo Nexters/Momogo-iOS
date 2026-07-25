@@ -21,7 +21,7 @@ public struct DSTooltip: View {
             }
             Text(text)
                 .momogoTypography(.xsMedium)
-                .foregroundStyle(DesignSystem.Color.white)
+                .foregroundStyle(DesignSystem.Color.gray50)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(DesignSystem.Color.gray700)

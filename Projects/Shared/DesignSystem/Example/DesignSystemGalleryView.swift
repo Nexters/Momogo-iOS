@@ -110,6 +110,10 @@ struct DesignSystemGalleryView: View {
                     }
                 }
             }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(DesignSystem.Color.gray800)
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
         }
     }
 
@@ -148,13 +152,15 @@ struct DesignSystemGalleryView: View {
             }
             Button("Disabled") {}.buttonStyle(.momogoButton()).disabled(true)
 
-            HStack(spacing: 8) {
-                DSChip("Gray", tone: .gray)
-                DSChip("Primary", tone: .primary)
-                DSChip("Secondary", tone: .secondary)
-                DSChip("Green", tone: .green)
-                DSChip("Blue", tone: .blue)
-                DSChip("Red", tone: .red)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    DSChip("Gray", tone: .gray)
+                    DSChip("Primary", tone: .primary)
+                    DSChip("Secondary", tone: .secondary)
+                    DSChip("Green", tone: .green)
+                    DSChip("Blue", tone: .blue)
+                    DSChip("Red", tone: .red)
+                }
             }
 
             DSRadioButton("Selected", isSelected: .constant(true))

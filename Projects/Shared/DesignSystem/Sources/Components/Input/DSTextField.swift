@@ -33,7 +33,7 @@ public struct DSTextField: View {
             HStack {
                 TextField(placeholder, text: $text)
                     .momogoTypography(.mdMedium)
-                    .foregroundStyle(DesignSystem.Color.white)
+                    .foregroundStyle(DesignSystem.Color.gray50)
                 if let characterLimit {
                     Text("\(text.count)/\(characterLimit)")
                         .momogoTypography(.xsMedium)

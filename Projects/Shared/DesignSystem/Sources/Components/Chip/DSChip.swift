@@ -22,6 +22,7 @@ public struct DSChip: View {
         Text(title)
             .momogoTypography(.smMedium)
             .foregroundStyle(DesignSystem.Color.white)
+            .fixedSize()
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(backgroundColor)

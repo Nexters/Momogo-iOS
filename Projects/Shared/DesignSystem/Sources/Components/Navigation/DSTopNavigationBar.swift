@@ -27,15 +27,15 @@ public struct DSTopNavigationBar<Leading: View, Trailing: View>: View {
         ZStack {
             if alignment == .center, let title {
                 Text(title)
-                    .momogoTypography(.lgSemistrong)
-                    .foregroundStyle(DesignSystem.Color.white)
+                    .momogoTypography(.mdSemistrong)
+                    .foregroundStyle(DesignSystem.Color.gray50)
             }
             HStack {
                 leading
                 if alignment == .leading, let title {
                     Text(title)
-                        .momogoTypography(.lgSemistrong)
-                        .foregroundStyle(DesignSystem.Color.white)
+                        .momogoTypography(.heading20)
+                        .foregroundStyle(DesignSystem.Color.gray50)
                 }
                 Spacer()
                 trailing

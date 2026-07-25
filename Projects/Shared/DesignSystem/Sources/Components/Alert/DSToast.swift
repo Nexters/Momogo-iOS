@@ -22,7 +22,7 @@ public struct DSToast: View {
                 .frame(width: 8, height: 8)
             Text(message)
                 .momogoTypography(.smMedium)
-                .foregroundStyle(DesignSystem.Color.white)
+                .foregroundStyle(DesignSystem.Color.gray50)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
