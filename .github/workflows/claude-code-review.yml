@@ -63,5 +63,9 @@ jobs:
             사소한 취향 차이는 지적하지 말고, 실제로 개선이 필요한 부분만 간결하게 남기세요.
             MUST 항목이 하나도 없으면 요약에 그 점을 명확히 밝혀 주세요.
           # 파일 읽기 + 인라인 코멘트 + PR 요약 코멘트 도구만 허용 (코드 변경은 하지 않음)
+          # TodoWrite: 작업 계획 수립에 기본적으로 쓰이는 도구라 허용 목록에서 빠지면
+          # 권한 거부가 반복되며 리뷰가 조기 종료될 수 있어 포함
           claude_args: |
-            --allowed-tools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*)"
+            --allowed-tools "Read,Grep,Glob,TodoWrite,mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*)"
+          # 실패 재현 시 어떤 툴 호출이 거부됐는지 로그에서 바로 확인하기 위해 활성화
+          show_full_output: true
