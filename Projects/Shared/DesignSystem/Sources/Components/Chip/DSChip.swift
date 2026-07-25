@@ -30,12 +30,12 @@ public struct DSChip: View {
 
     private var backgroundColor: Color {
         switch tone {
-        case .gray: return DesignSystem.Color.gray700
-        case .primary: return DesignSystem.Color.primary500
-        case .secondary: return DesignSystem.Color.secondary500
-        case .green: return DesignSystem.Color.systemGreen500
-        case .blue: return DesignSystem.Color.systemBlue500
-        case .red: return DesignSystem.Color.systemRed500
+        case .gray: DesignSystem.Color.gray700
+        case .primary: DesignSystem.Color.primary500
+        case .secondary: DesignSystem.Color.secondary500
+        case .green: DesignSystem.Color.systemGreen500
+        case .blue: DesignSystem.Color.systemBlue500
+        case .red: DesignSystem.Color.systemRed500
         }
     }
 }

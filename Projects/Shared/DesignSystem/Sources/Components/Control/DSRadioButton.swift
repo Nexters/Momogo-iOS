@@ -7,7 +7,7 @@ public struct DSRadioButton: View {
 
     public init(_ title: String, isSelected: Binding<Bool>) {
         self.title = title
-        self._isSelected = isSelected
+        _isSelected = isSelected
     }
 
     public var body: some View {

@@ -67,8 +67,8 @@ public struct DSModal: View {
     }
 }
 
-extension View {
-    public func momogoModalOverlay(isPresented: Binding<Bool>, modal: @escaping () -> DSModal) -> some View {
+public extension View {
+    func momogoModalOverlay(isPresented: Binding<Bool>, modal: @escaping () -> DSModal) -> some View {
         overlay {
             if isPresented.wrappedValue {
                 ZStack {

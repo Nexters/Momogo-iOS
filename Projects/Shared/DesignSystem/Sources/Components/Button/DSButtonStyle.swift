@@ -76,8 +76,8 @@ public struct DSButtonStyle: ButtonStyle {
     }
 }
 
-extension ButtonStyle where Self == DSButtonStyle {
-    public static func momogoButton(
+public extension ButtonStyle where Self == DSButtonStyle {
+    static func momogoButton(
         kind: DSButtonStyle.Kind = .solid,
         tone: DSButtonStyle.Tone = .primary,
         isFullWidth: Bool = true

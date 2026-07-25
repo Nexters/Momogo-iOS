@@ -106,10 +106,10 @@ public struct DSBottomSheetAtom: View {
     }
 }
 
-extension View {
-    public func momogoBottomSheetOverlay<SheetContent: View>(
+public extension View {
+    func momogoBottomSheetOverlay(
         isPresented: Binding<Bool>,
-        @ViewBuilder sheet: @escaping () -> DSBottomSheet<SheetContent>
+        @ViewBuilder sheet: @escaping () -> DSBottomSheet<some View>
     ) -> some View {
         overlay(alignment: .bottom) {
             if isPresented.wrappedValue {

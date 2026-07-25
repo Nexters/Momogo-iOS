@@ -1,7 +1,7 @@
 import Foundation
 
-extension DesignSystem {
-    public enum Radius {
+public extension DesignSystem {
+    enum Radius {
         public static let r12: CGFloat = 12
         public static let r16: CGFloat = 16
         public static let r20: CGFloat = 20

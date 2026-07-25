@@ -1,7 +1,7 @@
 import SwiftUI
 
-extension DesignSystem {
-    public enum Typography {
+public extension DesignSystem {
+    enum Typography {
         case heading32
         case heading26
         case heading24
@@ -19,26 +19,26 @@ extension DesignSystem {
 
         public var size: CGFloat {
             switch self {
-            case .heading32: return 32
-            case .heading26: return 26
-            case .heading24: return 24
-            case .heading20: return 20
-            case .xlSemistrong, .xlMedium: return 20
-            case .lgSemistrong, .lgMedium: return 17
-            case .mdSemistrong, .mdMedium: return 16
-            case .smSemistrong, .smMedium: return 14
-            case .xsSemistrong, .xsMedium: return 12
+            case .heading32: 32
+            case .heading26: 26
+            case .heading24: 24
+            case .heading20: 20
+            case .xlSemistrong, .xlMedium: 20
+            case .lgSemistrong, .lgMedium: 17
+            case .mdSemistrong, .mdMedium: 16
+            case .smSemistrong, .smMedium: 14
+            case .xsSemistrong, .xsMedium: 12
             }
         }
 
         public var weight: Font.Weight {
             switch self {
             case .heading32, .heading26, .heading24, .heading20:
-                return .bold
+                .bold
             case .xlSemistrong, .lgSemistrong, .mdSemistrong, .smSemistrong, .xsSemistrong:
-                return .semibold
+                .semibold
             case .xlMedium, .lgMedium, .mdMedium, .smMedium, .xsMedium:
-                return .medium
+                .medium
             }
         }
 
@@ -52,8 +52,8 @@ extension DesignSystem {
     }
 }
 
-extension View {
-    public func momogoTypography(_ style: DesignSystem.Typography) -> some View {
+public extension View {
+    func momogoTypography(_ style: DesignSystem.Typography) -> some View {
         font(style.font)
             .tracking(style.tracking)
             .lineSpacing(style.lineHeight - style.size)

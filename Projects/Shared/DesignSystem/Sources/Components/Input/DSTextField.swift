@@ -22,7 +22,7 @@ public struct DSTextField: View {
         state: State = .normal
     ) {
         self.placeholder = placeholder
-        self._text = text
+        _text = text
         self.comment = comment
         self.characterLimit = characterLimit
         self.state = state
@@ -58,9 +58,9 @@ public struct DSTextField: View {
 
     private var borderColor: Color {
         switch state {
-        case .normal: return DesignSystem.Color.gray600
-        case .focused: return DesignSystem.Color.primary500
-        case .error: return DesignSystem.Color.systemRed500
+        case .normal: DesignSystem.Color.gray600
+        case .focused: DesignSystem.Color.primary500
+        case .error: DesignSystem.Color.systemRed500
         }
     }
 

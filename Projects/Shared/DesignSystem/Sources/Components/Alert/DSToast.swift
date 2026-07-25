@@ -33,16 +33,16 @@ public struct DSToast: View {
 
     private var indicatorColor: Color {
         switch tone {
-        case .notice: return DesignSystem.Color.primary500
-        case .error: return DesignSystem.Color.systemRed500
-        case .success: return DesignSystem.Color.systemGreen500
+        case .notice: DesignSystem.Color.primary500
+        case .error: DesignSystem.Color.systemRed500
+        case .success: DesignSystem.Color.systemGreen500
         }
     }
 }
 
-extension View {
+public extension View {
     /// Figma 스펙: Toast는 3초 후 자동으로 사라짐
-    public func momogoToast(isPresented: Binding<Bool>, message: String, tone: DSToast.Tone = .notice) -> some View {
+    func momogoToast(isPresented: Binding<Bool>, message: String, tone: DSToast.Tone = .notice) -> some View {
         overlay(alignment: .bottom) {
             if isPresented.wrappedValue {
                 DSToast(message, tone: tone)

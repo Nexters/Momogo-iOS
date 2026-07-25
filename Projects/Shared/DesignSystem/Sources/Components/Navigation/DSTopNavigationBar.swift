@@ -46,14 +46,14 @@ public struct DSTopNavigationBar<Leading: View, Trailing: View>: View {
     }
 }
 
-extension DSTopNavigationBar where Leading == EmptyView, Trailing == EmptyView {
-    public init(title: String? = nil, alignment: TitleAlignment = .center) {
+public extension DSTopNavigationBar where Leading == EmptyView, Trailing == EmptyView {
+    init(title: String? = nil, alignment: TitleAlignment = .center) {
         self.init(title: title, alignment: alignment, leading: { EmptyView() }, trailing: { EmptyView() })
     }
 }
 
-extension DSTopNavigationBar where Leading == EmptyView {
-    public init(
+public extension DSTopNavigationBar where Leading == EmptyView {
+    init(
         title: String? = nil,
         alignment: TitleAlignment = .center,
         @ViewBuilder trailing: () -> Trailing
@@ -62,8 +62,8 @@ extension DSTopNavigationBar where Leading == EmptyView {
     }
 }
 
-extension DSTopNavigationBar where Trailing == EmptyView {
-    public init(
+public extension DSTopNavigationBar where Trailing == EmptyView {
+    init(
         title: String? = nil,
         alignment: TitleAlignment = .center,
         @ViewBuilder leading: () -> Leading

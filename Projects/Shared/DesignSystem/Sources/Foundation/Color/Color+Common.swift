@@ -1,10 +1,10 @@
 import SwiftUI
 
-extension DesignSystem {
-    public enum Color {}
+public extension DesignSystem {
+    enum Color {}
 }
 
-extension DesignSystem.Color {
-    public static let black = SwiftUI.Color(momogoHex: 0x000000)
-    public static let white = SwiftUI.Color(momogoHex: 0xFFFFFF)
+public extension DesignSystem.Color {
+    static let black = SwiftUI.Color(momogoHex: 0x000000)
+    static let white = SwiftUI.Color(momogoHex: 0xFFFFFF)
 }

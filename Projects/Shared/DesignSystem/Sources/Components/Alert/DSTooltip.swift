@@ -51,9 +51,9 @@ private struct DSTooltipArrow: Shape {
     }
 }
 
-extension View {
+public extension View {
     /// Figma 스펙: Tooltip은 3초 후 자동으로 사라짐
-    public func momogoTooltip(
+    func momogoTooltip(
         isPresented: Binding<Bool>,
         text: String,
         arrowDirection: DSTooltip.ArrowDirection = .down
