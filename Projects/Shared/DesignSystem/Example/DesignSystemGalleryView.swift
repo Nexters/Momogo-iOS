@@ -167,6 +167,8 @@ struct DesignSystemGalleryView: View {
                 Button("Button") {}.buttonStyle(.momogoButton(size: .small))
             }
 
+            Button("Full Width") {}.buttonStyle(.momogoButton(showsLeadingIcon: true, isFullWidth: true))
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     DSChip("Gray", tone: .gray)

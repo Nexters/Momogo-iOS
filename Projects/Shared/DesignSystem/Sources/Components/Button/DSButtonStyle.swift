@@ -46,19 +46,12 @@ public struct DSButtonStyle: ButtonStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: iconGap) {
-            if showsLeadingIcon {
-                Image(asset: SharedDesignSystemAsset.chevronLeft)
-                    .resizable()
-                    .frame(width: iconSize, height: iconSize)
-            }
+            leadingIconSlot
             configuration.label
                 .momogoTypography(typography)
                 .fixedSize()
-            if showsTrailingIcon {
-                Image(asset: SharedDesignSystemAsset.chevronRight)
-                    .resizable()
-                    .frame(width: iconSize, height: iconSize)
-            }
+                .frame(maxWidth: isFullWidth ? .infinity : nil)
+            trailingIconSlot
         }
         .foregroundStyle(foregroundColor)
         .padding(.horizontal, horizontalPadding)
@@ -67,6 +60,36 @@ public struct DSButtonStyle: ButtonStyle {
         .background(backgroundColor(isPressed: configuration.isPressed))
         .clipShape(Capsule())
         .overlay(borderOverlay)
+    }
+
+    /// 아이콘이 한쪽에만 있어도 타이틀이 항상 가운데 오도록, 반대쪽에 같은 크기의
+    /// 투명한 자리를 남겨 좌우를 대칭으로 맞춘다.
+    private var showsAnyIcon: Bool { showsLeadingIcon || showsTrailingIcon }
+
+    @ViewBuilder
+    private var leadingIconSlot: some View {
+        if showsAnyIcon {
+            iconOrPlaceholder(SharedDesignSystemAsset.chevronLeft, isVisible: showsLeadingIcon)
+        }
+    }
+
+    @ViewBuilder
+    private var trailingIconSlot: some View {
+        if showsAnyIcon {
+            iconOrPlaceholder(SharedDesignSystemAsset.chevronRight, isVisible: showsTrailingIcon)
+        }
+    }
+
+    @ViewBuilder
+    private func iconOrPlaceholder(_ asset: SharedDesignSystemImages, isVisible: Bool) -> some View {
+        if isVisible {
+            Image(asset: asset)
+                .resizable()
+                .frame(width: iconSize, height: iconSize)
+        } else {
+            Color.clear
+                .frame(width: iconSize, height: iconSize)
+        }
     }
 
     private var typography: DesignSystem.Typography {
