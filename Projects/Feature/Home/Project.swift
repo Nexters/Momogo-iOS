@@ -6,6 +6,8 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .home, factory: .init(
             dependencies: [
+                .domainInterface,
+                .designSystem,
                 .dependencies,
                 .swiftUINavigation
             ]
@@ -19,7 +21,6 @@ let project = Project.makeModule(
         .feature(example: .home, factory: .init(
             dependencies: [
                 .feature(implements: .home),
-                .domainInterface,
                 .dependencies
             ]
         ))

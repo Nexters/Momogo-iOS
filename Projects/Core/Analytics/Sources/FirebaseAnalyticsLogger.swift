@@ -1,7 +1,7 @@
 import FirebaseAnalytics
 
-/// `AnalyticsLogging`을 채택해 Firebase Analytics로 이벤트를 전송하는 구현체.
-public struct FirebaseAnalyticsLogger: AnalyticsLogging {
+/// Firebase Analytics로 이벤트를 전송하는 구현체.
+public struct FirebaseAnalyticsLogger: Sendable {
     public init() {}
 
     public func log(_ event: AnalyticsEvent) {

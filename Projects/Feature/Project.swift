@@ -4,7 +4,8 @@ import ProjectDescription
 let targets: [Target] = [
     .feature(factory: .init(
         dependencies: [
-            .feature(implements: .home)
+            .feature(implements: .home),
+            .core
         ]
     ))
 ]
