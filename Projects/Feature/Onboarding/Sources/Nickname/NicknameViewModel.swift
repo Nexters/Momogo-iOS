@@ -14,7 +14,7 @@ final class NicknameViewModel {
     var errorMessage: String?
 
     @ObservationIgnored
-    @Dependency(\.authRepository) private var authRepository
+    @Dependency(\.signUpUseCase) private var signUpUseCase
 
     private let onFinish: () -> Void
 
@@ -37,8 +37,7 @@ final class NicknameViewModel {
             defer { isLoading = false }
 
             do {
-                let request = SignUpRequest(provider: .guest, providerToken: "", nickname: nickname)
-                _ = try await authRepository.signUp(request)
+                _ = try await signUpUseCase.execute(nickname)
                 destination = .groupSelect(GroupSelectViewModel(onFinish: onFinish))
             } catch {
                 errorMessage = "잠시 후 다시 시도해주세요."
