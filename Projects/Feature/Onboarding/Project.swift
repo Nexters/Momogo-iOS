@@ -21,7 +21,8 @@ let project = Project.makeModule(
         .feature(example: .onboarding, factory: .init(
             dependencies: [
                 .feature(implements: .onboarding),
-                .domain
+                .dependencies,
+                .domainInterface
             ]
         ))
     ],
