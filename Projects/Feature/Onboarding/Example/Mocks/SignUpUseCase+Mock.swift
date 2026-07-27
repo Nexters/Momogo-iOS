@@ -4,7 +4,7 @@ import DomainInterface
 
 /// 실제 백엔드 연동 전까지 Example 앱에서 플로우를 확인하기 위한 Mock. 프로덕션 liveValue는 unimplemented로 유지한다.
 extension SignUpUseCase {
-    static let mock = SignUpUseCase { nickname in
+    static let happyPath = SignUpUseCase { nickname in
         try? await Task.sleep(for: .seconds(0.4))
 
         return SignUpResponse(
@@ -14,4 +14,13 @@ extension SignUpUseCase {
             refreshToken: "mock-refresh-token-\(UUID().uuidString)"
         )
     }
+
+    static let failedPath = SignUpUseCase { _ in
+        try? await Task.sleep(for: .seconds(0.4))
+        throw SignUpMockError.failed
+    }
+}
+
+private enum SignUpMockError: Error {
+    case failed
 }

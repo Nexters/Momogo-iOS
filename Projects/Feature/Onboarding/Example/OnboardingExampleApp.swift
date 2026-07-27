@@ -8,7 +8,7 @@ import FeatureOnboarding
 struct OnboardingExampleApp: App {
     init() {
         prepareDependencies {
-            $0.signUpUseCase = .mock
+            $0.signUpUseCase = .happyPath
         }
     }
 
