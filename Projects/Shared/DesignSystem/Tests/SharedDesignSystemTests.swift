@@ -18,6 +18,12 @@ struct SharedDesignSystemTests {
     }
 
     @Test
+    func chipSizeCasesAreExhaustive() {
+        let sizes: [DSChip.Size] = [.default, .small]
+        #expect(sizes.count == 2)
+    }
+
+    @Test
     func textFieldStateCasesAreExhaustive() {
         let states: [DSTextField.State] = [.normal, .focused, .error]
         #expect(states.count == 3)

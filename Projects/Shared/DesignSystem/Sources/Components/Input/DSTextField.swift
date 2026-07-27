@@ -3,6 +3,7 @@ import SwiftUI
 public struct DSTextField: View {
     public enum State {
         case normal
+        case filled
         case focused
         case error
     }
@@ -30,41 +31,69 @@ public struct DSTextField: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
+            HStack(spacing: 8) {
                 TextField(placeholder, text: $text)
                     .momogoTypography(.mdMedium)
-                    .foregroundStyle(DesignSystem.Color.gray50)
+                    .foregroundStyle(textColor)
                 if let characterLimit {
                     Text("\(text.count)/\(characterLimit)")
-                        .momogoTypography(.xsMedium)
-                        .foregroundStyle(DesignSystem.Color.gray400)
+                        .momogoTypography(.mdMedium)
+                        .foregroundStyle(countColor)
                 }
             }
-            .padding(.horizontal, 16)
-            .frame(height: 48)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 14)
+            .background(DesignSystem.Color.gray900)
+            .clipShape(Capsule())
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.Radius.r12)
-                    .stroke(borderColor, lineWidth: 1)
+                Capsule()
+                    .stroke(borderColor, lineWidth: borderWidth)
             )
 
             if let comment {
                 Text(comment)
                     .momogoTypography(.xsMedium)
                     .foregroundStyle(commentColor)
+                    .padding(.leading, 12)
             }
         }
-        .opacity(isEnabled ? 1 : 0.4)
     }
 
     private var borderColor: Color {
-        switch state {
-        case .normal: DesignSystem.Color.gray600
+        guard isEnabled else { return .clear }
+        return switch state {
+        case .error: DesignSystem.Color.systemRed500
         case .focused: DesignSystem.Color.primary500
+        case .normal, .filled: DesignSystem.Color.gray800
+        }
+    }
+
+    private var borderWidth: CGFloat {
+        guard isEnabled else { return 0 }
+        return switch state {
+        case .error, .focused: 1.5
+        case .normal, .filled: 1
+        }
+    }
+
+    private var textColor: Color {
+        guard isEnabled else { return DesignSystem.Color.gray600 }
+        return switch state {
+        case .normal: DesignSystem.Color.gray400
+        case .filled, .focused, .error: DesignSystem.Color.gray50
+        }
+    }
+
+    private var countColor: Color {
+        guard isEnabled else { return DesignSystem.Color.gray600 }
+        return switch state {
+        case .normal, .filled: DesignSystem.Color.gray400
+        case .focused: DesignSystem.Color.gray50
         case .error: DesignSystem.Color.systemRed500
         }
     }
 
     private var commentColor: Color {
-        state == .error ? DesignSystem.Color.systemRed500 : DesignSystem.Color.gray400
+        state == .error ? DesignSystem.Color.systemRed500 : DesignSystem.Color.gray200
     }
 }
