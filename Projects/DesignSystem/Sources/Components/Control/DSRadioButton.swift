@@ -15,7 +15,7 @@ public struct DSRadioButton: View {
             isSelected = true
         } label: {
             HStack(spacing: 8) {
-                Image(asset: isSelected ? SharedDesignSystemAsset.radioActive : SharedDesignSystemAsset.radioInactive)
+                Image(asset: isSelected ? DesignSystemAsset.radioActive : DesignSystemAsset.radioInactive)
                     .resizable()
                     .frame(width: 20, height: 20)
                     .foregroundStyle(foregroundColor)

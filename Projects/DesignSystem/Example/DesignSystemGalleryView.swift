@@ -1,6 +1,6 @@
 import SwiftUI
 
-import SharedDesignSystem
+import DesignSystem
 
 enum DesignSystemCategory: String, CaseIterable, Identifiable {
     case color
@@ -144,13 +144,13 @@ struct DesignSystemDetailView: View {
     }
 
     private var iconSection: some View {
-        let icons: [(SharedDesignSystemImages, String)] = [
-            (SharedDesignSystemAsset.chevronLeft, "chevronLeft"),
-            (SharedDesignSystemAsset.chevronRight, "chevronRight"),
-            (SharedDesignSystemAsset.x, "x"),
-            (SharedDesignSystemAsset.share2, "share2"),
-            (SharedDesignSystemAsset.settings, "settings"),
-            (SharedDesignSystemAsset.ellipsisVertical, "ellipsisVertical")
+        let icons: [(DesignSystemImages, String)] = [
+            (DesignSystemAsset.chevronLeft, "chevronLeft"),
+            (DesignSystemAsset.chevronRight, "chevronRight"),
+            (DesignSystemAsset.x, "x"),
+            (DesignSystemAsset.share2, "share2"),
+            (DesignSystemAsset.settings, "settings"),
+            (DesignSystemAsset.ellipsisVertical, "ellipsisVertical")
         ]
         let columns = [GridItem(.adaptive(minimum: 64), spacing: 16)]
         return LazyVGrid(columns: columns, spacing: 16) {

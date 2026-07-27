@@ -31,14 +31,14 @@ public extension DesignSystem {
             }
         }
 
-        private var fontConvertible: SharedDesignSystemFontConvertible {
+        private var fontConvertible: DesignSystemFontConvertible {
             switch self {
             case .heading32, .heading26, .heading24, .heading20:
-                SharedDesignSystemFontFamily.WantedSans.bold
+                DesignSystemFontFamily.WantedSans.bold
             case .xlSemistrong, .lgSemistrong, .mdSemistrong, .smSemistrong, .xsSemistrong:
-                SharedDesignSystemFontFamily.WantedSans.semiBold
+                DesignSystemFontFamily.WantedSans.semiBold
             case .xlMedium, .lgMedium, .mdMedium, .smMedium, .xsMedium:
-                SharedDesignSystemFontFamily.WantedSans.medium
+                DesignSystemFontFamily.WantedSans.medium
             }
         }
 

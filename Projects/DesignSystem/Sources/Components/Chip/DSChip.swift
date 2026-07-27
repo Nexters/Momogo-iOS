@@ -38,7 +38,7 @@ public struct DSChip: View {
     public var body: some View {
         HStack(spacing: 2) {
             if showsLeadingIcon {
-                Image(asset: SharedDesignSystemAsset.chevronLeft)
+                Image(asset: DesignSystemAsset.chevronLeft)
                     .resizable()
                     .frame(width: iconSize, height: iconSize)
             }
@@ -46,7 +46,7 @@ public struct DSChip: View {
                 .momogoTypography(typography)
                 .fixedSize()
             if showsTrailingIcon {
-                Image(asset: SharedDesignSystemAsset.chevronRight)
+                Image(asset: DesignSystemAsset.chevronRight)
                     .resizable()
                     .frame(width: iconSize, height: iconSize)
             }

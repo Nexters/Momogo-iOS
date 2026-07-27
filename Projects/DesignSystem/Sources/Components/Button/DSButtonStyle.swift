@@ -69,19 +69,19 @@ public struct DSButtonStyle: ButtonStyle {
     @ViewBuilder
     private var leadingIconSlot: some View {
         if showsAnyIcon {
-            iconOrPlaceholder(SharedDesignSystemAsset.chevronLeft, isVisible: showsLeadingIcon)
+            iconOrPlaceholder(DesignSystemAsset.chevronLeft, isVisible: showsLeadingIcon)
         }
     }
 
     @ViewBuilder
     private var trailingIconSlot: some View {
         if showsAnyIcon {
-            iconOrPlaceholder(SharedDesignSystemAsset.chevronRight, isVisible: showsTrailingIcon)
+            iconOrPlaceholder(DesignSystemAsset.chevronRight, isVisible: showsTrailingIcon)
         }
     }
 
     @ViewBuilder
-    private func iconOrPlaceholder(_ asset: SharedDesignSystemImages, isVisible: Bool) -> some View {
+    private func iconOrPlaceholder(_ asset: DesignSystemImages, isVisible: Bool) -> some View {
         if isVisible {
             Image(asset: asset)
                 .resizable()

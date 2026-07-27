@@ -1,6 +1,6 @@
 import SwiftUI
 
-import SharedDesignSystem
+import DesignSystem
 
 @main
 struct DesignSystemExampleApp: App {

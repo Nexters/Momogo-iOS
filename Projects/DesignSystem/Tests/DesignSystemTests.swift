@@ -1,10 +1,10 @@
 import SwiftUI
 import Testing
 
-@testable import SharedDesignSystem
+@testable import DesignSystem
 
 @Suite
-struct SharedDesignSystemTests {
+struct DesignSystemTests {
     @Test
     func radiusTokensAreDefined() {
         #expect(DesignSystem.Radius.r12 == 12)
