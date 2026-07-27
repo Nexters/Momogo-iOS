@@ -26,7 +26,7 @@ public struct TargetFactory {
         productName: String? = nil,
         bundleId: String? = nil,
         deploymentTargets: DeploymentTargets? = env.deploymentTargets,
-        infoPlist: InfoPlist? = .default,
+        infoPlist: InfoPlist? = .extendingDefault(with: ["UILaunchScreen": .dictionary([:])]),
         sources: SourceFilesList? = .sources,
         resources: ResourceFileElements? = nil,
         entitlements: Entitlements? = nil,
