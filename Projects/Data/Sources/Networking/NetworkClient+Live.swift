@@ -17,19 +17,39 @@ extension NetworkClient: DependencyKey {
     )
 }
 
-private let provider = MoyaProvider<MultiTarget>()
+private let provider = MoyaProvider<MultiTarget>(plugins: providerPlugins)
+
+private var providerPlugins: [PluginType] {
+    var plugins: [PluginType] = [AuthorizationPlugin(tokenStore: AccessTokenStore.liveValue)]
+    #if DEBUG
+    plugins.append(NetworkLoggerPlugin())
+    #endif
+    return plugins
+}
 
 @Sendable
 private func performRequest(_ target: any TargetType) async throws -> Data {
-    let response: Response = try await withCheckedThrowingContinuation { continuation in
-        provider.request(MultiTarget(target)) { result in
-            switch result {
-            case let .success(response):
-                continuation.resume(returning: response)
-            case let .failure(error):
-                continuation.resume(throwing: NetworkError.requestFailed(error))
+    do {
+        let response: Response = try await withCheckedThrowingContinuation { continuation in
+            provider.request(MultiTarget(target)) { result in
+                continuation.resume(with: result)
             }
         }
+        return try mapToData(response)
+    } catch let error as NetworkError {
+        throw error
+    } catch {
+        throw NetworkError.underlying(error)
     }
-    return response.data
+}
+
+private func mapToData(_ response: Response) throws -> Data {
+    switch response.statusCode {
+    case 200 ..< 300:
+        return response.data
+    case 401:
+        throw NetworkError.unauthorized
+    default:
+        throw NetworkError.serverError(statusCode: response.statusCode)
+    }
 }

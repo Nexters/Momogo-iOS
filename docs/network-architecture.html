@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Momogo Data 네트워크 구조</title>
+<style>
+  :root {
+    --bg: #eef1f3;
+    --surface: #ffffff;
+    --surface-2: #e4e9ec;
+    --ink: #101820;
+    --ink-soft: #49555e;
+    --ink-faint: #7c8890;
+    --line: #d3dbe0;
+    --accent: #0e7c86;
+    --accent-ink: #075a62;
+    --accent-soft: #e3f1f1;
+    --warm: #a8611b;
+    --warm-soft: #f5e7d8;
+    --danger: #a83730;
+    --danger-soft: #f7e4e2;
+    --code-bg: #0f1720;
+    --code-ink: #d7f5ee;
+    --code-faint: #8296a3;
+    --shadow: 0 1px 2px rgba(16, 24, 32, 0.04), 0 8px 24px rgba(16, 24, 32, 0.06);
+
+    --font-kr: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220;
+      --surface: #121b2b;
+      --surface-2: #172335;
+      --ink: #e7ecf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #6d7d89;
+      --line: #223142;
+      --accent: #4fc7cf;
+      --accent-ink: #bdf0ec;
+      --accent-soft: #163338;
+      --warm: #e0a868;
+      --warm-soft: #33261a;
+      --danger: #e2837c;
+      --danger-soft: #3a201d;
+      --code-bg: #070c14;
+      --code-ink: #d7f5ee;
+      --code-faint: #6d7d89;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-kr);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header.masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 28px;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(26px, 4vw, 34px);
+    line-height: 1.25;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .chiprow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .chip.on { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
+
+  section {
+    margin-bottom: 44px;
+  }
+
+  h2 {
+    font-size: 19px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  .section-lede {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    margin: 0 0 18px;
+    max-width: 66ch;
+  }
+
+  p { margin: 0 0 12px; }
+
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    overflow-x: auto;
+  }
+
+  .diagram-card .mermaid {
+    display: flex;
+    justify-content: center;
+    min-width: 560px;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .codeblock {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .codeblock pre { margin: 0; white-space: pre; }
+  .codeblock code { background: none; padding: 0; color: inherit; }
+  .code-label {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+    letter-spacing: 0.02em;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-2);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.path, td.mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent-ink); white-space: nowrap; }
+  td.status { font-family: var(--font-mono); font-weight: 600; white-space: nowrap; }
+
+  .callout {
+    display: flex;
+    gap: 12px;
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+  }
+  .callout.todo { background: var(--warm-soft); border-color: var(--warm); }
+  .callout .mark {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--warm);
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .callout ul { margin: 4px 0 0; padding-left: 18px; }
+  .callout li { margin-bottom: 4px; }
+
+  .flow-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .flow-steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 14px 0 14px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .flow-steps li:last-child { border-bottom: none; }
+  .flow-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .flow-steps b { display: block; margin-bottom: 2px; }
+  .flow-steps .detail { color: var(--ink-soft); font-size: 13.5px; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 12px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+  }
+
+  a { color: var(--accent-ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">Momogo · feature/13-NetworkModule</div>
+    <h1>Data 모듈은 서버와 이렇게 대화한다</h1>
+    <p class="subtitle">UseCase → Repository → Data 흐름에서, Data가 Moya를 감싸 만든 네트워크 계층의 실제 배선도. 인증 헤더, 에러 매핑, base URL 주입까지 한 번에 정리했다.</p>
+    <div class="chiprow">
+      <span class="chip">UseCase</span>
+      <span class="chip">Repository (DomainInterface)</span>
+      <span class="chip on">Data</span>
+      <span class="chip on">NetworkClient</span>
+      <span class="chip on">Moya</span>
+      <span class="chip">서버</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> 전체 구조</h2>
+    <p class="section-lede">Repository 구현체는 <code>NetworkClient</code> 하나만 알면 된다. baseURL 해석, 인증 헤더 부착, 디버그 로깅은 전부 Data 내부에서 끝나고 바깥으로 새어나가지 않는다.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+flowchart LR
+    UC["UseCase<br/>(Feature/Domain)"] --> Repo["Repository 구현체<br/>(Domain, Data 사용)"]
+    Repo -->|"requestDecodable(_:)"| NC["NetworkClient<br/>(Data)"]
+    NC --> Provider["MoyaProvider&lt;MultiTarget&gt;"]
+
+    subgraph Plugins["요청 전/후 가로채기"]
+        Auth["AuthorizationPlugin<br/>Bearer 토큰 부착"]
+        Log["NetworkLoggerPlugin<br/>#if DEBUG"]
+    end
+
+    Provider --> Plugins
+    Plugins --> Server[("서버 API")]
+    Server -.응답.-> NC
+    NC -.상태코드→NetworkError 매핑.-> Repo
+
+    Token[("AccessTokenStore")] -.토큰 조회.-> Auth
+    Config[("Info.plist<br/>API_BASE_URL")] -.baseURL.-> Provider
+
+    classDef data fill:#0e7c86,stroke:#075a62,color:#fff;
+    classDef outer fill:none,stroke:#8296a3,color:#8296a3,stroke-dasharray:3 3;
+    class NC,Provider,Auth,Log,Token,Config data;
+    class UC,Repo,Server outer;
+      </pre>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--accent)"></i>Data 모듈 내부 (이번에 만든 부분)</span>
+      <span><i class="swatch" style="background:var(--ink-faint);opacity:.5"></i>Data 바깥 레이어</span>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> 요청 1건의 실제 흐름</h2>
+    <p class="section-lede">예: 홈 화면이 식단 목록을 요청하는 경우. 인증이 필요한 API라고 가정한다.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+sequenceDiagram
+    participant UC as UseCase
+    participant Repo as Repository (Data)
+    participant NC as NetworkClient
+    participant Auth as AuthorizationPlugin
+    participant MP as MoyaProvider
+    participant Server as 서버
+
+    UC->>Repo: fetchMeals(date:)
+    Repo->>NC: requestDecodable(HomeAPI.fetchMeals)
+    NC->>MP: request(MultiTarget(target))
+    MP->>Auth: prepare(request, target)
+    Auth->>Auth: requiresAuthorization == true?
+    Auth->>Auth: AccessTokenStore.current()
+    Auth-->>MP: Authorization: Bearer {token} 부착된 request
+    MP->>Server: HTTP 요청
+    Server-->>MP: HTTP 응답 (statusCode + body)
+    MP-->>NC: Result&lt;Response, MoyaError&gt;
+    NC->>NC: statusCode 분기 → Data 또는 NetworkError
+    NC->>NC: JSONDecoder로 T 디코딩
+    NC-->>Repo: 디코딩된 모델 또는 throw
+    Repo-->>UC: 도메인 모델 또는 에러
+      </pre>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> 파일별 책임</h2>
+    <p class="section-lede">전부 <code>Projects/Data/Sources/Networking/</code> 아래에 있다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>파일</th><th>역할</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="path">NetworkConfiguration.swift</td><td>Info.plist의 <code>API_BASE_URL</code>을 읽어 <code>baseURL: URL</code>을 만든다. 키가 없으면 즉시 크래시 — 설정 누락을 배포 전에 드러내기 위함.</td></tr>
+          <tr><td class="path">NetworkTargetType.swift</td><td>Moya <code>TargetType</code> 확장 프로토콜. baseURL / headers / validationType 기본값을 주고, <code>requiresAuthorization</code> 플래그를 새로 선언한다. 실제 API enum은 <code>path</code>/<code>method</code>/<code>task</code>만 채우면 된다.</td></tr>
+          <tr><td class="path">AccessTokenStore.swift</td><td>현재 액세스 토큰을 들고 있는 락 기반 저장소. 로그인 기능이 아직 없어 지금은 항상 비어 있다 — 나중에 로그인 플로우가 <code>update(_:)</code>만 호출하면 됨.</td></tr>
+          <tr><td class="path">AuthorizationPlugin.swift</td><td>Moya <code>PluginType</code>. 요청 직전 <code>requiresAuthorization</code>과 토큰 유무를 보고 <code>Authorization</code> 헤더를 붙일지 말지 결정한다.</td></tr>
+          <tr><td class="path">NetworkClient.swift</td><td>Data가 network에 요구하는 포트. raw <code>Data</code> 요청 클로저 + 제네릭 디코딩 편의 메서드 <code>requestDecodable(_:)</code>.</td></tr>
+          <tr><td class="path">NetworkClient+Live.swift</td><td><code>MoyaProvider</code> 실제 구성(플러그인 장착), 상태 코드 → <code>NetworkError</code> 매핑, liveValue/testValue/previewValue 제공.</td></tr>
+          <tr><td class="path">NetworkError.swift</td><td>Repository가 받게 되는 에러 타입. 아래 05번 표 참고.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> 인증 — 토큰은 이렇게 자동으로 붙는다</h2>
+    <p class="section-lede">API 정의 쪽에서 아무것도 안 하면 인증이 필요한 것으로 간주한다. 로그인·회원가입처럼 인증이 필요 없는 API만 <code>requiresAuthorization</code>을 <code>false</code>로 오버라이드하면 된다.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+flowchart TB
+    A["API가 NetworkTargetType 채택"] --> B{"requiresAuthorization"}
+    B -->|"기본값 true"| C{"AccessTokenStore에<br/>토큰이 있는가?"}
+    B -->|"false로 오버라이드<br/>(로그인/회원가입 등)"| E["헤더 없이 전송"]
+    C -->|"있음"| D["Authorization: Bearer {token} 부착"]
+    C -->|"없음"| E
+
+    classDef warm fill:#a8611b,stroke:#a8611b,color:#fff;
+    class D warm;
+      </pre>
+    </div>
+    <div class="code-label">로그인이 필요 없는 API 예시</div>
+    <div class="codeblock"><pre><code>enum AuthAPI: NetworkTargetType {
+    case login(id: String, password: String)
+
+    var requiresAuthorization: Bool { false }
+
+    var path: String { "/v1/auth/login" }
+    var method: Moya.Method { .post }
+    var task: Moya.Task {
+        switch self {
+        case let .login(id, password):
+            return .requestJSONEncodable(["id": id, "password": password])
+        }
+    }
+}</code></pre></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> 에러는 이렇게 좁혀진다</h2>
+    <p class="section-lede"><code>NetworkClient+Live.swift</code>의 <code>mapToData(_:)</code>가 응답을 받자마자 상태 코드를 확인해서, Repository가 <code>switch</code>로 바로 분기할 수 있는 형태로 좁혀준다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>상황</th><th>NetworkError</th><th>의미</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="status">200–299</td><td class="mono">(에러 아님)</td><td>응답 <code>Data</code> 그대로 반환, 이후 <code>requestDecodable</code>이 디코딩 진행</td></tr>
+          <tr><td class="status">401</td><td class="mono">.unauthorized</td><td>인증 실패 / 토큰 만료</td></tr>
+          <tr><td class="status">그 외 상태 코드</td><td class="mono">.serverError(statusCode:)</td><td>서버 측 오류 응답</td></tr>
+          <tr><td class="status">디코딩 단계</td><td class="mono">.decodingFailed(Error)</td><td>응답 JSON과 모델 타입 불일치</td></tr>
+          <tr><td class="status">요청 자체 실패</td><td class="mono">.underlying(Error)</td><td>네트워크 단절 등 Moya/URLSession 레벨 오류</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> 새 API를 추가하는 법</h2>
+    <p class="section-lede">Data 안에 API enum 하나, Repository 구현체 하나만 추가하면 된다. baseURL·인증·에러 처리는 신경 쓸 필요 없다.</p>
+    <ol class="flow-steps">
+      <li><b>API 정의</b><span class="detail"><code>NetworkTargetType</code>을 채택하는 enum을 만들고 <code>path</code>/<code>method</code>/<code>task</code>만 정의한다.</span></li>
+      <li><b>Repository에서 호출</b><span class="detail"><code>@Dependency(\.networkClient)</code>로 주입받아 <code>requestDecodable(_:)</code>로 바로 디코딩된 모델을 받는다.</span></li>
+      <li><b>에러는 그대로 위임</b><span class="detail">Repository는 <code>NetworkError</code>를 그대로 던지거나 도메인 에러로 한 번 감싸서 UseCase에 전달한다.</span></li>
+    </ol>
+    <div class="code-label">01 · API 정의</div>
+    <div class="codeblock"><pre><code>enum HomeAPI {
+    case fetchMeals(date: String)
+}
+
+extension HomeAPI: NetworkTargetType {
+    var path: String {
+        switch self {
+        case .fetchMeals:
+            return "/v1/meals"
+        }
+    }
+
+    var method: Moya.Method { .get }
+
+    var task: Moya.Task {
+        switch self {
+        case let .fetchMeals(date):
+            return .requestParameters(
+                parameters: ["date": date],
+                encoding: URLEncoding.queryString
+            )
+        }
+    }
+}</code></pre></div>
+    <div class="code-label">02 · Repository에서 호출</div>
+    <div class="codeblock"><pre><code>struct MealRepository {
+    @Dependency(\.networkClient) var networkClient
+
+    func fetchMeals(date: String) async throws -> [MealDTO] {
+        try await networkClient.requestDecodable(HomeAPI.fetchMeals(date: date))
+    }
+}</code></pre></div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span> 아직 정해지지 않은 것</h2>
+    <div class="callout todo">
+      <div class="mark">TODO</div>
+      <div>
+        <ul>
+          <li><code>Projects/App/Config/Debug.xcconfig</code> / <code>Release.xcconfig</code>의 <code>API_BASE_URL</code>은 자리표시자다. 실제 서버 주소가 정해지면 교체해야 한다.</li>
+          <li><code>AccessTokenStore</code>는 로그인 기능이 없어 지금은 항상 빈 상태다. 로그인 플로우가 붙으면 로그인 성공 시점에 <code>store.update(token)</code>을 호출하고, 로그아웃 시 <code>nil</code>로 되돌리면 된다.</li>
+          <li>401 응답 시 자동 로그아웃 / 토큰 갱신(refresh) 흐름은 아직 없다 — 지금은 <code>.unauthorized</code>를 상위로 던지기만 한다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Projects/Data/Sources/Networking/ · feature/13-NetworkModule
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  var isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var palette = isDark
+    ? {
+        background: "transparent",
+        primaryColor: "#163338",
+        primaryTextColor: "#e7ecf0",
+        primaryBorderColor: "#4fc7cf",
+        lineColor: "#6d7d89",
+        secondaryColor: "#172335",
+        tertiaryColor: "#121b2b",
+        textColor: "#e7ecf0",
+        actorBkg: "#172335",
+        actorBorder: "#4fc7cf",
+        actorTextColor: "#e7ecf0",
+        signalColor: "#a9b8c4",
+        signalTextColor: "#e7ecf0",
+        labelBoxBkgColor: "#172335",
+        labelTextColor: "#e7ecf0",
+        loopTextColor: "#e7ecf0"
+      }
+    : {
+        background: "transparent",
+        primaryColor: "#e3f1f1",
+        primaryTextColor: "#101820",
+        primaryBorderColor: "#0e7c86",
+        lineColor: "#7c8890",
+        secondaryColor: "#e4e9ec",
+        tertiaryColor: "#ffffff",
+        textColor: "#101820",
+        actorBkg: "#ffffff",
+        actorBorder: "#0e7c86",
+        actorTextColor: "#101820",
+        signalColor: "#49555e",
+        signalTextColor: "#101820",
+        labelBoxBkgColor: "#ffffff",
+        labelTextColor: "#101820",
+        loopTextColor: "#101820"
+      };
+  palette.fontFamily = "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: palette,
+    securityLevel: "loose",
+    flowchart: { htmlLabels: true, curve: "basis" }
+  });
+</script>
+</body>
+</html>

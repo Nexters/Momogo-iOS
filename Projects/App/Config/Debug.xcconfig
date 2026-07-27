@@ -1,0 +1,2 @@
+// xcconfig은 "//"를 주석 시작으로 처리하므로 $() 빈 매크로로 끊어서 이스케이프한다.
+API_BASE_URL = https:/$()/api-dev.momogo.io/

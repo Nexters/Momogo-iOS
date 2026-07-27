@@ -5,6 +5,7 @@ let project = Project.makeModule(
     name: env.appName,
     targets: [
         .app(factory: .init(
+            infoPlist: .extendingDefault(with: ["API_BASE_URL": "$(API_BASE_URL)"]),
             sources: ["Sources/**"],
             resources: ["Resources/**"],
             scripts: [
@@ -32,7 +33,13 @@ let project = Project.makeModule(
                 )
             ],
             dependencies: [.feature, .domain, .data, .firebaseCrashlytics],
-            settings: .settings(base: ["OTHER_LDFLAGS": ["-ObjC"]])
+            settings: .settings(
+                base: ["OTHER_LDFLAGS": ["-ObjC"]],
+                configurations: [
+                    .debug(name: "Debug", xcconfig: .relativeToRoot("Projects/App/Config/Debug.xcconfig")),
+                    .release(name: "Release", xcconfig: .relativeToRoot("Projects/App/Config/Release.xcconfig"))
+                ]
+            )
         ))
     ],
     schemes: [
