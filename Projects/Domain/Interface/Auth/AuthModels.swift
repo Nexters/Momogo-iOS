@@ -3,7 +3,6 @@ import Foundation
 /// 게스트 또는 소셜 로그인에 사용하는 인증 provider.
 public enum AuthProvider: String, Sendable, Codable {
     case guest = "GUEST"
-    case kakao = "KAKAO"
 }
 
 /// 게스트 또는 소셜 provider로 회원가입할 때 사용하는 요청 모델.
