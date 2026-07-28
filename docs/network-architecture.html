@@ -389,9 +389,10 @@ sequenceDiagram
     Auth-->>MP: Authorization: Bearer {token} 부착된 request
     MP->>Server: HTTP 요청
     Server-->>MP: HTTP 응답 (statusCode + body)
+    MP->>MP: validationType 기준으로 성공/실패 판정
     MP-->>NC: Result&lt;Response, MoyaError&gt;
-    NC->>NC: statusCode 분기 → Data 또는 NetworkError
-    NC->>NC: JSONDecoder로 T 디코딩
+    NC->>NC: 실패 시 MoyaError.response.statusCode → NetworkError 매핑
+    NC->>NC: 성공 시 JSONDecoder로 T 디코딩
     NC-->>Repo: 디코딩된 모델 또는 throw
     Repo-->>UC: 도메인 모델 또는 에러
       </pre>
@@ -454,18 +455,18 @@ flowchart TB
 
   <section>
     <h2><span class="num">05</span> 에러는 이렇게 좁혀진다</h2>
-    <p class="section-lede"><code>NetworkClient+Live.swift</code>의 <code>mapToData(_:)</code>가 응답을 받자마자 상태 코드를 확인해서, Repository가 <code>switch</code>로 바로 분기할 수 있는 형태로 좁혀준다.</p>
+    <p class="section-lede">성공 판정은 Moya의 <code>validationType</code>(기본 <code>.successCodes</code>)이 먼저 내린다. 실패로 판정되면 Moya가 <code>MoyaError</code>를 던지는데, <code>NetworkClient+Live.swift</code>의 <code>mapToNetworkError(_:)</code>가 그 안에 보존된 <code>response.statusCode</code>를 꺼내 Repository가 <code>switch</code>로 바로 분기할 수 있는 형태로 좁혀준다.</p>
     <div class="table-wrap">
       <table>
         <thead>
           <tr><th>상황</th><th>NetworkError</th><th>의미</th></tr>
         </thead>
         <tbody>
-          <tr><td class="status">200–299</td><td class="mono">(에러 아님)</td><td>응답 <code>Data</code> 그대로 반환, 이후 <code>requestDecodable</code>이 디코딩 진행</td></tr>
+          <tr><td class="status">validationType 통과 (기본 200–299)</td><td class="mono">(에러 아님)</td><td>Moya가 <code>.success</code>로 판정, 응답 <code>Data</code> 그대로 반환 → <code>requestDecodable</code>이 디코딩 진행</td></tr>
           <tr><td class="status">401</td><td class="mono">.unauthorized</td><td>인증 실패 / 토큰 만료</td></tr>
           <tr><td class="status">그 외 상태 코드</td><td class="mono">.serverError(statusCode:)</td><td>서버 측 오류 응답</td></tr>
+          <tr><td class="status">응답 자체가 없음</td><td class="mono">.underlying(Error)</td><td>네트워크 단절 등 <code>MoyaError.response</code>가 nil인 경우</td></tr>
           <tr><td class="status">디코딩 단계</td><td class="mono">.decodingFailed(Error)</td><td>응답 JSON과 모델 타입 불일치</td></tr>
-          <tr><td class="status">요청 자체 실패</td><td class="mono">.underlying(Error)</td><td>네트워크 단절 등 Moya/URLSession 레벨 오류</td></tr>
         </tbody>
       </table>
     </div>

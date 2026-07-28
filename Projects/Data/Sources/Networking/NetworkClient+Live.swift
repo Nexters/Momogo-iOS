@@ -35,21 +35,22 @@ private func performRequest(_ target: any TargetType) async throws -> Data {
                 continuation.resume(with: result)
             }
         }
-        return try mapToData(response)
-    } catch let error as NetworkError {
-        throw error
+        return response.data
+    } catch let error as MoyaError {
+        throw mapToNetworkError(error)
     } catch {
         throw NetworkError.underlying(error)
     }
 }
 
-private func mapToData(_ response: Response) throws -> Data {
-    switch response.statusCode {
-    case 200 ..< 300:
-        return response.data
+private func mapToNetworkError(_ error: MoyaError) -> NetworkError {
+    guard let statusCode = error.response?.statusCode else {
+        return .underlying(error)
+    }
+    switch statusCode {
     case 401:
-        throw NetworkError.unauthorized
+        return .unauthorized
     default:
-        throw NetworkError.serverError(statusCode: response.statusCode)
+        return .serverError(statusCode: statusCode)
     }
 }
