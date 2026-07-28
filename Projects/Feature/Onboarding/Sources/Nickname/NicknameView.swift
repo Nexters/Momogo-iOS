@@ -1,5 +1,6 @@
 import SwiftUI
 
+import DesignSystem
 import SwiftUINavigation
 
 struct NicknameView: View {
@@ -12,41 +13,24 @@ struct NicknameView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모라고\n불러줄까?")
-                .font(.largeTitle.weight(.medium))
-                .foregroundStyle(.white)
+                .momogoTypography(.heading32)
+                .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
 
             VStack(spacing: 12) {
-                TextField(
-                    "",
+                DSTextField(
+                    "닉네임 입력",
                     text: $viewModel.nickname,
-                    prompt: Text("닉네임 입력")
-                        .foregroundStyle(OnboardingColor.placeholder)
+                    state: viewModel.nickname.isEmpty ? .normal : .filled
                 )
-                .textFieldStyle(.plain)
-                .font(.footnote)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 14)
-                .frame(minHeight: 48)
-                .background(OnboardingColor.fieldBackground)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 14)
-                        .strokeBorder(OnboardingColor.fieldBorder, style: StrokeStyle(lineWidth: 1.5, dash: [4]))
-                }
-                .clipShape(.rect(cornerRadius: 14))
 
                 Button {
                     viewModel.nextTapped()
                 } label: {
                     Text("다음")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(OnboardingColor.accentText)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 48)
-                        .background(OnboardingColor.accent)
-                        .clipShape(.rect(cornerRadius: 24))
                 }
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)
@@ -54,7 +38,7 @@ struct NicknameView: View {
         .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
-        .background(OnboardingColor.background.ignoresSafeArea())
+        .background(DesignSystem.Color.gray950.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $viewModel.destination.groupSelect) { groupSelectViewModel in
             GroupSelectView(viewModel: groupSelectViewModel)

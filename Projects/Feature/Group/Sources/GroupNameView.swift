@@ -1,5 +1,6 @@
 import SwiftUI
 
+import DesignSystem
 import SwiftUINavigation
 
 public struct GroupNameView: View {
@@ -12,41 +13,24 @@ public struct GroupNameView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("그룹 이름을\n지어주라모")
-                .font(.largeTitle.weight(.medium))
-                .foregroundStyle(.white)
+                .momogoTypography(.heading32)
+                .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
 
             VStack(spacing: 12) {
-                TextField(
-                    "",
+                DSTextField(
+                    "그룹명 입력",
                     text: $viewModel.groupName,
-                    prompt: Text("그룹명 입력")
-                        .foregroundStyle(GroupColor.placeholder)
+                    state: viewModel.groupName.isEmpty ? .normal : .filled
                 )
-                .textFieldStyle(.plain)
-                .font(.footnote)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 14)
-                .frame(minHeight: 48)
-                .background(GroupColor.fieldBackground)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 14)
-                        .strokeBorder(GroupColor.fieldBorder, style: StrokeStyle(lineWidth: 1.5, dash: [4]))
-                }
-                .clipShape(.rect(cornerRadius: 14))
 
                 Button {
                     viewModel.createGroupTapped()
                 } label: {
                     Text("그룹 만들기")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(GroupColor.accentText)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 48)
-                        .background(GroupColor.accent)
-                        .clipShape(.rect(cornerRadius: 24))
                 }
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)
@@ -54,7 +38,7 @@ public struct GroupNameView: View {
         .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
-        .background(GroupColor.background.ignoresSafeArea())
+        .background(DesignSystem.Color.gray950.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $viewModel.destination.inviteShare) { inviteShareViewModel in
             InviteShareView(viewModel: inviteShareViewModel)

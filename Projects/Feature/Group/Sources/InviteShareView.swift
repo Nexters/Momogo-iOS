@@ -1,12 +1,14 @@
 import SwiftUI
 
+import DesignSystem
+
 struct InviteShareView: View {
     @Bindable private var viewModel: InviteShareViewModel
 
     private let memberColors: [Color] = [
-        Color(red: 216 / 255, green: 90 / 255, blue: 48 / 255),
-        Color(red: 29 / 255, green: 158 / 255, blue: 117 / 255),
-        Color(red: 212 / 255, green: 83 / 255, blue: 126 / 255)
+        DesignSystem.Color.systemRed500,
+        DesignSystem.Color.systemGreen500,
+        DesignSystem.Color.systemBlue500
     ]
 
     init(viewModel: InviteShareViewModel) {
@@ -18,19 +20,19 @@ struct InviteShareView: View {
             VStack(spacing: 12) {
                 Image(systemName: "plus")
                     .font(.system(size: 26, weight: .medium))
-                    .foregroundStyle(GroupColor.accent)
+                    .foregroundStyle(DesignSystem.Color.primary500)
                     .frame(width: 66, height: 66)
-                    .background(GroupColor.secondaryBackground)
+                    .background(DesignSystem.Color.gray900)
                     .overlay {
                         Circle()
-                            .strokeBorder(GroupColor.accent, style: StrokeStyle(lineWidth: 2, dash: [4]))
+                            .strokeBorder(DesignSystem.Color.primary500, style: StrokeStyle(lineWidth: 2, dash: [4]))
                     }
                     .clipShape(.circle)
                     .accessibilityHidden(true)
 
                 Text("가까운 사람을\n초대해보세요")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
+                    .momogoTypography(.mdMedium)
+                    .foregroundStyle(DesignSystem.Color.gray50)
                     .multilineTextAlignment(.center)
 
                 HStack(spacing: -8) {
@@ -39,24 +41,24 @@ struct InviteShareView: View {
                             .fill(memberColors[index])
                             .frame(width: 28, height: 28)
                             .overlay {
-                                Circle().strokeBorder(GroupColor.background, lineWidth: 2)
+                                Circle().strokeBorder(DesignSystem.Color.gray950, lineWidth: 2)
                             }
                     }
                 }
                 .accessibilityHidden(true)
 
                 Text(viewModel.inviteCode)
-                    .font(.subheadline.weight(.medium))
+                    .momogoTypography(.smMedium)
                     .tracking(3)
-                    .foregroundStyle(GroupColor.accent)
+                    .foregroundStyle(DesignSystem.Color.primary500)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(GroupColor.fieldBackground)
+                    .background(DesignSystem.Color.gray900)
                     .overlay {
-                        RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(GroupColor.accent, style: StrokeStyle(lineWidth: 1.5, dash: [4]))
+                        RoundedRectangle(cornerRadius: DesignSystem.Radius.r10)
+                            .strokeBorder(DesignSystem.Color.primary500, style: StrokeStyle(lineWidth: 1.5, dash: [4]))
                     }
-                    .clipShape(.rect(cornerRadius: 10))
+                    .clipShape(.rect(cornerRadius: DesignSystem.Radius.r10))
             }
 
             Spacer()
@@ -65,20 +67,15 @@ struct InviteShareView: View {
                 viewModel.goToMainTapped()
             } label: {
                 Text("메인 화면으로 가기")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(GroupColor.accentText)
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 48)
-                    .background(GroupColor.accent)
-                    .clipShape(.rect(cornerRadius: 24))
             }
+            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
         }
         .padding(.horizontal, 24)
         .padding(.top, 72)
         .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
-        .background(GroupColor.background.ignoresSafeArea())
+        .background(DesignSystem.Color.gray950.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
     }
 }
