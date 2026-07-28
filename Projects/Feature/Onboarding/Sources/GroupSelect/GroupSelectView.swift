@@ -14,17 +14,17 @@ struct GroupSelectView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모모님, 모부터\n시작할까?")
-                .momogoTypography(.heading32)
+                .momogoTypography(.heading32Medium)
                 .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
 
             VStack(spacing: 12) {
                 Button("그룹 만들기", action: viewModel.createGroupTapped)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
 
                 Button("초대코드로 참여하기", action: viewModel.joinWithCodeTapped)
-                    .buttonStyle(.momogoButton(kind: .outlined, tone: .primary, isFullWidth: true))
+                    .buttonStyle(.momogoButton(kind: .outlined, tone: .primary, size: .medium, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)

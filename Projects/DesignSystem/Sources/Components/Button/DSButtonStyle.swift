@@ -12,10 +12,11 @@ public struct DSButtonStyle: ButtonStyle {
         case gray
     }
 
-    /// Figma 스펙: XL(기본, 54px)/L/S 3가지 사이즈
+    /// Figma 스펙: XL(기본, 54px)/L/M/S 4가지 사이즈
     public enum Size {
         case xl
         case large
+        case medium
         case small
     }
 
@@ -96,6 +97,7 @@ public struct DSButtonStyle: ButtonStyle {
         switch size {
         case .xl: .lgSemistrong
         case .large: .mdSemistrong
+        case .medium: .smMedium
         case .small: .xsSemistrong
         }
     }
@@ -104,6 +106,7 @@ public struct DSButtonStyle: ButtonStyle {
         switch size {
         case .xl: 32
         case .large: 24
+        case .medium: 20
         case .small: 16
         }
     }
@@ -112,6 +115,7 @@ public struct DSButtonStyle: ButtonStyle {
         switch size {
         case .xl: 14
         case .large: 12
+        case .medium: 10
         case .small: 8
         }
     }

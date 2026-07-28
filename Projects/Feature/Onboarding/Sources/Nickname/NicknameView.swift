@@ -13,7 +13,7 @@ struct NicknameView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모라고\n불러줄까?")
-                .momogoTypography(.heading32)
+                .momogoTypography(.heading32Medium)
                 .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
@@ -26,7 +26,7 @@ struct NicknameView: View {
                 )
 
                 Button("다음", action: viewModel.nextTapped)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)

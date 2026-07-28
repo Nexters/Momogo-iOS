@@ -13,7 +13,7 @@ public struct GroupNameView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("그룹 이름을\n지어주라모")
-                .momogoTypography(.heading32)
+                .momogoTypography(.heading32Medium)
                 .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
@@ -26,7 +26,7 @@ public struct GroupNameView: View {
                 )
 
                 Button("그룹 만들기", action: viewModel.createGroupTapped)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)

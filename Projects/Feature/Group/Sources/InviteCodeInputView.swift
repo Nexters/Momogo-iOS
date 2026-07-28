@@ -13,7 +13,7 @@ public struct InviteCodeInputView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("초대코드를\n입력해주라모")
-                .momogoTypography(.heading32)
+                .momogoTypography(.heading32Medium)
                 .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
@@ -26,7 +26,7 @@ public struct InviteCodeInputView: View {
                 )
 
                 Button("참여하기", action: viewModel.joinTapped)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)

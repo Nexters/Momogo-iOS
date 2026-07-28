@@ -24,7 +24,7 @@ struct JoinConfirmView: View {
                 .accessibilityHidden(true)
 
                 Text("그룹에 참여했다모")
-                    .momogoTypography(.heading32)
+                    .momogoTypography(.heading32Medium)
                     .foregroundStyle(DesignSystem.Color.gray50)
 
                 Text("우리 가족에 합류했다모")
@@ -35,7 +35,7 @@ struct JoinConfirmView: View {
             Spacer()
 
             Button("시작하기", action: viewModel.startTapped)
-                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
         }
         .padding(.horizontal, 24)
         .padding(.top, 72)
