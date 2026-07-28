@@ -63,12 +63,8 @@ struct InviteShareView: View {
 
             Spacer()
 
-            Button {
-                viewModel.goToMainTapped()
-            } label: {
-                Text("메인 화면으로 가기")
-            }
-            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+            Button("메인 화면으로 가기", action: viewModel.goToMainTapped)
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
         }
         .padding(.horizontal, 24)
         .padding(.top, 72)

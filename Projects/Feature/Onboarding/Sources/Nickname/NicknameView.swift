@@ -25,12 +25,8 @@ struct NicknameView: View {
                     state: viewModel.nickname.isEmpty ? .normal : .filled
                 )
 
-                Button {
-                    viewModel.nextTapped()
-                } label: {
-                    Text("다음")
-                }
-                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                Button("다음", action: viewModel.nextTapped)
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)

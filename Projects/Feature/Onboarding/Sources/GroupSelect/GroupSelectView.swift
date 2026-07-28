@@ -20,19 +20,11 @@ struct GroupSelectView: View {
             Spacer()
 
             VStack(spacing: 12) {
-                Button {
-                    viewModel.createGroupTapped()
-                } label: {
-                    Text("그룹 만들기")
-                }
-                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                Button("그룹 만들기", action: viewModel.createGroupTapped)
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
 
-                Button {
-                    viewModel.joinWithCodeTapped()
-                } label: {
-                    Text("초대코드로 참여하기")
-                }
-                .buttonStyle(.momogoButton(kind: .outlined, tone: .primary, isFullWidth: true))
+                Button("초대코드로 참여하기", action: viewModel.joinWithCodeTapped)
+                    .buttonStyle(.momogoButton(kind: .outlined, tone: .primary, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)

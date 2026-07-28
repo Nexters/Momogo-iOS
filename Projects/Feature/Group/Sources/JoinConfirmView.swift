@@ -34,12 +34,8 @@ struct JoinConfirmView: View {
 
             Spacer()
 
-            Button {
-                viewModel.startTapped()
-            } label: {
-                Text("시작하기")
-            }
-            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+            Button("시작하기", action: viewModel.startTapped)
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
         }
         .padding(.horizontal, 24)
         .padding(.top, 72)

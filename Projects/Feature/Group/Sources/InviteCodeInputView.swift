@@ -25,12 +25,8 @@ public struct InviteCodeInputView: View {
                     state: viewModel.code.isEmpty ? .normal : .filled
                 )
 
-                Button {
-                    viewModel.joinTapped()
-                } label: {
-                    Text("참여하기")
-                }
-                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
+                Button("참여하기", action: viewModel.joinTapped)
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)
