@@ -37,8 +37,6 @@ public struct OnboardingView: View {
                         .foregroundStyle(DesignSystem.Color.gray50)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 54)
-                        .background(DesignSystem.Color.gray900)
-                        .clipShape(.rect(cornerRadius: 8))
 
                     Text("회원가입 없이 바로 사용할 수 있어요")
                         .momogoTypography(.xsMedium)
