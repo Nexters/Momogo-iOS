@@ -24,7 +24,7 @@ struct JoinConfirmView: View {
                 .accessibilityHidden(true)
 
                 Text("그룹에 참여했다모")
-                    .momogoTypography(.heading32Medium)
+                    .momogoTypography(.heading32)
                     .foregroundStyle(DesignSystem.Color.gray50)
 
                 Text("우리 가족에 합류했다모")

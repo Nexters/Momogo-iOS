@@ -14,7 +14,7 @@ struct GroupSelectView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모모님, 모부터\n시작할까?")
-                .momogoTypography(.heading32Medium)
+                .momogoTypography(.heading32)
                 .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()

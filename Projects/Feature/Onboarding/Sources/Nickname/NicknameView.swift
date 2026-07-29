@@ -13,7 +13,7 @@ struct NicknameView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모라고\n불러줄까?")
-                .momogoTypography(.heading32Medium)
+                .momogoTypography(.heading32)
                 .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()

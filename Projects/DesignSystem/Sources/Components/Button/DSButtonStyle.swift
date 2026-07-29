@@ -54,13 +54,13 @@ public struct DSButtonStyle: ButtonStyle {
                 .frame(maxWidth: isFullWidth ? .infinity : nil)
             trailingIconSlot
         }
-        .foregroundStyle(foregroundColor)
+        .foregroundStyle(foregroundColor(isPressed: configuration.isPressed))
         .padding(.horizontal, horizontalPadding)
         .padding(.vertical, verticalPadding)
-        .frame(maxWidth: isFullWidth ? .infinity : nil)
+        .frame(maxWidth: isFullWidth ? .infinity : nil, minHeight: fixedHeight)
         .background(backgroundColor(isPressed: configuration.isPressed))
         .clipShape(Capsule())
-        .overlay(borderOverlay)
+        .overlay(borderOverlay(isPressed: configuration.isPressed))
     }
 
     /// 아이콘이 한쪽에만 있어도 타이틀이 항상 가운데 오도록, 반대쪽에 같은 크기의
@@ -120,6 +120,14 @@ public struct DSButtonStyle: ButtonStyle {
         }
     }
 
+    /// Figma 실측 고정 높이(M=48px). 패딩만으로는 스펙 높이에 못 미쳐 별도로 고정한다.
+    private var fixedHeight: CGFloat? {
+        switch size {
+        case .medium: 48
+        case .xl, .large, .small: nil
+        }
+    }
+
     private var iconSize: CGFloat {
         size == .small ? 18 : 20
     }
@@ -128,41 +136,47 @@ public struct DSButtonStyle: ButtonStyle {
         size == .small ? 2 : 6
     }
 
-    private var foregroundColor: Color {
-        guard isEnabled else { return DesignSystem.Color.gray500 }
+    private func foregroundColor(isPressed: Bool) -> Color {
+        guard isEnabled else {
+            return kind == .solid && tone == .gray ? DesignSystem.Color.gray700 : DesignSystem.Color.gray600
+        }
         switch kind {
         case .solid:
             return tone == .primary ? DesignSystem.Color.gray900 : DesignSystem.Color.gray50
-        case .outlined, .text:
+        case .outlined:
+            guard tone == .primary else { return DesignSystem.Color.gray50 }
+            return isPressed ? DesignSystem.Color.primary400 : DesignSystem.Color.primary500
+        case .text:
             return tone == .primary ? DesignSystem.Color.primary500 : DesignSystem.Color.gray50
         }
     }
 
     private func backgroundColor(isPressed: Bool) -> Color {
         guard isEnabled else {
-            return kind == .solid ? DesignSystem.Color.gray800 : .clear
+            return kind == .solid ? DesignSystem.Color.gray900 : .clear
         }
         switch kind {
         case .solid:
-            let base = tone == .primary ? DesignSystem.Color.primary500 : DesignSystem.Color.gray700
-            let pressed = tone == .primary ? DesignSystem.Color.primary600 : DesignSystem.Color.gray800
+            let base = tone == .primary ? DesignSystem.Color.primary500 : DesignSystem.Color.gray900
+            let pressed = tone == .primary ? DesignSystem.Color.primary400 : DesignSystem.Color.gray700
             return isPressed ? pressed : base
         case .outlined:
-            guard isPressed else { return .clear }
-            return tone == .primary
-                ? DesignSystem.Color.primary500.opacity(0.12)
-                : DesignSystem.Color.white.opacity(0.08)
+            return isPressed ? DesignSystem.Color.white.opacity(0.04) : .clear
         case .text:
             return .clear
         }
     }
 
     @ViewBuilder
-    private var borderOverlay: some View {
+    private func borderOverlay(isPressed: Bool) -> some View {
         if kind == .outlined {
-            let color = isEnabled
-                ? (tone == .primary ? DesignSystem.Color.primary500 : DesignSystem.Color.gray600)
-                : DesignSystem.Color.gray700
+            let color: Color = if !isEnabled {
+                DesignSystem.Color.gray700
+            } else if tone == .primary {
+                isPressed ? DesignSystem.Color.primary400 : DesignSystem.Color.primary500
+            } else {
+                DesignSystem.Color.gray700
+            }
             Capsule().stroke(color)
         }
     }

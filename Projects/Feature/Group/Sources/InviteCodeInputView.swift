@@ -13,7 +13,7 @@ public struct InviteCodeInputView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("초대코드를\n입력해주라모")
-                .momogoTypography(.heading32Medium)
+                .momogoTypography(.heading32)
                 .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
