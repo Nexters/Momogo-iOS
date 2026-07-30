@@ -19,15 +19,8 @@ struct GroupCardView: View {
                     .foregroundStyle(DesignSystem.Color.gray200)
             }
 
-            HStack {
-                if !group.photos.isEmpty {
-                    DSChip("New!", tone: .gray, size: .small, showsLeadingIcon: false, showsTrailingIcon: false)
-                }
-
-                Spacer()
-
-                GroupAvatarStackView(photos: group.photos, totalMemberCount: group.totalMemberCount)
-            }
+            GroupAvatarStackView(photos: group.photos, totalMemberCount: group.totalMemberCount)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(20)
         .background(DesignSystem.Color.gray800)
