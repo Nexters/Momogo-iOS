@@ -25,17 +25,18 @@ struct TodayCardView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            RoundedRectangle(cornerRadius: 8)
+            // Figma 스펙은 8px이지만 DesignSystem에 정의된 값이 아니라 가장 가까운 r10을 사용한다.
+            RoundedRectangle(cornerRadius: DesignSystem.Radius.r10)
                 .fill(DesignSystem.Color.gray900)
-                .stroke(DesignSystem.Color.gray800, lineWidth: 4)
+                .stroke(DesignSystem.Color.gray800, lineWidth: 4.5)
                 .overlay {
                     Image(asset: DesignSystemAsset.camera)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 24, height: 24)
-                        .foregroundStyle(DesignSystem.Color.gray50)
+                        .foregroundStyle(DesignSystem.Color.gray400)
                 }
-                .frame(width: 96, height: 96)
+                .frame(width: 124, height: 124)
                 .rotationEffect(.degrees(-4))
                 .accessibilityHidden(true)
         }
