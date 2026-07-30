@@ -37,7 +37,9 @@ public struct DSIconButton: View {
                         Circle().fill(DesignSystem.Color.white.opacity(0.5))
                     }
                 }
+                .frame(minWidth: 44, minHeight: 44)
         }
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private var image: Image {
@@ -46,6 +48,15 @@ public struct DSIconButton: View {
         case .settings: Image(asset: DesignSystemAsset.settings)
         case .more: Image(asset: DesignSystemAsset.ellipsisVertical)
         case .plus: Image(asset: DesignSystemAsset.plus)
+        }
+    }
+
+    private var accessibilityLabel: String {
+        switch icon {
+        case .share: "공유"
+        case .settings: "설정"
+        case .more: "더보기"
+        case .plus: "추가"
         }
     }
 

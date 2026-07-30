@@ -3,11 +3,15 @@ import SwiftUI
 import DesignSystem
 
 struct TodayCardView: View {
-    private var dateText: String {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "M월 d일 (E)"
-        return formatter.string(from: Date())
+        return formatter
+    }()
+
+    private var dateText: String {
+        Self.dateFormatter.string(from: Date())
     }
 
     var body: some View {
@@ -23,19 +27,17 @@ struct TodayCardView: View {
 
             RoundedRectangle(cornerRadius: 8)
                 .fill(DesignSystem.Color.gray900)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(DesignSystem.Color.gray800, lineWidth: 4)
-                )
-                .overlay(
+                .stroke(DesignSystem.Color.gray800, lineWidth: 4)
+                .overlay {
                     Image(asset: DesignSystemAsset.camera)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 24, height: 24)
                         .foregroundStyle(DesignSystem.Color.gray50)
-                )
+                }
                 .frame(width: 96, height: 96)
                 .rotationEffect(.degrees(-4))
+                .accessibilityHidden(true)
         }
     }
 }

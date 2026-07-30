@@ -30,7 +30,7 @@ struct GroupCardView: View {
             }
         }
         .padding(20)
-        .background(HomeColor.groupCardBackground)
+        .background(DesignSystem.Color.gray800)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r24))
     }
 }
