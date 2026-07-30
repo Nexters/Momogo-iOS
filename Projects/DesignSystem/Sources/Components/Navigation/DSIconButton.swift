@@ -25,6 +25,8 @@ public struct DSIconButton: View {
     }
 
     public var body: some View {
+        // circular 버튼은 Figma 스펙상 정확히 36x36이어야 한다. 44x44 최소 탭 영역으로
+        // 확장하면 HStack의 spacing이 이 여백까지 포함해 계산되어 버튼 사이 간격이 벌어져 보인다.
         Button(action: action) {
             image
                 .resizable()
@@ -37,7 +39,6 @@ public struct DSIconButton: View {
                         Circle().fill(DesignSystem.Color.white.opacity(0.5))
                     }
                 }
-                .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityLabel(accessibilityLabel)
     }
