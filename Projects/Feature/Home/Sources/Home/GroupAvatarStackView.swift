@@ -1,5 +1,6 @@
 import SwiftUI
 
+import DesignSystem
 import DomainInterface
 
 /// 그룹 카드의 멤버 아바타를 겹쳐서 보여주는 뷰. `totalMemberCount`만큼 슬롯을 만들고,
@@ -15,8 +16,12 @@ struct GroupAvatarStackView: View {
     var body: some View {
         HStack(spacing: -overlap) {
             ForEach(0..<totalMemberCount, id: \.self) { index in
-                GroupAvatarView(photo: index < photos.count ? photos[index] : nil, diameter: diameter)
-                    .zIndex(Double(totalMemberCount - index))
+                GroupAvatarView(
+                    photo: index < photos.count ? photos[index] : nil,
+                    diameter: diameter,
+                    strokeColor: DesignSystem.Color.gray800
+                )
+                .zIndex(Double(totalMemberCount - index))
             }
         }
         .accessibilityHidden(true)

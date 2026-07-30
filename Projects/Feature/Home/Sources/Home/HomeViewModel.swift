@@ -15,6 +15,12 @@ public final class HomeViewModel {
 
     public init() {}
 
+    /// 내 그룹들에서 오늘 사진을 올린 고유 인원. 같은 사람이 여러 그룹에 올려도 한 번만 센다.
+    var todayPosters: [GroupMemberPhoto] {
+        var seenMemberIds = Set<Int>()
+        return groups.flatMap(\.photos).filter { seenMemberIds.insert($0.memberId).inserted }
+    }
+
     func load() async {
         isLoading = true
         errorMessage = nil

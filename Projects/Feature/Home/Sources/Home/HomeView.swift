@@ -23,6 +23,8 @@ public struct HomeView: View {
                         GroupCardView(group: group)
                     }
                 }
+
+                ReactionCardView(posters: viewModel.todayPosters)
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
