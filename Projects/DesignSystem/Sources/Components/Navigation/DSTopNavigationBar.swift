@@ -91,8 +91,10 @@ public struct DSNavigationLogo: View {
     public init() {}
 
     public var body: some View {
-        Text("MOMOGO")
-            .momogoTypography(.lgSemistrong)
-            .foregroundStyle(DesignSystem.Color.primary500)
+        Image(asset: DesignSystemAsset.logo)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 117, height: 32)
+            .accessibilityLabel("모모고")
     }
 }
