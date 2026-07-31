@@ -47,4 +47,50 @@ struct GroupDataSourceTests {
             _ = try await dataSource.create(CreateGroupRequestDTO(groupName: "우리 가족"))
         }
     }
+
+    @Test("참여 코드로 그룹 정보 확인 성공 시 응답을 반환한다")
+    func checkInvitation_success_returnsResponse() async throws {
+        let dataSource = withDependencies {
+            $0.networkClient = NetworkClient { _ in
+                Foundation.Data(#"{"groupId":10,"groupName":"우리 가족","totalMemberCount":4,"participated":false}"#.utf8)
+            }
+        } operation: {
+            GroupDataSource.liveValue
+        }
+
+        let response = try await dataSource.checkInvitation("A1B2C3D4")
+
+        #expect(response.participated == false)
+    }
+
+    @Test("참여 그룹 목록 조회 성공 시 빈 배열도 정상 디코딩된다")
+    func list_success_decodesEmptyArray() async throws {
+        let dataSource = withDependencies {
+            $0.networkClient = NetworkClient { _ in Foundation.Data(#"{"groups":[]}"#.utf8) }
+        } operation: {
+            GroupDataSource.liveValue
+        }
+
+        let response = try await dataSource.list()
+
+        #expect(response.groups.isEmpty)
+    }
+
+    @Test("그룹 상세 조회 성공 시 응답을 반환한다")
+    func detail_success_returnsResponse() async throws {
+        let dataSource = withDependencies {
+            $0.networkClient = NetworkClient { _ in
+                Foundation.Data(#"""
+                {"date":"2026-07-25 14:30:00.123456+00","todayVerifiedCount":2,"totalMemberCount":4,
+                "invitationCode":"A1B2C3D4","members":[]}
+                """#.utf8)
+            }
+        } operation: {
+            GroupDataSource.liveValue
+        }
+
+        let response = try await dataSource.detail(10, nil)
+
+        #expect(response.todayVerifiedCount == 2)
+    }
 }

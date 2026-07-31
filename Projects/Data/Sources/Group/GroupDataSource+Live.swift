@@ -12,12 +12,24 @@ extension GroupDataSource: DependencyKey {
             },
             updateName: { groupId, request in
                 try await networkClient.requestDecodable(GroupTargetType.updateName(groupId: groupId, request: request))
+            },
+            checkInvitation: { code in
+                try await networkClient.requestDecodable(GroupTargetType.checkInvitation(code: code))
+            },
+            list: {
+                try await networkClient.requestDecodable(GroupTargetType.list)
+            },
+            detail: { groupId, date in
+                try await networkClient.requestDecodable(GroupTargetType.detail(groupId: groupId, date: date))
             }
         )
     }
 
     public static let testValue = GroupDataSource(
         create: unimplemented("\(Self.self).create"),
-        updateName: unimplemented("\(Self.self).updateName")
+        updateName: unimplemented("\(Self.self).updateName"),
+        checkInvitation: unimplemented("\(Self.self).checkInvitation"),
+        list: unimplemented("\(Self.self).list"),
+        detail: unimplemented("\(Self.self).detail")
     )
 }
