@@ -8,6 +8,8 @@ struct GroupExampleApp: App {
     init() {
         prepareDependencies {
             $0.createGroupUseCase = .happyPath
+            $0.checkGroupByCodeUseCase = .happyPath
+            $0.joinGroupByCodeUseCase = .happyPath
         }
     }
 
