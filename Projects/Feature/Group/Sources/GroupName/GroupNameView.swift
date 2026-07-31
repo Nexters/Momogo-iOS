@@ -25,8 +25,23 @@ public struct GroupNameView: View {
                     state: viewModel.groupName.isEmpty ? .normal : .filled
                 )
 
-                Button("그룹 만들기", action: viewModel.createGroupTapped)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                Button {
+                    viewModel.createGroupTapped()
+                } label: {
+                    if viewModel.isLoading {
+                        ProgressView()
+                    } else {
+                        Text("그룹 만들기")
+                    }
+                }
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
+                .disabled(viewModel.isLoading)
             }
         }
         .padding(.horizontal, 24)

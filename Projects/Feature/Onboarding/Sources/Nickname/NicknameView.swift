@@ -25,8 +25,23 @@ struct NicknameView: View {
                     state: viewModel.nickname.isEmpty ? .normal : .filled
                 )
 
-                Button("다음", action: viewModel.nextTapped)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                Button {
+                    viewModel.nextTapped()
+                } label: {
+                    if viewModel.isLoading {
+                        ProgressView()
+                    } else {
+                        Text("다음")
+                    }
+                }
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
+                .disabled(viewModel.isLoading)
             }
         }
         .padding(.horizontal, 24)

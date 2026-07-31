@@ -8,6 +8,8 @@ let project = Project.makeModule(
             dependencies: [
                 .designSystem,
                 .swiftUINavigation,
+                .dependencies,
+                .domainInterface,
                 .feature(implements: .group)
             ]
         )),
@@ -18,7 +20,9 @@ let project = Project.makeModule(
         )),
         .feature(example: .onboarding, factory: .init(
             dependencies: [
-                .feature(implements: .onboarding)
+                .feature(implements: .onboarding),
+                .dependencies,
+                .domainInterface
             ]
         ))
     ],

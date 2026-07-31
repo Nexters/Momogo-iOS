@@ -25,8 +25,23 @@ public struct InviteCodeInputView: View {
                     state: viewModel.code.isEmpty ? .normal : .filled
                 )
 
-                Button("참여하기", action: viewModel.joinTapped)
-                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                Button {
+                    viewModel.joinTapped()
+                } label: {
+                    if viewModel.isLoading {
+                        ProgressView()
+                    } else {
+                        Text("참여하기")
+                    }
+                }
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
+                .disabled(viewModel.isLoading)
             }
         }
         .padding(.horizontal, 24)

@@ -7,7 +7,9 @@ let project = Project.makeModule(
         .feature(implements: .group, factory: .init(
             dependencies: [
                 .designSystem,
-                .swiftUINavigation
+                .swiftUINavigation,
+                .dependencies,
+                .domainInterface
             ]
         )),
         .feature(tests: .group, factory: .init(
@@ -17,7 +19,9 @@ let project = Project.makeModule(
         )),
         .feature(example: .group, factory: .init(
             dependencies: [
-                .feature(implements: .group)
+                .feature(implements: .group),
+                .dependencies,
+                .domainInterface
             ]
         ))
     ],
