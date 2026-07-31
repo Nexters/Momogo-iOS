@@ -1,5 +1,7 @@
 import Foundation
 
+import Dependencies
+import DomainInterface
 import FeatureGroup
 import SwiftUINavigation
 
@@ -8,6 +10,11 @@ import SwiftUINavigation
 final class NicknameViewModel {
     var nickname: String = ""
     var destination: Destination?
+    var isLoading: Bool = false
+    var errorMessage: String?
+
+    @ObservationIgnored
+    @Dependency(\.authRepository) private var authRepository
 
     private let onFinish: () -> Void
 
@@ -21,6 +28,21 @@ final class NicknameViewModel {
     }
 
     func nextTapped() {
-        destination = .groupSelect(GroupSelectViewModel(onFinish: onFinish))
+        guard !isLoading else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        Task {
+            defer { isLoading = false }
+
+            do {
+                let request = SignUpRequest(provider: .guest, providerToken: "", nickname: nickname)
+                _ = try await authRepository.signUp(request)
+                destination = .groupSelect(GroupSelectViewModel(onFinish: onFinish))
+            } catch {
+                errorMessage = "잠시 후 다시 시도해주세요."
+            }
+        }
     }
 }
