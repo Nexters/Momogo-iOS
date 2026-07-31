@@ -1,5 +1,6 @@
 import SwiftUI
 
+import DesignSystem
 import FeatureGroup
 import SwiftUINavigation
 
@@ -13,39 +14,17 @@ struct GroupSelectView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모모님, 모부터\n시작할까?")
-                .font(.largeTitle.weight(.medium))
-                .foregroundStyle(.white)
+                .momogoTypography(.heading32)
+                .foregroundStyle(DesignSystem.Color.gray50)
 
             Spacer()
 
             VStack(spacing: 12) {
-                Button {
-                    viewModel.createGroupTapped()
-                } label: {
-                    Text("그룹 만들기")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(OnboardingColor.accentText)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 48)
-                        .background(OnboardingColor.accent)
-                        .clipShape(.rect(cornerRadius: 24))
-                }
+                Button("그룹 만들기", action: viewModel.createGroupTapped)
+                    .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
 
-                Button {
-                    viewModel.joinWithCodeTapped()
-                } label: {
-                    Text("초대코드로 참여하기")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(OnboardingColor.accent)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 48)
-                        .background(OnboardingColor.secondaryBackground)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 24)
-                                .strokeBorder(OnboardingColor.accent, lineWidth: 1.5)
-                        }
-                        .clipShape(.rect(cornerRadius: 24))
-                }
+                Button("초대코드로 참여하기", action: viewModel.joinWithCodeTapped)
+                    .buttonStyle(.momogoButton(kind: .outlined, tone: .primary, size: .medium, isFullWidth: true))
             }
         }
         .padding(.horizontal, 24)
@@ -53,7 +32,7 @@ struct GroupSelectView: View {
         .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
-        .background(OnboardingColor.background.ignoresSafeArea())
+        .background(DesignSystem.Color.gray950.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $viewModel.destination.groupName) { groupNameViewModel in
             GroupNameView(viewModel: groupNameViewModel)

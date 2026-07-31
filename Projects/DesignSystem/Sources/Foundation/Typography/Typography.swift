@@ -46,8 +46,7 @@ public extension DesignSystem {
             fontConvertible.swiftUIFont(size: size)
         }
 
-        // Figma 스펙: lineHeight 150%, letterSpacing -2% — SwiftUI Font에는 line-height API가 없어 근사치로 적용
-        public var lineHeight: CGFloat { size * 1.5 }
+        // Figma 스펙: letterSpacing -2%
         public var tracking: CGFloat { size * -0.02 }
     }
 }
@@ -56,6 +55,5 @@ public extension View {
     func momogoTypography(_ style: DesignSystem.Typography) -> some View {
         font(style.font)
             .tracking(style.tracking)
-            .lineSpacing(style.lineHeight - style.size)
     }
 }

@@ -6,6 +6,7 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .onboarding, factory: .init(
             dependencies: [
+                .designSystem,
                 .swiftUINavigation,
                 .feature(implements: .group)
             ]
