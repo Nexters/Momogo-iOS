@@ -21,6 +21,9 @@ extension GroupDataSource: DependencyKey {
             },
             detail: { groupId, date in
                 try await networkClient.requestDecodable(GroupTargetType.detail(groupId: groupId, date: date))
+            },
+            leave: { groupId in
+                _ = try await networkClient.request(GroupTargetType.leave(groupId: groupId))
             }
         )
     }
@@ -30,6 +33,7 @@ extension GroupDataSource: DependencyKey {
         updateName: unimplemented("\(Self.self).updateName"),
         checkInvitation: unimplemented("\(Self.self).checkInvitation"),
         list: unimplemented("\(Self.self).list"),
-        detail: unimplemented("\(Self.self).detail")
+        detail: unimplemented("\(Self.self).detail"),
+        leave: unimplemented("\(Self.self).leave")
     )
 }

@@ -93,4 +93,15 @@ struct GroupDataSourceTests {
 
         #expect(response.todayVerifiedCount == 2)
     }
+
+    @Test("그룹 나가기 성공 시 에러 없이 완료된다")
+    func leave_success_completesWithoutThrowing() async throws {
+        let dataSource = withDependencies {
+            $0.networkClient = NetworkClient { _ in Foundation.Data() }
+        } operation: {
+            GroupDataSource.liveValue
+        }
+
+        try await dataSource.leave(10)
+    }
 }

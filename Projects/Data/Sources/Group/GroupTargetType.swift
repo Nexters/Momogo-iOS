@@ -8,6 +8,7 @@ enum GroupTargetType: NetworkTargetType {
     case checkInvitation(code: String)
     case list
     case detail(groupId: Int, date: String?)
+    case leave(groupId: Int)
 
     var path: String {
         switch self {
@@ -21,6 +22,8 @@ enum GroupTargetType: NetworkTargetType {
             "/groups"
         case let .detail(groupId, _):
             "/groups/\(groupId)"
+        case let .leave(groupId):
+            "/groups/\(groupId)/members/me"
         }
     }
 
@@ -32,6 +35,8 @@ enum GroupTargetType: NetworkTargetType {
             .patch
         case .checkInvitation, .list, .detail:
             .get
+        case .leave:
+            .delete
         }
     }
 
@@ -51,6 +56,8 @@ enum GroupTargetType: NetworkTargetType {
             } else {
                 .requestPlain
             }
+        case .leave:
+            .requestPlain
         }
     }
 }

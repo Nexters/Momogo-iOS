@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 import Dependencies
+import ConcurrencyExtras
 @testable import Data
 
 struct PhotoDataSourceTests {
@@ -57,5 +58,22 @@ struct PhotoDataSourceTests {
         await #expect(throws: NetworkError.self) {
             _ = try await dataSource.createUploadSession(CreateUploadSessionRequestDTO(contentType: "image/webp"))
         }
+    }
+
+    @Test("upload는 주입된 MediaUploadClient에 위임한다")
+    func upload_delegatesToMediaUploadClient() async throws {
+        let uploadedURL = LockIsolated<URL?>(nil)
+        let dataSource = withDependencies {
+            $0.mediaUploadClient = MediaUploadClient { url, _, _ in
+                uploadedURL.setValue(url)
+            }
+        } operation: {
+            PhotoDataSource.liveValue
+        }
+
+        let targetURL = URL(string: "https://minio.example.com/momogo/users/1/9f8b.webp")!
+        try await dataSource.upload(targetURL, Foundation.Data("image".utf8), "image/webp")
+
+        #expect(uploadedURL.value == targetURL)
     }
 }

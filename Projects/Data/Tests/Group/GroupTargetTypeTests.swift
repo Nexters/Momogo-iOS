@@ -61,4 +61,16 @@ struct GroupTargetTypeTests {
             return
         }
     }
+
+    @Test("leave는 DELETE /groups/{groupId}/members/me, requestPlain")
+    func leave_hasCorrectRouting() {
+        let target = GroupTargetType.leave(groupId: 10)
+
+        #expect(target.path == "/groups/10/members/me")
+        #expect(target.method == .delete)
+        guard case .requestPlain = target.task else {
+            Issue.record("requestPlain을 기대했지만 다른 task가 반환됨")
+            return
+        }
+    }
 }

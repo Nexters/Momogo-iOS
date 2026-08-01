@@ -8,19 +8,22 @@ public struct GroupDataSource: Sendable {
     public var checkInvitation: @Sendable (String) async throws -> CheckInvitationResponseDTO
     public var list: @Sendable () async throws -> GroupListResponseDTO
     public var detail: @Sendable (Int, String?) async throws -> GroupDetailResponseDTO
+    public var leave: @Sendable (Int) async throws -> Void
 
     public init(
         create: @escaping @Sendable (CreateGroupRequestDTO) async throws -> CreateGroupResponseDTO,
         updateName: @escaping @Sendable (Int, UpdateGroupNameRequestDTO) async throws -> UpdateGroupNameResponseDTO,
         checkInvitation: @escaping @Sendable (String) async throws -> CheckInvitationResponseDTO,
         list: @escaping @Sendable () async throws -> GroupListResponseDTO,
-        detail: @escaping @Sendable (Int, String?) async throws -> GroupDetailResponseDTO
+        detail: @escaping @Sendable (Int, String?) async throws -> GroupDetailResponseDTO,
+        leave: @escaping @Sendable (Int) async throws -> Void
     ) {
         self.create = create
         self.updateName = updateName
         self.checkInvitation = checkInvitation
         self.list = list
         self.detail = detail
+        self.leave = leave
     }
 }
 
