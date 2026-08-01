@@ -34,4 +34,29 @@ struct AuthTargetTypeTests {
             return
         }
     }
+
+    @Test("logout은 실제 Moya URLRequest 변환 시에도 DELETE + JSON body를 유지한다")
+    func logout_realMoyaConversion_preservesBodyOnDelete() throws {
+        let target = AuthTargetType.logout(LogoutRequestDTO(refreshToken: "refresh-token-value"))
+
+        // NetworkConfiguration.baseURL은 Info.plist(API_BASE_URL)를 요구해 테스트 번들에서 크래시하므로,
+        // target.baseURL을 거치지 않는 커스텀 endpointClosure로 더미 URL을 직접 구성한다.
+        let provider = MoyaProvider<MultiTarget>(endpointClosure: { multiTarget in
+            Endpoint(
+                url: "https://example.com" + multiTarget.path,
+                sampleResponseClosure: { .networkResponse(200, Foundation.Data()) },
+                method: multiTarget.method,
+                task: multiTarget.task,
+                httpHeaderFields: multiTarget.headers
+            )
+        })
+
+        let urlRequest = try provider.endpoint(MultiTarget(target)).urlRequest()
+
+        #expect(urlRequest.httpMethod == "DELETE")
+
+        let body = try #require(urlRequest.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: String])
+        #expect(json["refreshToken"] == "refresh-token-value")
+    }
 }

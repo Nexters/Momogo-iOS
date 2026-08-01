@@ -31,6 +31,16 @@ jobs:
       - name: SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
 
+      # Secrets/*.xcconfig(실값)가 git add -f 등으로 실수로 커밋되는 것을 막습니다.
+      - name: Guard against committed Secrets xcconfig
+        run: |
+          LEAKED=$(git ls-files 'Projects/App/Config/Secrets/*.xcconfig')
+          if [ -n "$LEAKED" ]; then
+            echo "::error::다음 파일이 gitignore 대상인데 커밋되어 있습니다:"
+            echo "$LEAKED"
+            exit 1
+          fi
+
       # 위 스텝 중 하나라도 실패하면 Discord로 알림을 보냅니다.
       - name: Notify Discord on failure
         if: failure()
