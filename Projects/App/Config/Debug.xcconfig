@@ -1,2 +1,3 @@
-// xcconfig은 "//"를 주석 시작으로 처리하므로 $() 빈 매크로로 끊어서 이스케이프한다.
-API_BASE_URL = https:/$()/api-dev.momogo.io/
+// 실제 값은 gitignore 대상인 Secrets/Debug.xcconfig에 있다.
+// 로컬에 없으면 tuist generate는 성공하지만 실제 빌드(xcodebuild build/test)가 실패한다 — Secrets/Debug.xcconfig.template 참고.
+#include "Secrets/Debug.xcconfig"

@@ -43,14 +43,15 @@ private func performRequest(_ target: any TargetType) async throws -> Data {
     }
 }
 
-private func mapToNetworkError(_ error: MoyaError) -> NetworkError {
+func mapToNetworkError(_ error: MoyaError) -> NetworkError {
     guard let statusCode = error.response?.statusCode else {
         return .underlying(error)
     }
+    let problem = error.response.flatMap { try? JSONDecoder().decode(ProblemDetail.self, from: $0.data) }
     switch statusCode {
     case 401:
-        return .unauthorized
+        return .unauthorized(problem: problem)
     default:
-        return .serverError(statusCode: statusCode)
+        return .serverError(statusCode: statusCode, problem: problem)
     }
 }
