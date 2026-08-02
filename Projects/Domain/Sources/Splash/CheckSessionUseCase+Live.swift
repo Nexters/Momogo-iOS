@@ -3,7 +3,14 @@ import Dependencies
 import DomainInterface
 
 extension CheckSessionUseCase: DependencyKey {
-    public static let liveValue = CheckSessionUseCase(
-        execute: unimplemented("\(Self.self).execute", placeholder: .onboarding)
-    )
+    public static var liveValue: CheckSessionUseCase {
+        @Dependency(\.authRepository) var authRepository
+
+        return CheckSessionUseCase(
+            execute: {
+                let isSessionValid = await authRepository.refreshSession()
+                return isSessionValid ? .home : .onboarding
+            }
+        )
+    }
 }
