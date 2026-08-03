@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>온보딩·그룹 UseCase는 서버에 이렇게 연결됐다</title>
+<style>
+  :root {
+    --bg: #eef1f3;
+    --surface: #ffffff;
+    --surface-2: #e4e9ec;
+    --ink: #101820;
+    --ink-soft: #49555e;
+    --ink-faint: #7c8890;
+    --line: #d3dbe0;
+    --accent: #0e7c86;
+    --accent-ink: #075a62;
+    --accent-soft: #e3f1f1;
+    --warm: #a8611b;
+    --warm-soft: #f5e7d8;
+    --danger: #a83730;
+    --danger-soft: #f7e4e2;
+    --code-bg: #0f1720;
+    --code-ink: #d7f5ee;
+    --code-faint: #8296a3;
+    --shadow: 0 1px 2px rgba(16, 24, 32, 0.04), 0 8px 24px rgba(16, 24, 32, 0.06);
+
+    --font-kr: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220;
+      --surface: #121b2b;
+      --surface-2: #172335;
+      --ink: #e7ecf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #6d7d89;
+      --line: #223142;
+      --accent: #4fc7cf;
+      --accent-ink: #bdf0ec;
+      --accent-soft: #163338;
+      --warm: #e0a868;
+      --warm-soft: #33261a;
+      --danger: #e2837c;
+      --danger-soft: #3a201d;
+      --code-bg: #070c14;
+      --code-ink: #d7f5ee;
+      --code-faint: #6d7d89;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-kr);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header.masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 28px;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(26px, 4vw, 34px);
+    line-height: 1.25;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .chiprow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .chiprow .arrow { color: var(--ink-faint); font-size: 12px; }
+
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .chip.on { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
+
+  section { margin-bottom: 44px; }
+
+  h2 {
+    font-size: 19px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num { font-family: var(--font-mono); font-size: 13px; color: var(--ink-faint); }
+
+  .section-lede {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    margin: 0 0 18px;
+    max-width: 66ch;
+  }
+
+  p { margin: 0 0 12px; }
+
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    overflow-x: auto;
+  }
+  .diagram-card .mermaid { display: flex; justify-content: center; min-width: 560px; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .codeblock {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .codeblock pre { margin: 0; white-space: pre; }
+  .codeblock code { background: none; padding: 0; color: inherit; }
+  .code-label { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); margin: 0 0 6px; letter-spacing: 0.02em; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-2);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.path, td.mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent-ink); white-space: nowrap; }
+  td.status { font-family: var(--font-mono); font-weight: 600; white-space: nowrap; }
+  td.bad { color: var(--danger); }
+  td.good { color: var(--accent-ink); }
+
+  .callout { display: flex; gap: 12px; border-radius: 12px; padding: 16px 18px; border: 1px solid var(--line); }
+  .callout.todo { background: var(--warm-soft); border-color: var(--warm); }
+  .callout .mark {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--warm);
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .callout ul { margin: 4px 0 0; padding-left: 18px; }
+  .callout li { margin-bottom: 4px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12.5px; color: var(--ink-soft); margin-top: 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+  }
+
+  a { color: var(--accent-ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">Momogo · feature/025-onboarding-api-integration</div>
+    <h1>온보딩·그룹 UseCase는 서버에 이렇게 연결됐다</h1>
+    <p class="subtitle">UseCase → Repository → DataSource 흐름 자체는 이미 있었지만, Repository의 <code>liveValue</code>가 어디에도 없어 UseCase를 호출하면 크래시가 나는 상태였다. 이번 작업은 그 빈 자리를 채우고, 실제 서버에 붙여보며 드러난 스펙 차이를 바로잡은 기록이다.</p>
+    <div class="chiprow">
+      <span class="chip on">UseCase</span><span class="arrow">→</span>
+      <span class="chip on">Repository</span><span class="arrow">→</span>
+      <span class="chip">DataSource</span><span class="arrow">→</span>
+      <span class="chip">NetworkClient</span><span class="arrow">→</span>
+      <span class="chip">Moya</span><span class="arrow">→</span>
+      <span class="chip">서버</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> 이번에 채운 자리</h2>
+    <p class="section-lede"><code>DataSource</code>(Group/User/Auth)는 <code>#Momogo/14</code>에서 이미 실제 네트워크 호출로 완성돼 있었다. 비어 있던 건 그 위의 <code>Repository</code> 한 겹뿐이었다 — Domain은 Data 모듈을 알 수 없으므로, DataSource가 아무리 완성돼 있어도 Repository가 없으면 UseCase는 그걸 쓸 방법이 없다.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+flowchart LR
+    UC["UseCase<br/>(Domain/Sources)"] -->|"이번에 연결"| Repo["Repository.liveValue<br/>(Data, 이번에 구현)"]
+    Repo -->|"기존에 완성됨"| DS["DataSource<br/>(Data, #Momogo/14)"]
+    DS --> NC["NetworkClient"]
+    NC --> Server[("서버")]
+
+    classDef done fill:#0e7c86,stroke:#075a62,color:#fff;
+    classDef existing fill:none,stroke:#8296a3,color:#8296a3,stroke-dasharray:3 3;
+    class UC,Repo done;
+    class DS,NC,Server existing;
+      </pre>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--accent)"></i>이번 작업에서 채운 부분 (UseCase, Repository)</span>
+      <span><i class="swatch" style="background:var(--ink-faint);opacity:.5"></i>이미 완성돼 있던 부분</span>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> 연결한 UseCase 5개</h2>
+    <p class="section-lede">전부 <code>Domain/Sources/**/*+Live.swift</code>가 <code>unimplemented</code>에서 실제 Repository 호출로 바뀐 것들이다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>UseCase</th><th>Repository 메서드</th><th>실제 엔드포인트</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="path">SignUpUseCase</td><td class="mono">authRepository.signUp</td><td class="mono">POST /api/v1/user/register</td><td>게스트 <code>providerToken</code>은 Keychain에서 매번 새로 발급 (clear → fetchOrCreate)</td></tr>
+          <tr><td class="path">CreateGroupUseCase</td><td class="mono">groupRepository.createGroup</td><td class="mono">POST /api/v1/groups</td><td>요청 필드는 <code>groupName</code>이 아니라 <code>name</code></td></tr>
+          <tr><td class="path">CheckGroupByCodeUseCase</td><td class="mono">groupRepository.checkGroupByCode</td><td class="mono">GET /api/v1/groups/invitations</td><td>-</td></tr>
+          <tr><td class="path">JoinGroupByCodeUseCase</td><td class="mono">groupRepository.joinGroupByCode</td><td class="mono">POST /api/v1/groups/invitations</td><td>GET과 같은 경로, 메서드만 다름</td></tr>
+          <tr><td class="path">GetGroupsUseCase</td><td class="mono">groupRepository.getGroups</td><td class="mono">GET /api/v1/groups</td><td>응답에 <code>photos</code> 없음, <code>todayPhotoUploaderCount</code>만 있음</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> 실제로 붙여보고 나서 알게 된 것들</h2>
+    <p class="section-lede">전부 클라이언트 코드가 서버 스펙을 잘못 가정하고 있던 경우다. <code>curl</code>로 재현해 원인을 좁힌 뒤 고쳤다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>증상</th><th>원인</th><th>조치</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="status bad">회원가입 401<br/><span style="font-weight:400;color:var(--ink-faint)">Www-Authenticate: Bearer</span></td><td>Base URL에 버전 경로(<code>/api/v1</code>) 누락 — 매칭되는 라우트가 없어 인증 필요 응답으로 폴백</td><td class="good">xcconfig의 <code>API_BASE_URL</code>에 <code>/api/v1</code> 반영</td></tr>
+          <tr><td class="status bad">그룹 생성 400</td><td>요청 필드가 <code>groupName</code>이 아니라 <code>name</code></td><td class="good"><code>CreateGroupRequestDTO</code> 필드명 수정</td></tr>
+          <tr><td class="status bad">그룹 생성 응답 불일치</td><td>응답 필드가 <code>invitationCode</code>가 아니라 <code>inviteCode</code></td><td class="good"><code>CreateGroupResponseDTO</code> 필드명 수정</td></tr>
+          <tr><td class="status bad">그룹 목록 디코딩 실패</td><td><code>photos</code>/<code>participateMemberCount</code>/<code>joinedDate</code>가 응답에 없고 <code>todayPhotoUploaderCount</code>만 존재</td><td class="good"><code>GroupSummary</code> 재설계, Home UI(아바타 스택) 단순화</td></tr>
+          <tr><td class="status bad">참여 화면 전환 안 됨</td><td>전용 join 엔드포인트가 없는 게 아니라, 조회와 같은 경로를 <code>POST</code>로 호출하는 게 참여 처리</td><td class="good"><code>GroupTargetType.join</code> 케이스 추가</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> 게스트 인증은 이렇게 돈다</h2>
+    <p class="section-lede">회원가입은 로그인과 역할이 다르다 — 로그인은 기존 <code>providerToken</code>으로 같은 계정에 돌아가는 것이고, 회원가입은 매번 새 계정이어야 한다. 그래서 가입 직전에 기존 토큰을 지운다.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+sequenceDiagram
+    participant VM as NicknameViewModel
+    participant UC as SignUpUseCase
+    participant GTS as GuestTokenStore
+    participant Repo as AuthRepository
+    participant DS as UserDataSource
+    participant Server as 서버
+
+    VM->>UC: execute(nickname)
+    UC->>GTS: clear()
+    Note right of GTS: Keychain에서 기존 UUID 삭제
+    UC->>GTS: fetchOrCreate()
+    GTS-->>UC: 새 UUID (Keychain에 저장)
+    UC->>Repo: signUp(provider: .guest, token, nickname)
+    Repo->>DS: register(dto)
+    DS->>Server: POST /api/v1/user/register
+    Server-->>DS: userId, accessToken, refreshToken
+    DS-->>Repo: AuthSessionResponseDTO
+    Repo-->>UC: SignUpResponse
+      </pre>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> 토큰 3개, 저장 위치가 다 다르다</h2>
+    <p class="section-lede">이름은 비슷해 보여도 역할이 다르다. <code>providerToken</code>을 잃어버리면 계정 자체를 되찾을 수 없어서 Keychain 영속화가 필수고, <code>accessToken</code>은 수명이 짧아 굳이 영속화하지 않아도 된다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>토큰</th><th>저장 위치</th><th>역할</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="path">providerToken (게스트 UUID)</td><td class="mono good">Keychain</td><td>계정의 "신원". 로그인 시 이 값으로 같은 계정에 재진입</td></tr>
+          <tr><td class="path">accessToken</td><td class="mono">메모리만</td><td>매 요청 인증 헤더. 수명 짧고 자주 교체됨</td></tr>
+          <tr><td class="path">refreshToken</td><td class="mono good">Keychain (이번에 추가)</td><td>accessToken 재발급용. <code>/auth/reissue</code>마다 rotation</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> 아직 정해지지 않은 것</h2>
+    <div class="callout todo">
+      <div class="mark">TODO</div>
+      <div>
+        <ul>
+          <li>스플래시의 <code>CheckSessionUseCase</code>가 아직 <code>unimplemented</code>다 — Keychain에 토큰이 있어도 앱 시작 시 그걸로 세션을 복구하는 로직 자체가 없어, 지금은 항상 Onboarding으로 진입한다.</li>
+          <li><code>MomogoApp.swift</code>는 온보딩을 끝까지 마치면 <code>HomeView</code>로 넘어가도록 임시로 분기해뒀다 — HomeView가 정상 동작하는지 확인하기 위한 것으로, 세션 확인에 따른 라우팅이 아니다. <code>CheckSessionUseCase</code>가 생기면 이 분기를 대체한다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Projects/Domain, Projects/Data · feature/025-onboarding-api-integration
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  var isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var palette = isDark
+    ? {
+        background: "transparent",
+        primaryColor: "#163338",
+        primaryTextColor: "#e7ecf0",
+        primaryBorderColor: "#4fc7cf",
+        lineColor: "#6d7d89",
+        secondaryColor: "#172335",
+        tertiaryColor: "#121b2b",
+        textColor: "#e7ecf0",
+        actorBkg: "#172335",
+        actorBorder: "#4fc7cf",
+        actorTextColor: "#e7ecf0",
+        signalColor: "#a9b8c4",
+        signalTextColor: "#e7ecf0",
+        labelBoxBkgColor: "#172335",
+        labelTextColor: "#e7ecf0",
+        loopTextColor: "#e7ecf0"
+      }
+    : {
+        background: "transparent",
+        primaryColor: "#e3f1f1",
+        primaryTextColor: "#101820",
+        primaryBorderColor: "#0e7c86",
+        lineColor: "#7c8890",
+        secondaryColor: "#e4e9ec",
+        tertiaryColor: "#ffffff",
+        textColor: "#101820",
+        actorBkg: "#ffffff",
+        actorBorder: "#0e7c86",
+        actorTextColor: "#101820",
+        signalColor: "#49555e",
+        signalTextColor: "#101820",
+        labelBoxBkgColor: "#ffffff",
+        labelTextColor: "#101820",
+        loopTextColor: "#101820"
+      };
+  palette.fontFamily = "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: palette,
+    securityLevel: "loose",
+    flowchart: { htmlLabels: true, curve: "basis" }
+  });
+</script>
+</body>
+</html>
