@@ -1,6 +1,7 @@
 import SwiftUI
 
 import DesignSystem
+import FeatureGroup
 import SwiftUINavigation
 
 struct NicknameView: View {

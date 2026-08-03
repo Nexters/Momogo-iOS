@@ -1,17 +1,16 @@
 import SwiftUI
 
 import DesignSystem
-import FeatureGroup
 import SwiftUINavigation
 
-struct GroupSelectView: View {
+public struct GroupSelectView: View {
     @Bindable private var viewModel: GroupSelectViewModel
 
-    init(viewModel: GroupSelectViewModel) {
+    public init(viewModel: GroupSelectViewModel) {
         self.viewModel = viewModel
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("모모님, 모부터\n시작할까?")
                 .momogoTypography(.heading32)

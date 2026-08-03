@@ -1,16 +1,15 @@
 import Foundation
 
-import FeatureGroup
 import SwiftUINavigation
 
 @Observable
 @MainActor
-final class GroupSelectViewModel {
+public final class GroupSelectViewModel {
     var destination: Destination?
 
     private let onFinish: () -> Void
 
-    init(onFinish: @escaping () -> Void) {
+    public init(onFinish: @escaping () -> Void) {
         self.onFinish = onFinish
     }
 
