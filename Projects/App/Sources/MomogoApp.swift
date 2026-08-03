@@ -1,6 +1,6 @@
 import SwiftUI
 
-import FeatureHome
+import FeatureOnboarding
 import FirebaseCore
 
 @main
@@ -11,7 +11,7 @@ struct MomogoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            OnboardingView(viewModel: OnboardingViewModel())
         }
     }
 }
