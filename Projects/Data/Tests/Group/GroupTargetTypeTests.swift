@@ -6,7 +6,7 @@ import Moya
 struct GroupTargetTypeTests {
     @Test("create는 POST /groups")
     func create_hasCorrectRouting() {
-        let target = GroupTargetType.create(CreateGroupRequestDTO(groupName: "우리 가족"))
+        let target = GroupTargetType.create(CreateGroupRequestDTO(name: "우리 가족"))
 
         #expect(target.path == "/groups")
         #expect(target.method == .post)

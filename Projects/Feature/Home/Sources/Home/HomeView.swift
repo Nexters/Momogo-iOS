@@ -24,7 +24,7 @@ public struct HomeView: View {
                     }
                 }
 
-                ReactionCardView(posters: viewModel.todayPosters)
+                ReactionCardView(posterCount: viewModel.todayPosterCount)
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)

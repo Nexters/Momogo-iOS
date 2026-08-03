@@ -11,23 +11,14 @@ extension GetGroupsUseCase {
             GroupSummary(
                 groupId: 10,
                 groupName: "우리 가족",
-                invitationCode: "A1B2C3D4",
-                participateMemberCount: 2,
                 totalMemberCount: 4,
-                joinedDate: "2026-07-25 14:30:00.123456+00",
-                photos: [
-                    GroupMemberPhoto(photoId: 501, memberId: 22, url: "https://picsum.photos/seed/momogo1/200"),
-                    GroupMemberPhoto(photoId: 502, memberId: 23, url: "https://picsum.photos/seed/momogo2/200")
-                ]
+                todayPhotoUploaderCount: 2
             ),
             GroupSummary(
                 groupId: 11,
                 groupName: "대학 동기",
-                invitationCode: "E5F6G7H8",
-                participateMemberCount: 0,
                 totalMemberCount: 3,
-                joinedDate: "2026-07-20 09:00:00.000000+00",
-                photos: []
+                todayPhotoUploaderCount: 0
             )
         ])
     }
