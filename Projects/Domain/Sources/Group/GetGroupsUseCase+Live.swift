@@ -3,7 +3,13 @@ import Dependencies
 import DomainInterface
 
 extension GetGroupsUseCase: DependencyKey {
-    public static let liveValue = GetGroupsUseCase(
-        execute: unimplemented("\(Self.self).execute")
-    )
+    public static var liveValue: GetGroupsUseCase {
+        @Dependency(\.groupRepository) var groupRepository
+
+        return GetGroupsUseCase(
+            execute: {
+                try await groupRepository.getGroups()
+            }
+        )
+    }
 }

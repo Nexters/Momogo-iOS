@@ -6,6 +6,7 @@ enum GroupTargetType: NetworkTargetType {
     case create(CreateGroupRequestDTO)
     case updateName(groupId: Int, request: UpdateGroupNameRequestDTO)
     case checkInvitation(code: String)
+    case join(JoinGroupByCodeRequestDTO)
     case list
     case detail(groupId: Int, date: String?)
     case leave(groupId: Int)
@@ -16,7 +17,7 @@ enum GroupTargetType: NetworkTargetType {
             "/groups"
         case let .updateName(groupId, _):
             "/groups/\(groupId)"
-        case .checkInvitation:
+        case .checkInvitation, .join:
             "/groups/invitations"
         case .list:
             "/groups"
@@ -29,7 +30,7 @@ enum GroupTargetType: NetworkTargetType {
 
     var method: Moya.Method {
         switch self {
-        case .create:
+        case .create, .join:
             .post
         case .updateName:
             .patch
@@ -48,6 +49,8 @@ enum GroupTargetType: NetworkTargetType {
             .requestJSONEncodable(dto)
         case let .checkInvitation(code):
             .requestParameters(parameters: ["code": code], encoding: URLEncoding.queryString)
+        case let .join(dto):
+            .requestJSONEncodable(dto)
         case .list:
             .requestPlain
         case let .detail(_, date):

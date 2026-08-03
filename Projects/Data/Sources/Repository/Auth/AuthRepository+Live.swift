@@ -1,0 +1,38 @@
+import Foundation
+
+import Dependencies
+
+import DomainInterface
+
+extension AuthRepository: DependencyKey {
+    public static var liveValue: AuthRepository {
+        @Dependency(\.userDataSource) var userDataSource
+
+        return AuthRepository(
+            signUp: { request in
+                let dto = RegisterRequestDTO(
+                    provider: request.provider.dataProvider,
+                    providerToken: request.providerToken,
+                    nickname: request.nickname
+                )
+                let response = try await userDataSource.register(dto)
+                return SignUpResponse(
+                    userId: response.userId,
+                    nickname: response.nickname,
+                    accessToken: response.accessToken,
+                    refreshToken: response.refreshToken
+                )
+            }
+        )
+    }
+}
+
+private extension DomainInterface.AuthProvider {
+    /// Domain의 AuthProvider와 Data의 AuthProvider는 이름이 같아 반드시 모듈로 한정해서 구분한다.
+    var dataProvider: AuthProvider {
+        switch self {
+        case .guest:
+            .guest
+        }
+    }
+}

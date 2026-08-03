@@ -16,6 +16,9 @@ extension GroupDataSource: DependencyKey {
             checkInvitation: { code in
                 try await networkClient.requestDecodable(GroupTargetType.checkInvitation(code: code))
             },
+            join: { request in
+                try await networkClient.requestDecodable(GroupTargetType.join(request))
+            },
             list: {
                 try await networkClient.requestDecodable(GroupTargetType.list)
             },
@@ -32,6 +35,7 @@ extension GroupDataSource: DependencyKey {
         create: unimplemented("\(Self.self).create"),
         updateName: unimplemented("\(Self.self).updateName"),
         checkInvitation: unimplemented("\(Self.self).checkInvitation"),
+        join: unimplemented("\(Self.self).join"),
         list: unimplemented("\(Self.self).list"),
         detail: unimplemented("\(Self.self).detail"),
         leave: unimplemented("\(Self.self).leave")
