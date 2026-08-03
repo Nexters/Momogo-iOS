@@ -1,6 +1,6 @@
+import Dependencies
 import Foundation
 import Testing
-import Dependencies
 @testable import Data
 
 struct ReactionDataSourceTests {

@@ -8,7 +8,7 @@ extension SignUpUseCase {
         try? await Task.sleep(for: .seconds(0.4))
 
         return SignUpResponse(
-            userId: Int.random(in: 1...9_999),
+            userId: Int.random(in: 1 ... 9999),
             nickname: nickname,
             accessToken: "mock-access-token-\(UUID().uuidString)",
             refreshToken: "mock-refresh-token-\(UUID().uuidString)"

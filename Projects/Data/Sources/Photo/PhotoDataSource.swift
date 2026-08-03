@@ -10,7 +10,7 @@ public struct PhotoDataSource: Sendable {
 
     public init(
         createUploadSession: @escaping @Sendable (CreateUploadSessionRequestDTO)
-            async throws -> CreateUploadSessionResponseDTO,
+        async throws -> CreateUploadSessionResponseDTO,
         confirm: @escaping @Sendable (ConfirmUploadRequestDTO) async throws -> ConfirmUploadResponseDTO,
         upload: @escaping @Sendable (_ url: URL, _ data: Data, _ contentType: String) async throws -> Void
     ) {

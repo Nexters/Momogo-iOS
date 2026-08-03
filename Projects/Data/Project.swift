@@ -1,5 +1,5 @@
-import ProjectDescription
 import DependencyPlugin
+import ProjectDescription
 
 let project = Project.makeModule(
     name: "Data",
@@ -8,11 +8,11 @@ let project = Project.makeModule(
             dependencies: [
                 .domainInterface,
                 .moya,
-                .dependencies,
+                .dependencies
             ]
         )),
         .data(tests: .init(
             dependencies: [.data]
-        )),
+        ))
     ]
 )
