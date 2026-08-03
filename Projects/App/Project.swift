@@ -5,7 +5,10 @@ let project = Project.makeModule(
     name: env.appName,
     targets: [
         .app(factory: .init(
-            infoPlist: .extendingDefault(with: ["API_BASE_URL": "$(API_BASE_URL)"]),
+            infoPlist: .extendingDefault(with: [
+                "API_BASE_URL": "$(API_BASE_URL)",
+                "UILaunchScreen": .dictionary([:])
+            ]),
             sources: ["Sources/**"],
             resources: ["Resources/**"],
             scripts: [
