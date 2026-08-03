@@ -25,8 +25,8 @@ public final class RefreshTokenStore: @unchecked Sendable {
 
     public func update(_ token: String?) {
         lock.lock()
+        defer { lock.unlock() }
         self.token = token
-        lock.unlock()
         onUpdate?(token)
     }
 }

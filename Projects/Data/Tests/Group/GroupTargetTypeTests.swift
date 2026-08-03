@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 import Moya
+import Testing
 @testable import Data
 
 struct GroupTargetTypeTests {
