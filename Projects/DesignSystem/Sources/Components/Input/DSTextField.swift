@@ -10,23 +10,27 @@ public struct DSTextField: View {
 
     @Environment(\.isEnabled) private var isEnabled
     @Binding private var text: String
+    @FocusState private var fallbackFocus: Bool
     private let placeholder: String
     private let comment: String?
     private let characterLimit: Int?
     private let state: State
+    private let isFocused: FocusState<Bool>.Binding?
 
     public init(
         _ placeholder: String,
         text: Binding<String>,
         comment: String? = nil,
         characterLimit: Int? = nil,
-        state: State = .normal
+        state: State = .normal,
+        isFocused: FocusState<Bool>.Binding? = nil
     ) {
         self.placeholder = placeholder
         _text = text
         self.comment = comment
         self.characterLimit = characterLimit
         self.state = state
+        self.isFocused = isFocused
     }
 
     public var body: some View {
@@ -35,6 +39,8 @@ public struct DSTextField: View {
                 TextField(placeholder, text: $text)
                     .momogoTypography(.mdMedium)
                     .foregroundStyle(textColor)
+                    .tint(DesignSystem.Color.gray200)
+                    .focused(isFocused ?? $fallbackFocus)
                 if let characterLimit {
                     Text("\(text.count)/\(characterLimit)")
                         .momogoTypography(.mdMedium)
@@ -44,11 +50,11 @@ public struct DSTextField: View {
             .padding(.horizontal, 24)
             .padding(.vertical, 14)
             .background(DesignSystem.Color.gray900)
-            .clipShape(Capsule())
-            .overlay(
+            .clipShape(.capsule)
+            .overlay {
                 Capsule()
                     .stroke(borderColor, lineWidth: borderWidth)
-            )
+            }
 
             if let comment {
                 Text(comment)

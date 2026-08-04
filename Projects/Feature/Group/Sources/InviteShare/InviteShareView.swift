@@ -4,12 +4,7 @@ import DesignSystem
 
 struct InviteShareView: View {
     @Bindable private var viewModel: InviteShareViewModel
-
-    private let memberColors: [Color] = [
-        DesignSystem.Color.systemRed500,
-        DesignSystem.Color.systemGreen500,
-        DesignSystem.Color.systemBlue500
-    ]
+    @Environment(\.dismiss) private var dismiss
 
     init(viewModel: InviteShareViewModel) {
         self.viewModel = viewModel
@@ -17,61 +12,42 @@ struct InviteShareView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 12) {
-                Image(systemName: "plus")
-                    .font(.system(size: 26, weight: .medium))
-                    .foregroundStyle(DesignSystem.Color.primary500)
-                    .frame(width: 66, height: 66)
-                    .background(DesignSystem.Color.gray900)
-                    .overlay {
-                        Circle()
-                            .strokeBorder(DesignSystem.Color.primary500, style: StrokeStyle(lineWidth: 2, dash: [4]))
-                    }
-                    .clipShape(.circle)
-                    .accessibilityHidden(true)
+            DSTopNavigationBar(leading: {
+                DSBackButton(action: { dismiss() })
+            })
 
-                Text("가까운 사람을\n초대해보세요")
-                    .momogoTypography(.mdMedium)
+            VStack(spacing: 24) {
+                Text("점심 메이트에게\n초대코드를 공유해주세요")
+                    .momogoMultilineTypography(.heading26)
                     .foregroundStyle(DesignSystem.Color.gray50)
                     .multilineTextAlignment(.center)
 
-                HStack(spacing: -8) {
-                    ForEach(memberColors.indices, id: \.self) { index in
-                        Circle()
-                            .fill(memberColors[index])
-                            .frame(width: 28, height: 28)
-                            .overlay {
-                                Circle().strokeBorder(DesignSystem.Color.gray950, lineWidth: 2)
-                            }
+                Button {
+                    viewModel.copyCodeTapped()
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(viewModel.inviteCode)
+                        Image(asset: DesignSystemAsset.copy)
+                            .resizable()
+                            .frame(width: 20, height: 20)
                     }
                 }
-                .accessibilityHidden(true)
-
-                Text(viewModel.inviteCode)
-                    .momogoTypography(.smMedium)
-                    .tracking(3)
-                    .foregroundStyle(DesignSystem.Color.primary500)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(DesignSystem.Color.gray900)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: DesignSystem.Radius.r10)
-                            .strokeBorder(DesignSystem.Color.primary500, style: StrokeStyle(lineWidth: 1.5, dash: [4]))
-                    }
-                    .clipShape(.rect(cornerRadius: DesignSystem.Radius.r10))
+                .buttonStyle(.momogoButton(kind: .outlined, tone: .gray, size: .large))
             }
+            .padding(16)
+            .frame(maxWidth: .infinity)
 
             Spacer()
 
-            Button("메인 화면으로 가기", action: viewModel.goToMainTapped)
-                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
+            Button("모모고 시작하기", action: viewModel.goToMainTapped)
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
+                .padding(.horizontal, 16)
+                .padding(.bottom, 32)
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 72)
-        .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
-        .background(DesignSystem.Color.gray950.ignoresSafeArea())
+        .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .momogoToast(isPresented: $viewModel.showsCopiedToast, message: "클립보드에 복사되었어요", tone: .success)
     }
 }

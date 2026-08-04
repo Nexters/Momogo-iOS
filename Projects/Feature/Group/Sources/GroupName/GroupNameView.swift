@@ -5,54 +5,73 @@ import SwiftUINavigation
 
 public struct GroupNameView: View {
     @Bindable private var viewModel: GroupNameViewModel
+    @FocusState private var isGroupNameFieldFocused: Bool
+    @Environment(\.dismiss) private var dismiss
 
     public init(viewModel: GroupNameViewModel) {
         self.viewModel = viewModel
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("그룹 이름을\n지어주라모")
-                .momogoTypography(.heading32)
-                .foregroundStyle(DesignSystem.Color.gray50)
+        VStack(spacing: 0) {
+            DSTopNavigationBar(leading: {
+                DSBackButton(action: { dismiss() })
+            })
 
-            Spacer()
+            VStack(alignment: .leading, spacing: 24) {
+                Text("그룹명을 정해주세요")
+                    .momogoTypography(.heading26)
+                    .foregroundStyle(DesignSystem.Color.gray50)
 
-            VStack(spacing: 12) {
                 DSTextField(
                     "그룹명 입력",
                     text: $viewModel.groupName,
-                    state: viewModel.groupName.isEmpty ? .normal : .filled
+                    comment: fieldComment,
+                    characterLimit: GroupNameViewModel.groupNameCharacterLimit,
+                    state: textFieldState,
+                    isFocused: $isGroupNameFieldFocused
                 )
-
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-
-                Button {
-                    viewModel.createGroupTapped()
-                } label: {
-                    if viewModel.isLoading {
-                        ProgressView()
-                    } else {
-                        Text("그룹 만들기")
-                    }
-                }
-                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .medium, isFullWidth: true))
-                .disabled(viewModel.isLoading)
             }
+            .padding(16)
+
+            Spacer()
+
+            Button {
+                viewModel.createGroupTapped()
+            } label: {
+                if viewModel.isLoading {
+                    ProgressView()
+                } else {
+                    Text("그룹 만들기")
+                }
+            }
+            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
+            .disabled(viewModel.isLoading || !viewModel.isCreateEnabled)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 32)
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 72)
-        .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
-        .background(DesignSystem.Color.gray950.ignoresSafeArea())
+        .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $viewModel.destination.inviteShare) { inviteShareViewModel in
             InviteShareView(viewModel: inviteShareViewModel)
         }
+    }
+
+    private var textFieldState: DSTextField.State {
+        if viewModel.isLengthExceeded {
+            .error
+        } else if isGroupNameFieldFocused {
+            .focused
+        } else if !viewModel.groupName.isEmpty {
+            .filled
+        } else {
+            .normal
+        }
+    }
+
+    private var fieldComment: String? {
+        viewModel.isLengthExceeded ? GroupNameViewModel.groupNameLengthErrorMessage : viewModel.errorMessage
     }
 }

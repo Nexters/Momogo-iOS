@@ -5,11 +5,19 @@ import SwiftUINavigation
 @Observable
 @MainActor
 public final class GroupSelectViewModel {
+    enum Selection {
+        case createGroup
+        case joinWithCode
+    }
+
+    let nickname: String
+    var selection: Selection = .createGroup
     var destination: Destination?
 
     private let onFinish: () -> Void
 
-    public init(onFinish: @escaping () -> Void) {
+    public init(nickname: String, onFinish: @escaping () -> Void) {
+        self.nickname = nickname
         self.onFinish = onFinish
     }
 
@@ -19,11 +27,16 @@ public final class GroupSelectViewModel {
         case inviteCode(InviteCodeInputViewModel)
     }
 
-    func createGroupTapped() {
-        destination = .groupName(GroupNameViewModel(onFinish: onFinish))
+    func select(_ selection: Selection) {
+        self.selection = selection
     }
 
-    func joinWithCodeTapped() {
-        destination = .inviteCode(InviteCodeInputViewModel(onFinish: onFinish))
+    func nextTapped() {
+        switch selection {
+        case .createGroup:
+            destination = .groupName(GroupNameViewModel(onFinish: onFinish))
+        case .joinWithCode:
+            destination = .inviteCode(InviteCodeInputViewModel(onFinish: onFinish))
+        }
     }
 }
