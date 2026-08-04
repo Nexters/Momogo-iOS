@@ -67,21 +67,15 @@ public final class InviteCodeInputViewModel {
         }
     }
 
-    /// 한글(완성형/자모), 영문, 공백만 허용한다. 숫자·특수문자·이모지는 제외.
-    /// 자소 결합 문자(이모지 대부분 포함)는 유니코드 스칼라가 2개 이상이므로 함께 제외된다.
+    /// 영문, 숫자, 공백만 허용한다. 한글·특수문자·이모지는 제외.
+    /// 실제 발급되는 초대코드가 영문+숫자 조합이므로 그에 맞춘 규칙이다.
     private static func isAllowedCodeCharacter(_ character: Character) -> Bool {
-        guard character.unicodeScalars.count == 1, let scalar = character.unicodeScalars.first else {
+        guard character.unicodeScalars.count == 1 else {
             return false
         }
-        if character.isASCII, character.isLetter {
+        if character.isASCII, character.isLetter || character.isNumber {
             return true
         }
-        if character == " " {
-            return true
-        }
-        return hangulSyllables.contains(scalar.value) || hangulJamo.contains(scalar.value)
+        return character == " "
     }
-
-    private static let hangulSyllables: ClosedRange<UInt32> = 0xAC00 ... 0xD7A3
-    private static let hangulJamo: ClosedRange<UInt32> = 0x3131 ... 0x318E
 }
