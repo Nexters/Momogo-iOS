@@ -8,7 +8,9 @@ extension AuthRepository: DependencyKey {
     public static var liveValue: AuthRepository {
         @Dependency(\.userDataSource) var userDataSource
         @Dependency(\.authDataSource) var authDataSource
+        @Dependency(\.accessTokenStore) var accessTokenStore
         @Dependency(\.refreshTokenStore) var refreshTokenStore
+        @Dependency(\.guestTokenStore) var guestTokenStore
 
         return AuthRepository(
             signUp: { request in
@@ -33,6 +35,29 @@ extension AuthRepository: DependencyKey {
                 } catch {
                     return false
                 }
+            },
+            login: {
+                let providerToken = guestTokenStore.fetchOrCreate()
+                do {
+                    _ = try await authDataSource.login(LoginRequestDTO(provider: .guest, providerToken: providerToken))
+                    return true
+                } catch {
+                    return false
+                }
+            },
+            logout: {
+                guard let refreshToken = refreshTokenStore.current() else { return true }
+                do {
+                    try await authDataSource.logout(LogoutRequestDTO(refreshToken: refreshToken))
+                    return true
+                } catch {
+                    return false
+                }
+            },
+            clearLocalAuthState: {
+                accessTokenStore.update(nil)
+                refreshTokenStore.update(nil)
+                guestTokenStore.clear()
             }
         )
     }

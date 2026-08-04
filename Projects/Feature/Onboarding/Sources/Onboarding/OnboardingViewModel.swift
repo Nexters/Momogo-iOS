@@ -1,11 +1,17 @@
 import Foundation
 
+import Dependencies
+import DomainInterface
 import SwiftUINavigation
 
 @Observable
 @MainActor
 public final class OnboardingViewModel {
     var destination: Destination?
+    var isLoading: Bool = false
+
+    @ObservationIgnored
+    @Dependency(\.loginUseCase) private var loginUseCase
 
     private let onFinish: () -> Void
 
@@ -19,6 +25,18 @@ public final class OnboardingViewModel {
     }
 
     func guestStartTapped() {
-        destination = .nickname(NicknameViewModel(onFinish: onFinish))
+        guard !isLoading else { return }
+
+        isLoading = true
+
+        Task {
+            defer { isLoading = false }
+
+            if await loginUseCase.execute() {
+                onFinish()
+            } else {
+                destination = .nickname(NicknameViewModel(onFinish: onFinish))
+            }
+        }
     }
 }

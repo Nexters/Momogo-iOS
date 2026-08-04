@@ -40,7 +40,7 @@ private struct RootView: View {
                 }
             }))
         case .home:
-            HomeView(viewModel: HomeViewModel())
+            HomeView(viewModel: HomeViewModel(onLogout: { destination = .onboarding }))
         case .onboarding:
             OnboardingView(viewModel: OnboardingViewModel(onFinish: { destination = .home }))
         }

@@ -11,12 +11,14 @@ public struct SplashView: View {
 
     public var body: some View {
         VStack {
-            Text("Momogo")
-                .momogoTypography(.heading32)
-                .foregroundStyle(DesignSystem.Color.white)
+            Image(asset: DesignSystemAsset.logo)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 175, height: 48)
+                .accessibilityLabel("모모고")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DesignSystem.Color.gray950.ignoresSafeArea())
+        .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .task {
             await viewModel.start()
         }
