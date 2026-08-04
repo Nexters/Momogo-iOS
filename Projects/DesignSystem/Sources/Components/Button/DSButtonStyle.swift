@@ -158,7 +158,7 @@ public struct DSButtonStyle: ButtonStyle {
         }
         switch kind {
         case .solid:
-            let base = tone == .primary ? DesignSystem.Color.primary500 : DesignSystem.Color.gray900
+            let base = tone == .primary ? DesignSystem.Color.primary500 : DesignSystem.Color.gray800
             let pressed = tone == .primary ? DesignSystem.Color.primary400 : DesignSystem.Color.gray700
             return isPressed ? pressed : base
         case .outlined:
