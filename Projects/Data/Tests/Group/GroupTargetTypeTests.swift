@@ -28,6 +28,18 @@ struct GroupTargetTypeTests {
         #expect(target.method == .get)
     }
 
+    @Test("join은 POST /groups/invitations, JSON 인코딩된 code")
+    func join_hasCorrectRouting() {
+        let target = GroupTargetType.join(JoinGroupByCodeRequestDTO(code: "A1B2C3D4"))
+
+        #expect(target.path == "/groups/invitations")
+        #expect(target.method == .post)
+        guard case .requestJSONEncodable = target.task else {
+            Issue.record("requestJSONEncodable을 기대했지만 다른 task가 반환됨")
+            return
+        }
+    }
+
     @Test("list는 GET /groups, requestPlain")
     func list_hasCorrectRouting() {
         let target = GroupTargetType.list

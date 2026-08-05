@@ -1,5 +1,4 @@
 import Foundation
-import Security
 
 import Dependencies
 
@@ -11,44 +10,15 @@ private enum GuestTokenKeychain {
     static let account = "guestProviderToken"
 
     static func read() -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status == errSecSuccess, let data = item as? Data else { return nil }
-        return String(decoding: data, as: UTF8.self)
+        KeychainStore.read(service: service, account: account)
     }
 
     static func save(_ token: String) {
-        let data = Data(token.utf8)
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account
-        ]
-
-        if SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess {
-            SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
-        } else {
-            var attributes = query
-            attributes[kSecValueData as String] = data
-            SecItemAdd(attributes as CFDictionary, nil)
-        }
+        KeychainStore.save(token, service: service, account: account)
     }
 
     static func delete() {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account
-        ]
-        SecItemDelete(query as CFDictionary)
+        KeychainStore.delete(service: service, account: account)
     }
 }
 
