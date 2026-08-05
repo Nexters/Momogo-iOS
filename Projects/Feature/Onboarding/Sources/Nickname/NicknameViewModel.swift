@@ -43,7 +43,8 @@ final class NicknameViewModel {
     }
 
     var isNextEnabled: Bool {
-        (1 ... Self.nicknameCharacterLimit).contains(nickname.count)
+        (1 ... Self.nicknameCharacterLimit).contains(nickname.count) &&
+            !nickname.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     func nextTapped() {
