@@ -22,15 +22,18 @@ struct TodayCardView: View {
     @State private var showsInviteTooltip = true
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            illustration
-
-            content
-        }
-        .frame(height: 358)
-        .frame(maxWidth: .infinity)
-        .background(DesignSystem.Color.primary500)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
+        content
+            .frame(height: 358)
+            .frame(maxWidth: .infinity)
+            // 배경(색상+일러스트)에만 라운드 클립을 적용한다. 카드 전체를 클립하면 카드 경계 밖으로
+            // 확장되는 초대 툴팁 오버레이까지 함께 잘려나간다.
+            .background(alignment: .topTrailing) {
+                ZStack(alignment: .topTrailing) {
+                    DesignSystem.Color.primary500
+                    illustration
+                }
+                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
+            }
     }
 
     private var content: some View {
@@ -57,6 +60,9 @@ struct TodayCardView: View {
             HStack(spacing: 10) {
                 headerIconButton(DesignSystemAsset.plus, accessibilityLabel: "그룹 추가", action: onTapAddGroup)
                     .momogoTooltip(isPresented: $showsInviteTooltip, text: "초대코드를 받았나요?", arrowDirection: .down)
+                    // 툴팁이 우측의 settings 버튼 위로 확장되므로, 나중에 그려지는 형제 뷰에
+                    // 가려지지 않도록 z-order를 높인다.
+                    .zIndex(1)
                 headerIconButton(DesignSystemAsset.settings, accessibilityLabel: "설정", action: onTapSettings)
             }
         }
