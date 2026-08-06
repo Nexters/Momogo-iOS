@@ -3,7 +3,13 @@ import Dependencies
 import DomainInterface
 
 extension JoinGroupByCodeUseCase: DependencyKey {
-    public static let liveValue = JoinGroupByCodeUseCase(
-        execute: unimplemented("\(Self.self).execute")
-    )
+    public static var liveValue: JoinGroupByCodeUseCase {
+        @Dependency(\.groupRepository) var groupRepository
+
+        return JoinGroupByCodeUseCase(
+            execute: { code in
+                try await groupRepository.joinGroupByCode(JoinGroupByCodeRequest(code: code))
+            }
+        )
+    }
 }

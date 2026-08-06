@@ -8,7 +8,7 @@ extension CreateGroupUseCase {
         try? await Task.sleep(for: .seconds(0.4))
 
         return CreateGroupResponse(
-            groupId: Int.random(in: 1...9_999),
+            groupId: Int.random(in: 1 ... 9999),
             groupName: groupName,
             invitationCode: String(UUID().uuidString.prefix(8)).uppercased()
         )

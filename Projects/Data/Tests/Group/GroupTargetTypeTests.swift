@@ -1,12 +1,12 @@
 import Foundation
-import Testing
 import Moya
+import Testing
 @testable import Data
 
 struct GroupTargetTypeTests {
     @Test("create는 POST /groups")
     func create_hasCorrectRouting() {
-        let target = GroupTargetType.create(CreateGroupRequestDTO(groupName: "우리 가족"))
+        let target = GroupTargetType.create(CreateGroupRequestDTO(name: "우리 가족"))
 
         #expect(target.path == "/groups")
         #expect(target.method == .post)
@@ -26,6 +26,18 @@ struct GroupTargetTypeTests {
 
         #expect(target.path == "/groups/invitations")
         #expect(target.method == .get)
+    }
+
+    @Test("join은 POST /groups/invitations, JSON 인코딩된 code")
+    func join_hasCorrectRouting() {
+        let target = GroupTargetType.join(JoinGroupByCodeRequestDTO(code: "A1B2C3D4"))
+
+        #expect(target.path == "/groups/invitations")
+        #expect(target.method == .post)
+        guard case .requestJSONEncodable = target.task else {
+            Issue.record("requestJSONEncodable을 기대했지만 다른 task가 반환됨")
+            return
+        }
     }
 
     @Test("list는 GET /groups, requestPlain")

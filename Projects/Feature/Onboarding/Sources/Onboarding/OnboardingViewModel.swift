@@ -7,7 +7,11 @@ import SwiftUINavigation
 public final class OnboardingViewModel {
     var destination: Destination?
 
-    public init() {}
+    private let onFinish: () -> Void
+
+    public init(onFinish: @escaping () -> Void = {}) {
+        self.onFinish = onFinish
+    }
 
     @CasePathable
     enum Destination {
@@ -15,6 +19,6 @@ public final class OnboardingViewModel {
     }
 
     func guestStartTapped() {
-        destination = .nickname(NicknameViewModel(onFinish: {}))
+        destination = .nickname(NicknameViewModel(onFinish: onFinish))
     }
 }

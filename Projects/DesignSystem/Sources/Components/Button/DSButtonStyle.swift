@@ -59,8 +59,8 @@ public struct DSButtonStyle: ButtonStyle {
         .padding(.vertical, verticalPadding)
         .frame(maxWidth: isFullWidth ? .infinity : nil, minHeight: fixedHeight)
         .background(backgroundColor(isPressed: configuration.isPressed))
-        .clipShape(Capsule())
-        .overlay(borderOverlay(isPressed: configuration.isPressed))
+        .clipShape(.capsule)
+        .overlay { borderOverlay(isPressed: configuration.isPressed) }
     }
 
     /// 아이콘이 한쪽에만 있어도 타이틀이 항상 가운데 오도록, 반대쪽에 같은 크기의
@@ -120,11 +120,12 @@ public struct DSButtonStyle: ButtonStyle {
         }
     }
 
-    /// Figma 실측 고정 높이(M=48px). 패딩만으로는 스펙 높이에 못 미쳐 별도로 고정한다.
+    /// Figma 실측 고정 높이(XL=54px, M=48px). 패딩만으로는 스펙 높이에 못 미쳐 별도로 고정한다.
     private var fixedHeight: CGFloat? {
         switch size {
+        case .xl: 54
         case .medium: 48
-        case .xl, .large, .small: nil
+        case .large, .small: nil
         }
     }
 
@@ -153,7 +154,7 @@ public struct DSButtonStyle: ButtonStyle {
 
     private func backgroundColor(isPressed: Bool) -> Color {
         guard isEnabled else {
-            return kind == .solid ? DesignSystem.Color.gray900 : .clear
+            return kind == .solid ? DesignSystem.Color.white.opacity(0.04) : .clear
         }
         switch kind {
         case .solid:

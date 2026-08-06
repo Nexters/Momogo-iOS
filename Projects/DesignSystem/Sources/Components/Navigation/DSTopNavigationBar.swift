@@ -83,7 +83,10 @@ public struct DSBackButton: View {
         Button(action: action) {
             Image(asset: DesignSystemAsset.chevronLeft)
                 .foregroundStyle(DesignSystem.Color.white)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel("뒤로")
     }
 }
 

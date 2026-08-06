@@ -66,45 +66,23 @@ public struct JoinGroupByCodeResponse: Sendable, Equatable {
     }
 }
 
-/// 그룹의 오늘자 사진 한 장을 나타내는 모델.
-public struct GroupMemberPhoto: Sendable, Equatable {
-    public let photoId: Int
-    public let memberId: Int
-    public let url: String
-
-    public init(photoId: Int, memberId: Int, url: String) {
-        self.photoId = photoId
-        self.memberId = memberId
-        self.url = url
-    }
-}
-
 /// 그룹 목록의 개별 그룹 요약 정보.
 public struct GroupSummary: Sendable, Equatable {
     public let groupId: Int
     public let groupName: String
-    public let invitationCode: String
-    public let participateMemberCount: Int
     public let totalMemberCount: Int
-    public let joinedDate: String
-    public let photos: [GroupMemberPhoto]
+    public let todayPhotoUploaderCount: Int
 
     public init(
         groupId: Int,
         groupName: String,
-        invitationCode: String,
-        participateMemberCount: Int,
         totalMemberCount: Int,
-        joinedDate: String,
-        photos: [GroupMemberPhoto]
+        todayPhotoUploaderCount: Int
     ) {
         self.groupId = groupId
         self.groupName = groupName
-        self.invitationCode = invitationCode
-        self.participateMemberCount = participateMemberCount
         self.totalMemberCount = totalMemberCount
-        self.joinedDate = joinedDate
-        self.photos = photos
+        self.todayPhotoUploaderCount = todayPhotoUploaderCount
     }
 }
 

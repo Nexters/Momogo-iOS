@@ -48,6 +48,12 @@ public extension DesignSystem {
 
         // Figma 스펙: letterSpacing -2%
         public var tracking: CGFloat { size * -0.02 }
+
+        // Figma 스펙: lineHeight 150%. `lineSpacing`은 폰트 자체의 줄간격 위에 더해지는 값이라,
+        // 목표 줄간격(size * 1.5)에서 폰트가 이미 가진 자연 줄간격을 뺀 만큼만 추가한다.
+        var multilineLineSpacing: CGFloat {
+            max(0, size * 1.5 - fontConvertible.font(size: size).lineHeight)
+        }
     }
 }
 
@@ -55,5 +61,12 @@ public extension View {
     func momogoTypography(_ style: DesignSystem.Typography) -> some View {
         font(style.font)
             .tracking(style.tracking)
+    }
+
+    /// 줄바꿈이 있는 여러 줄 텍스트에 Figma 스펙의 150% 줄간격을 함께 적용한다.
+    /// 단일 줄 텍스트(버튼/칩 등 높이가 고정된 컴포넌트)에는 `momogoTypography(_:)`만 사용한다.
+    func momogoMultilineTypography(_ style: DesignSystem.Typography) -> some View {
+        momogoTypography(style)
+            .lineSpacing(style.multilineLineSpacing)
     }
 }

@@ -1,7 +1,7 @@
+import ConcurrencyExtras
+import Dependencies
 import Foundation
 import Testing
-import Dependencies
-import ConcurrencyExtras
 @testable import Data
 
 struct PhotoDataSourceTests {

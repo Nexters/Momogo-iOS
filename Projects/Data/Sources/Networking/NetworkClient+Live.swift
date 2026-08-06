@@ -22,7 +22,7 @@ private let provider = MoyaProvider<MultiTarget>(plugins: providerPlugins)
 private var providerPlugins: [PluginType] {
     var plugins: [PluginType] = [AuthorizationPlugin(tokenStore: AccessTokenStore.liveValue)]
     #if DEBUG
-    plugins.append(NetworkLoggerPlugin())
+        plugins.append(NetworkLoggerPlugin())
     #endif
     return plugins
 }
