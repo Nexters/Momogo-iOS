@@ -19,13 +19,12 @@ struct MomogoApp: App {
     }
 }
 
-private enum RootDestination {
-    case splash
-    case home
-    case onboarding
-}
-
 private struct RootView: View {
+    private enum RootDestination {
+        case splash
+        case home
+        case onboarding
+    }
     @State private var destination: RootDestination = .splash
 
     var body: some View {
