@@ -22,17 +22,15 @@ struct SignUpUseCaseTests {
                     callOrder.mutate { $0.append("clear") }
                 }
             )
-            $0.authRepository = AuthRepository(
-                signUp: { request in
-                    capturedRequest.set(request)
-                    return SignUpResponse(
-                        userId: 1,
-                        nickname: request.nickname,
-                        accessToken: "access-token",
-                        refreshToken: "refresh-token"
-                    )
-                }
-            )
+            $0.authRepository.signUp = { request in
+                capturedRequest.set(request)
+                return SignUpResponse(
+                    userId: 1,
+                    nickname: request.nickname,
+                    accessToken: "access-token",
+                    refreshToken: "refresh-token"
+                )
+            }
         } operation: {
             SignUpUseCase.liveValue
         }
@@ -52,7 +50,7 @@ struct SignUpUseCaseTests {
     func execute_repositoryFailure_throws() async throws {
         let useCase = withDependencies {
             $0.guestTokenStore = GuestTokenStore(fetchOrCreate: { "token" }, clear: {})
-            $0.authRepository = AuthRepository(signUp: { _ in throw SignUpTestError.failed })
+            $0.authRepository.signUp = { _ in throw SignUpTestError.failed }
         } operation: {
             SignUpUseCase.liveValue
         }
