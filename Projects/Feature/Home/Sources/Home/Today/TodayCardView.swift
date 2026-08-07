@@ -22,18 +22,29 @@ struct TodayCardView: View {
     @State private var showsInviteTooltip = true
 
     var body: some View {
-        content
-            .frame(height: 358)
-            .frame(maxWidth: .infinity)
+        ZStack(alignment: .topLeading) {
             // 배경(색상+일러스트)에만 라운드 클립을 적용한다. 카드 전체를 클립하면 카드 경계 밖으로
-            // 확장되는 초대 툴팁 오버레이까지 함께 잘려나간다.
-            .background(alignment: .topTrailing) {
-                ZStack(alignment: .topTrailing) {
-                    DesignSystem.Color.primary500
-                    illustration
-                }
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
+            // 확장되는 초대 툴팁까지 함께 잘려나간다.
+            ZStack(alignment: .topLeading) {
+                DesignSystem.Color.primary500
+                illustration
             }
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
+
+            content
+
+            if showsInviteTooltip {
+                DSTooltip("초대코드를 받았나요?", arrowDirection: .up)
+                    .offset(x: 179, y: 70)
+                    .transition(.opacity)
+                    .task {
+                        try? await Task.sleep(for: .seconds(3))
+                        showsInviteTooltip = false
+                    }
+            }
+        }
+        .frame(height: 358)
+        .frame(maxWidth: .infinity)
     }
 
     private var content: some View {
@@ -59,10 +70,6 @@ struct TodayCardView: View {
 
             HStack(spacing: 10) {
                 headerIconButton(DesignSystemAsset.plus, accessibilityLabel: "그룹 추가", action: onTapAddGroup)
-                    .momogoTooltip(isPresented: $showsInviteTooltip, text: "초대코드를 받았나요?", arrowDirection: .down)
-                    // 툴팁이 우측의 settings 버튼 위로 확장되므로, 나중에 그려지는 형제 뷰에
-                    // 가려지지 않도록 z-order를 높인다.
-                    .zIndex(1)
                 headerIconButton(DesignSystemAsset.settings, accessibilityLabel: "설정", action: onTapSettings)
             }
         }
@@ -137,27 +144,28 @@ struct TodayCardView: View {
     }
 
     private var illustration: some View {
-        ZStack(alignment: .topTrailing) {
-            Image(asset: DesignSystemAsset.illustHomeBanner)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 230)
-                .offset(x: 55, y: 8)
-
+        ZStack(alignment: .topLeading) {
             Image(asset: DesignSystemAsset.sparkleStarLarge)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 32, height: 32)
-                .offset(x: -20, y: 170)
+                .frame(width: 34, height: 34)
+                .offset(x: 16, y: 238)
 
             Image(asset: DesignSystemAsset.sparkleStarSmall)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 20, height: 20)
-                .offset(x: 90, y: 130)
+                .frame(width: 24, height: 24)
+                .offset(x: 110, y: 156)
+
+            // 원본 SVG 실측 비율(269.4 x 329.6)을 그대로 사용하고, 카드 우/하단 경계에서
+            // 자연스럽게 잘리도록 배치한다(Figma도 카드 밖으로 넘치는 부분은 클립되어 보이지 않음).
+            Image(asset: DesignSystemAsset.illustHomeBanner)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 269)
+                .offset(x: 108, y: 120)
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
     }
 }
