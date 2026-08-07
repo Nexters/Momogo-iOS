@@ -25,7 +25,7 @@ public final class SplashViewModel {
         let checkSessionUseCase = checkSessionUseCase
         async let destination = Self.resolveDestination(checkSessionUseCase: checkSessionUseCase)
         try? await Task.sleep(for: Constants.minimumExposureDuration)
-        onFinish(await destination)
+        await onFinish(destination)
     }
 
     private static func resolveDestination(checkSessionUseCase: CheckSessionUseCase) async -> SplashDestination {

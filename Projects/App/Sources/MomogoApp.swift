@@ -25,6 +25,7 @@ private struct RootView: View {
         case home
         case onboarding
     }
+
     @State private var destination: RootDestination = .splash
 
     var body: some View {

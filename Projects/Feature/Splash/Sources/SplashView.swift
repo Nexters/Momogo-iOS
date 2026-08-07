@@ -3,10 +3,13 @@ import SwiftUI
 import DesignSystem
 
 public struct SplashView: View {
-    private struct Constants {
-        static let logoSize = CGSize(width: 175, height: 48)
-        static let logoAccessibilityLabel = "모모고"
+    struct Constants {
+        let logoAccessibilityLabel = "모모고"
+        let logoWidth: CGFloat = 175
+        let logoHeight: CGFloat = 48
     }
+
+    private let constants = Constants()
 
     @State private var viewModel: SplashViewModel
 
@@ -19,8 +22,8 @@ public struct SplashView: View {
             Image(asset: DesignSystemAsset.logo)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: Constants.logoSize.width, height: Constants.logoSize.height)
-                .accessibilityLabel(Constants.logoAccessibilityLabel)
+                .frame(width: constants.logoWidth, height: constants.logoHeight)
+                .accessibilityLabel(constants.logoAccessibilityLabel)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
