@@ -4,7 +4,7 @@ import Dependencies
 
 import DomainInterface
 
-extension AuthRepository: DependencyKey {
+extension AuthRepository: @retroactive DependencyKey {
     public static var liveValue: AuthRepository {
         @Dependency(\.userDataSource) var userDataSource
         @Dependency(\.authDataSource) var authDataSource

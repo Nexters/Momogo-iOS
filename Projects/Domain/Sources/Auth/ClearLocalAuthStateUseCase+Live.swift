@@ -2,7 +2,7 @@ import Dependencies
 
 import DomainInterface
 
-extension ClearLocalAuthStateUseCase: DependencyKey {
+extension ClearLocalAuthStateUseCase: @retroactive DependencyKey {
     public static var liveValue: ClearLocalAuthStateUseCase {
         @Dependency(\.authRepository) var authRepository
 

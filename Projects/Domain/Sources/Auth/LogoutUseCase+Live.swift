@@ -2,7 +2,7 @@ import Dependencies
 
 import DomainInterface
 
-extension LogoutUseCase: DependencyKey {
+extension LogoutUseCase: @retroactive DependencyKey {
     public static var liveValue: LogoutUseCase {
         @Dependency(\.authRepository) var authRepository
 

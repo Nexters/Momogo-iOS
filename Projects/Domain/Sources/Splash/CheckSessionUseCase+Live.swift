@@ -2,7 +2,7 @@ import Dependencies
 
 import DomainInterface
 
-extension CheckSessionUseCase: DependencyKey {
+extension CheckSessionUseCase: @retroactive DependencyKey {
     public static var liveValue: CheckSessionUseCase {
         @Dependency(\.authRepository) var authRepository
 
