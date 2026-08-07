@@ -55,7 +55,10 @@ struct TodayCardView: View {
             }
 
             Spacer(minLength: 0)
+            // Figma 스펙: 카메라 버튼 컨테이너 자체에 왼쪽 패딩 20px이 있어, 헤드라인/CTA 버튼과 달리
+            // 콘텐츠 왼쪽선보다 20px 더 안쪽에서 시작한다.
             cameraButton
+                .padding(.leading, 20)
             Spacer(minLength: 0)
             shootButton
         }
@@ -64,7 +67,7 @@ struct TodayCardView: View {
 
     private var titleRow: some View {
         HStack(spacing: 0) {
-            DSChip(dateText, tone: .primary, size: .small, showsLeadingIcon: false, showsTrailingIcon: false)
+            dateChip
 
             Spacer(minLength: 0)
 
@@ -75,11 +78,23 @@ struct TodayCardView: View {
         }
     }
 
+    // Figma 스펙(가로 10px/세로 8px 패딩, 14px SemiBold)이 `DSChip`의 기존 사이즈 프리셋(.default, .small)
+    // 어느 쪽과도 정확히 맞지 않아, 이 칩만 커스텀으로 그린다.
+    private var dateChip: some View {
+        Text(dateText)
+            .momogoTypography(.smSemistrong)
+            .foregroundStyle(DesignSystem.Color.gray800)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(DesignSystem.Color.primary300, in: RoundedRectangle(cornerRadius: DesignSystem.Radius.r10))
+    }
+
     private var headlineBlock: some View {
         VStack(alignment: .leading, spacing: 4) {
-            // Figma 스펙은 34px "BM DoHyeon OTF"지만 DesignSystem에 해당 폰트가 없어 가장 가까운 heading26으로 근사한다.
+            // Figma 스펙은 34px "BM DoHyeon OTF"지만 DesignSystem에 해당 폰트가 없어(폰트 리소스 추가는
+            // 스코프 밖) 가장 가까운 크기인 heading32(32pt)로 근사한다.
             Text("오늘 모모고?")
-                .momogoTypography(.heading26)
+                .momogoTypography(.heading32)
                 .foregroundStyle(DesignSystem.Color.gray950)
 
             Text("오늘의 점심 메뉴를 찍어볼까요?")
@@ -139,7 +154,9 @@ struct TodayCardView: View {
             .padding(.vertical, 14)
             .padding(.horizontal, 32)
         }
-        .background(.ultraThinMaterial, in: Capsule())
+        // Figma 스펙: backdrop-blur(4px) + 검정 50% 불투명도. SwiftUI엔 배경 레이어를 실시간으로
+        // 블러하는 API가 마땅치 않아 블러는 재현하지 않고, 불투명도만 스펙대로 맞춘다.
+        // (`ultraThinMaterial`을 겹치면 밝은 톤이 섞여 스펙보다 더 옅어 보이므로 쓰지 않는다.)
         .background(Color.black.opacity(0.5), in: Capsule())
     }
 
