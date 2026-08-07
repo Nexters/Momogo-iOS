@@ -5,6 +5,7 @@ public extension ModulePath {
         case home = "Home"
         case onboarding = "Onboarding"
         case group = "Group"
+        case splash = "Splash"
 
         public static let name = "Feature"
     }

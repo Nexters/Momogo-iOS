@@ -7,7 +7,8 @@ let targets: [Target] = [
             .feature(implements: .home),
             .core,
             .feature(implements: .onboarding),
-            .feature(implements: .group)
+            .feature(implements: .group),
+            .feature(implements: .splash)
         ]
     ))
 ]
