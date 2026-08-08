@@ -40,7 +40,7 @@ struct TodayCardView: View {
 
             if showsInviteTooltip {
                 DSTooltip("초대코드를 받았나요?", arrowDirection: .up)
-                    .offset(x: 179, y: 70)
+                    .offset(x: 170, y: 70)
                     .transition(.opacity)
                     .task {
                         try? await Task.sleep(for: .seconds(3))
@@ -187,7 +187,7 @@ struct TodayCardView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 235)
-                .offset(x: 98, y: 121)
+                .offset(x: 115, y: 112)
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
