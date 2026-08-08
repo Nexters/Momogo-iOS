@@ -17,11 +17,15 @@ struct GroupCardView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
+            // Figma 스펙: 아이콘 자체는 9.2x16이지만 24x24 탭 슬롯 안에 중앙 정렬되어 있어, 카드
+            // 오른쪽 여백(pr-12 + 슬롯 인셋)만큼 자연스러운 여유가 생긴다. 색상은 원본 SVG의 실제
+            // fill(#464443=gray700)을 따른다 — gray400은 스펙보다 밝다.
             Image(asset: DesignSystemAsset.chevronRightFill)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 9, height: 16)
-                .foregroundStyle(DesignSystem.Color.gray400)
+                .foregroundStyle(DesignSystem.Color.gray700)
+                .frame(width: 24, height: 24)
         }
         .padding(.leading, 24)
         .padding(.trailing, 12)
