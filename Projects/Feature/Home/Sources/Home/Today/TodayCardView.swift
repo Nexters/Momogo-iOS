@@ -33,6 +33,11 @@ struct TodayCardView: View {
 
             content
 
+            // Figma 갱신 스펙: 카메라 버튼이 더 이상 콘텐츠 흐름에 끼워진 요소가 아니라, 카드 기준
+            // 절대좌표(30, 167)에 고정된 오버레이다.
+            cameraButton
+                .offset(x: 30, y: 167)
+
             if showsInviteTooltip {
                 DSTooltip("초대코드를 받았나요?", arrowDirection: .up)
                     .offset(x: 179, y: 70)
@@ -54,11 +59,6 @@ struct TodayCardView: View {
                 headlineBlock
             }
 
-            Spacer(minLength: 0)
-            // Figma 스펙: 카메라 버튼 컨테이너 자체에 왼쪽 패딩 20px이 있어, 헤드라인/CTA 버튼과 달리
-            // 콘텐츠 왼쪽선보다 20px 더 안쪽에서 시작한다.
-            cameraButton
-                .padding(.leading, 20)
             Spacer(minLength: 0)
             shootButton
         }
@@ -162,25 +162,32 @@ struct TodayCardView: View {
 
     private var illustration: some View {
         ZStack(alignment: .topLeading) {
+            // Figma 갱신 스펙에 추가된 큰 햇살 모양 장식(카메라 버튼 뒤쪽에 은은하게 깔림).
+            Image(asset: DesignSystemAsset.sparkleSun)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 70, height: 70)
+                .offset(x: 78, y: 240)
+
             Image(asset: DesignSystemAsset.sparkleStarLarge)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 34, height: 34)
-                .offset(x: 16, y: 238)
+                .offset(x: 18, y: 230)
 
             Image(asset: DesignSystemAsset.sparkleStarSmall)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 24, height: 24)
-                .offset(x: 110, y: 156)
+                .offset(x: 106, y: 186)
 
-            // 원본 SVG 실측 비율(269.4 x 329.6)을 그대로 사용하고, 카드 우/하단 경계에서
+            // 갱신된 원본 SVG 실측 비율(235.3 x 326.5)을 그대로 사용하고, 카드 우/하단 경계에서
             // 자연스럽게 잘리도록 배치한다(Figma도 카드 밖으로 넘치는 부분은 클립되어 보이지 않음).
             Image(asset: DesignSystemAsset.illustHomeBanner)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 269)
-                .offset(x: 108, y: 120)
+                .frame(width: 235)
+                .offset(x: 98, y: 121)
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
