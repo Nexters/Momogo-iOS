@@ -17,9 +17,10 @@ extension NetworkClient: DependencyKey {
     )
 }
 
-private let accessTokenStore = AccessTokenStore.liveValue
-private let refreshTokenStore = RefreshTokenStore.liveValue
-
+/// `NetworkClient.liveValue`는 프로세스에서 딱 한 번만 만들어지는 실제 네트워크 계층이라,
+/// provider(Moya 세션)와 tokenRefresher(동시 401을 묶는 상태)는 요청마다 다시 만들면 안 되는
+/// 진짜 싱글턴이라서 전역에 둔다. accessToken/refreshToken 스토어는 그럴 필요가 없어서
+/// 필요한 곳(providerPlugins, reissueAccessToken)에서 `@Dependency`로 그때그때 가져온다.
 private let provider = MoyaProvider<MultiTarget>(plugins: providerPlugins)
 
 /// 401 발생 시 accessToken을 재발급받는 흐름. 실제 재발급 호출/토큰 영속화는
@@ -27,6 +28,8 @@ private let provider = MoyaProvider<MultiTarget>(plugins: providerPlugins)
 private let tokenRefresher = TokenRefresher(refresh: reissueAccessToken)
 
 private var providerPlugins: [PluginType] {
+    @Dependency(\.accessTokenStore) var accessTokenStore
+
     var plugins: [PluginType] = [AuthorizationPlugin(tokenStore: accessTokenStore)]
     #if DEBUG
         plugins.append(NetworkLoggerPlugin())
@@ -87,6 +90,9 @@ func sendMoyaRequest(_ target: any TargetType, using provider: MoyaProvider<Mult
 /// 실패 시(리프레시 토큰 없음, 재발급 API 실패 등) `AuthDataSource.reissue`와 동일하게 토큰을 모두 clear한다.
 @Sendable
 private func reissueAccessToken() async throws {
+    @Dependency(\.accessTokenStore) var accessTokenStore
+    @Dependency(\.refreshTokenStore) var refreshTokenStore
+
     guard let refreshToken = refreshTokenStore.current() else {
         clearTokenPair(accessTokenStore: accessTokenStore, refreshTokenStore: refreshTokenStore)
         throw NetworkError.unauthorized(problem: nil)
