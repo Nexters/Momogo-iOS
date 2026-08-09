@@ -14,6 +14,7 @@ struct TodayCardView: View {
         Self.dateFormatter.string(from: Date())
     }
 
+    var hasGroups: Bool = true
     var onTapAddGroup: () -> Void = {}
     var onTapSettings: () -> Void = {}
     var onTapShoot: () -> Void = {}
@@ -93,11 +94,20 @@ struct TodayCardView: View {
         VStack(alignment: .leading, spacing: 4) {
             // Figma 스펙은 34px "BM DoHyeon OTF"지만 DesignSystem에 해당 폰트가 없어(폰트 리소스 추가는
             // 스코프 밖) 가장 가까운 크기인 heading32(32pt)로 근사한다.
-            Text("오늘 모모고?")
+            if hasGroups {
+                Text("오늘 모모고?")
+                    .momogoTypography(.heading32)
+                    .foregroundStyle(DesignSystem.Color.gray950)
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("모모고?")
+                    Text("가치모고!")
+                }
                 .momogoTypography(.heading32)
                 .foregroundStyle(DesignSystem.Color.gray950)
+            }
 
-            Text("오늘의 점심 메뉴를 찍어볼까요?")
+            Text(hasGroups ? "오늘의 점심 메뉴를 찍어볼까요?" : "점심 사진으로 연결되는 사이")
                 .momogoTypography(.smMedium)
                 .foregroundStyle(DesignSystem.Color.gray700)
         }
@@ -141,13 +151,15 @@ struct TodayCardView: View {
     private var shootButton: some View {
         Button(action: onTapShoot) {
             HStack(spacing: 6) {
-                Text("오늘의 점심 촬영하러 가기")
+                Text(hasGroups ? "오늘의 점심 촬영하러 가기" : "새 그룹 만들러 가기")
                     .momogoTypography(.lgSemistrong)
 
-                Image(asset: DesignSystemAsset.arrowRight)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 14, height: 12)
+                if hasGroups {
+                    Image(asset: DesignSystemAsset.arrowRight)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 14, height: 12)
+                }
             }
             .foregroundStyle(DesignSystem.Color.white)
             .frame(maxWidth: .infinity)

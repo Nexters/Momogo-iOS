@@ -9,22 +9,32 @@ public struct HomeView: View {
         _viewModel = State(initialValue: viewModel)
     }
 
+    private var isGroupEmpty: Bool {
+        viewModel.hasLoaded && viewModel.groups.isEmpty
+    }
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                TodayCardView()
+                TodayCardView(hasGroups: !isGroupEmpty)
 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("내 그룹")
                         .momogoTypography(.heading20)
                         .foregroundStyle(DesignSystem.Color.gray50)
 
-                    ForEach(viewModel.groups, id: \.groupId) { group in
-                        GroupCardView(group: group)
+                    if isGroupEmpty {
+                        GroupEmptyView()
+                    } else {
+                        ForEach(viewModel.groups, id: \.groupId) { group in
+                            GroupCardView(group: group)
+                        }
                     }
                 }
 
-                ReactionCardView(posterCount: viewModel.todayPosterCount)
+                if !isGroupEmpty {
+                    ReactionCardView(posterCount: viewModel.todayPosterCount)
+                }
 
                 // 플로우 검증용 임시 버튼들 — Settings 화면이 생기면 그쪽으로 옮기고 여기서는 제거한다.
                 VStack(alignment: .leading, spacing: 8) {
