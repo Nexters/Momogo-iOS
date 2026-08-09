@@ -73,8 +73,9 @@ struct TodayCardView: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 10) {
-                headerIconButton(DesignSystemAsset.plus, accessibilityLabel: "그룹 추가", action: onTapAddGroup)
-                headerIconButton(DesignSystemAsset.settings, accessibilityLabel: "설정", action: onTapSettings)
+                HomeHeaderIconButton(asset: DesignSystemAsset.plus, accessibilityLabel: "그룹 추가", action: onTapAddGroup)
+                    .dsMenuAnchor()
+                HomeHeaderIconButton(asset: DesignSystemAsset.settings, accessibilityLabel: "설정", action: onTapSettings)
             }
         }
     }
@@ -111,23 +112,6 @@ struct TodayCardView: View {
                 .momogoTypography(.smMedium)
                 .foregroundStyle(DesignSystem.Color.gray700)
         }
-    }
-
-    private func headerIconButton(
-        _ asset: DesignSystemImages,
-        accessibilityLabel: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(asset: asset)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20, height: 20)
-                .foregroundStyle(DesignSystem.Color.white)
-                .padding(12)
-                .background(DesignSystem.Color.gray800, in: Circle())
-        }
-        .accessibilityLabel(accessibilityLabel)
     }
 
     private var cameraButton: some View {

@@ -16,6 +16,7 @@ enum DesignSystemCategory: String, CaseIterable, Identifiable {
     case alert
     case bottomSheet
     case navigation
+    case menu
 
     var id: String { rawValue }
 
@@ -34,6 +35,7 @@ enum DesignSystemCategory: String, CaseIterable, Identifiable {
         case .alert: "Alert"
         case .bottomSheet: "Bottom Sheet"
         case .navigation: "Navigation"
+        case .menu: "Menu"
         }
     }
 }
@@ -82,6 +84,7 @@ struct DesignSystemDetailView: View {
         case .alert: alertSection
         case .bottomSheet: bottomSheetSection
         case .navigation: navigationSection
+        case .menu: menuSection
         }
     }
 
@@ -254,6 +257,13 @@ struct DesignSystemDetailView: View {
                 onClose: {}
             )
         }
+    }
+
+    private var menuSection: some View {
+        DSMenu([
+            DSMenu.Item("그룹 생성", icon: DesignSystemAsset.usersThree, action: {}),
+            DSMenu.Item("그룹 참여", icon: DesignSystemAsset.login, action: {})
+        ])
     }
 
     private var alertSection: some View {

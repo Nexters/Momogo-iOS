@@ -9,6 +9,9 @@ public struct HomeView: View {
         _viewModel = State(initialValue: viewModel)
     }
 
+    /// 순수 UI 상태라 ViewModel이 아닌 View가 소유한다(`TodayCardView.showsInviteTooltip`과 동일한 원칙).
+    @State private var isAddGroupMenuPresented = false
+
     private var isGroupEmpty: Bool {
         viewModel.hasLoaded && viewModel.groups.isEmpty
     }
@@ -16,7 +19,10 @@ public struct HomeView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                TodayCardView(hasGroups: !isGroupEmpty)
+                TodayCardView(
+                    hasGroups: !isGroupEmpty,
+                    onTapAddGroup: { withAnimation { isAddGroupMenuPresented.toggle() } }
+                )
 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("내 그룹")
@@ -49,6 +55,19 @@ public struct HomeView: View {
             .padding(.bottom, 40)
         }
         .background(DesignSystem.Color.gray950.ignoresSafeArea())
+        // 딤·메뉴는 ScrollView 바깥에 걸어야 화면 전체를 덮고 스크롤에 클리핑되지 않는다.
+        .momogoMenuOverlay(
+            isPresented: $isAddGroupMenuPresented,
+            items: [
+                DSMenu.Item("그룹 생성", icon: DesignSystemAsset.usersThree, action: {}),
+                DSMenu.Item("그룹 참여", icon: DesignSystemAsset.login, action: {})
+            ],
+            anchorContent: {
+                HomeHeaderIconButton(asset: DesignSystemAsset.plus, accessibilityLabel: "그룹 추가") {
+                    withAnimation { isAddGroupMenuPresented.toggle() }
+                }
+            }
+        )
         .task {
             await viewModel.load()
         }
