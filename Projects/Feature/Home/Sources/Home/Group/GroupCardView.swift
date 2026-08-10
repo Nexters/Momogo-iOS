@@ -39,7 +39,7 @@ struct GroupCardView: View {
     /// 업로드 완료 상태 색으로 채우는 방식으로 근사한다.
     private var memberDots: some View {
         HStack(spacing: 3) {
-            ForEach(0..<group.totalMemberCount, id: \.self) { index in
+            ForEach(0 ..< group.totalMemberCount, id: \.self) { index in
                 Image(asset: DesignSystemAsset.memberDot)
                     .resizable()
                     .scaledToFit()
