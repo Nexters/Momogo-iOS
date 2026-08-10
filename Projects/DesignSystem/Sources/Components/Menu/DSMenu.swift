@@ -35,9 +35,12 @@ public struct DSMenu: View {
                 }
             }
         }
-        .frame(width: width)
         .padding(.horizontal, 12)
         .padding(.vertical, 4)
+        // `width`는 Figma 스펙상 패딩을 포함한 컨테이너 전체 폭이다. 패딩 앞에 frame을 걸면
+        // 내부 VStack만 158이 되고 패딩이 그 바깥에 더해져 실제 폭이 182로 부풀어, 오버레이가
+        // trailing 정렬을 계산할 때 기준으로 삼는 `DSMenu.defaultWidth`와 어긋난다.
+        .frame(width: width)
         .background(DesignSystem.Color.gray900)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
         .overlay {

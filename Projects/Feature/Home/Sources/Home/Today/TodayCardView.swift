@@ -19,6 +19,15 @@ struct TodayCardView: View {
     var onTapSettings: () -> Void = {}
     var onTapShoot: () -> Void = {}
 
+    private let cameraSize: CGFloat = 75
+    /// Figma 스펙: 카드 leading 기준 30px. `headlineBlock`은 `content`의 16px 패딩 안쪽에서 시작하므로
+    /// 그 차이(30-16)만큼만 추가로 민다.
+    private let cameraLeadingOffset: CGFloat = 14
+    /// Figma 스펙: 라벨(헤드라인+서브텍스트) 하단에서 25px. hasGroups에 따라 헤드라인이 1줄/2줄로
+    /// 바뀌어 라벨의 실제 높이가 달라지므로, 카드 기준 절대 y좌표 대신 라벨의 실제 렌더링된 하단을
+    /// 기준으로 계산해야 헤드라인이 길어져도 라벨을 침범하지 않는다.
+    private let cameraTopGap: CGFloat = 25
+
     /// Figma 스펙: 툴팁은 3초 후 자동으로 사라짐(`DSTooltip` 내부 처리)
     @State private var showsInviteTooltip = true
 
@@ -33,11 +42,6 @@ struct TodayCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
 
             content
-
-            // Figma 갱신 스펙: 카메라 버튼이 더 이상 콘텐츠 흐름에 끼워진 요소가 아니라, 카드 기준
-            // 절대좌표(30, 167)에 고정된 오버레이다.
-            cameraButton
-                .offset(x: 30, y: 167)
 
             if showsInviteTooltip {
                 DSTooltip("초대코드를 받았나요?", arrowDirection: .up)
@@ -112,6 +116,13 @@ struct TodayCardView: View {
                 .momogoTypography(.smMedium)
                 .foregroundStyle(DesignSystem.Color.gray700)
         }
+        // `.overlay(alignment: .bottomLeading)`는 카메라의 bottomLeading 모서리를 라벨의 bottomLeading
+        // 모서리에 맞춘다(= 라벨 위에 겹쳐 위로 확장). 카메라 자신의 높이만큼 아래로 밀어 "겹침"을
+        // "라벨 바로 아래 flush"로 바꾼 뒤, 거기서 gap만큼 더 내린다.
+        .overlay(alignment: .bottomLeading) {
+            cameraButton
+                .offset(x: cameraLeadingOffset, y: cameraSize + cameraTopGap)
+        }
     }
 
     private var cameraButton: some View {
@@ -126,7 +137,7 @@ struct TodayCardView: View {
                 .frame(width: 18, height: 18)
                 .foregroundStyle(DesignSystem.Color.gray400)
         }
-        .frame(width: 75, height: 75)
+        .frame(width: cameraSize, height: cameraSize)
         .rotationEffect(.degrees(-2))
         .momogoShadow()
         .accessibilityHidden(true)
