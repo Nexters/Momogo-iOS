@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>강제 업데이트 로직 — #34</title>
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface-sunken: #efeae0;
+    --text: #1d1c1c;
+    --text-dim: #6b6864;
+    --border: #e3ddd0;
+    --accent: #b8790a;
+    --accent-soft: #f1e2c0;
+    --warn: #a63a2c;
+    --warn-soft: #f3ddd6;
+    --code-bg: #efe9dd;
+    --shadow: 0 1px 2px rgba(29, 28, 28, 0.06), 0 8px 24px rgba(29, 28, 28, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1d1c1c;
+      --surface: #242322;
+      --surface-sunken: #171615;
+      --text: #efefef;
+      --text-dim: #969494;
+      --border: #35332f;
+      --accent: #ffcc42;
+      --accent-soft: #3a331c;
+      --warn: #e2685a;
+      --warn-soft: #3a2320;
+      --code-bg: #171615;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1d1c1c;
+    --surface: #242322;
+    --surface-sunken: #171615;
+    --text: #efefef;
+    --text-dim: #969494;
+    --border: #35332f;
+    --accent: #ffcc42;
+    --accent-soft: #3a331c;
+    --warn: #e2685a;
+    --warn-soft: #3a2320;
+    --code-bg: #171615;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 64px 24px 96px;
+    line-height: 1.6;
+  }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 18px;
+    height: 2px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .meta-row span b {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  code, .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    font-size: 0.92em;
+  }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  h2 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  h2 .num {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 -4px;
+  }
+
+  p { margin: 0; max-width: 66ch; }
+
+  p + p { margin-top: -8px; }
+
+  ul, ol {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 64ch;
+  }
+
+  li { padding-left: 2px; }
+
+  a { color: var(--accent); }
+
+  .codeblock {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+  }
+
+  .codeblock pre {
+    margin: 0;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    white-space: pre;
+  }
+
+  .codeblock .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .cmt { color: var(--text-dim); }
+  .kw  { color: var(--accent); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  caption {
+    text-align: left;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  .table-wrap table { min-width: 480px; }
+  .table-wrap th:first-child, .table-wrap td:first-child { padding-left: 16px; }
+
+  .row-block td { background: color-mix(in srgb, var(--warn) 6%, transparent); }
+
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  figure .diagram-frame {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 12px 8px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+
+  svg { display: block; max-width: 100%; height: auto; color: var(--text); }
+  svg text { fill: currentColor; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  figcaption {
+    font-size: 13px;
+    color: var(--text-dim);
+    max-width: 62ch;
+  }
+
+  .callout {
+    display: flex;
+    gap: 12px;
+    border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+    background: var(--warn-soft);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .callout .mark {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--warn);
+    color: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .callout .body { display: flex; flex-direction: column; gap: 4px; }
+  .callout .body b { font-size: 14px; }
+  .callout .body p { font-size: 13.5px; color: var(--text-dim); max-width: 58ch; }
+
+  .layer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .layer-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .layer-card .name {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+  }
+
+  .layer-card ul { gap: 4px; }
+  .layer-card li {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    list-style: none;
+    padding-left: 0;
+  }
+  .layer-card li code { color: var(--text); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 40px 16px 72px; }
+    h1 { font-size: 27px; }
+    .layer-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <div class="eyebrow">Spec · Momogo iOS</div>
+    <h1>강제 업데이트 로직</h1>
+    <p class="subtitle">
+      스플래시 화면에서 서버가 판정한 <code>forceUpdate</code> 결과에 따라 앱 진입을
+      차단하고 스토어로 안내하는 기능의 동작 원리를 정리한다.
+    </p>
+    <div class="meta-row">
+      <span>이슈 <b>#34</b></span>
+      <span>브랜치 <b class="mono">feature/034-force-version-update</b></span>
+      <span>모듈 <b>FeatureSplash · DomainInterface · Domain · Data · DesignSystem</b></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> 개요</h2>
+    <p>
+      이 앱은 그동안 버전 체크가 전혀 없어서, 서버가 하위 호환을 깨는 변경을 배포해도
+      구버전 사용자는 계속 앱을 쓰다 정체불명의 오류를 만났다. 스플래시 화면은 세션(Access/Refresh
+      Token) 유효성을 확인해 <code>Home</code> 또는 <code>Onboarding</code>으로 라우팅하는 로직을
+      이미 갖고 있었는데, 이번 작업은 같은 지점에 <b>버전 체크를 병렬로 추가</b>해서
+      <code>forceUpdate == true</code>일 때 라우팅 자체를 가로막는다.
+    </p>
+    <p>
+      판정 기준은 서버의 <code>forceUpdate</code> 플래그 하나뿐이다. 클라이언트는 시맨틱 버전을
+      비교하지 않고, API 실패·타임아웃 시에는 차단하지 않고 통과시킨다(fail-open).
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> API 계약</h2>
+    <p>
+      <code>/init/versions</code>는 다른 API와 달리 <code>/api/v1</code> 경로가 붙지 않는
+      루트 엔드포인트다. 그래서 <code>NetworkConfiguration</code>은 기존 <code>baseURL</code>에서
+      path를 통째로 제거한 <code>rootURL</code>을 별도로 파생시키고, <code>VersionTargetType</code>이
+      이걸로 <code>baseURL</code>을 override한다.
+    </p>
+    <div class="codeblock">
+      <span class="label">Request</span>
+      <pre>GET {rootURL}/init/versions?platform=IOS&amp;appVersion={CFBundleShortVersionString}
+<span class="cmt">Authorization 헤더 없음 — 스플래시 시점엔 토큰이 없을 수 있어 requiresAuthorization = false</span></pre>
+    </div>
+    <div class="codeblock">
+      <span class="label">Response · AppVersionResponseDTO</span>
+      <pre>{
+  <span class="kw">"latestVersion"</span>:        <span class="cmt">"1.0.0",   // 이번 판정 로직엔 미사용 (선택 업데이트 확장 대비)</span>
+  <span class="kw">"minSupportedVersion"</span>:  <span class="cmt">"1.0.0",   // 동일</span>
+  <span class="kw">"forceUpdate"</span>:          <span class="cmt">false,     // 유일한 판정 신호</span>
+  <span class="kw">"updateUrl"</span>:            <span class="cmt">"https://apps.apple.com/app/id000000000"</span>
+}</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> 호출 경로</h2>
+    <p>
+      <code>ViewModel</code>은 Repository를 직접 부르지 않고 항상 UseCase를 거친다. 각 계층은
+      자신의 모듈 경계 안에서만 타입을 알고, 실제 구현(<code>liveValue</code>)은 한 단계 아래
+      모듈에 있다.
+    </p>
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 960 280" role="img" aria-label="SplashView가 .task에서 SplashViewModel.start()를 호출하면, DomainInterface의 CheckAppVersionUseCase를 거쳐 Domain의 liveValue, Data의 VersionRepository와 VersionDataSource를 지나 GET /init/versions를 호출하고, 결과(AppVersionCheckResult) 또는 실패 시 nil이 같은 경로를 거슬러 되돌아온다.">
+          <!-- module groups -->
+          <rect x="20" y="30" width="230" height="190" rx="12" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="3,4"/>
+          <text x="34" y="20" font-size="11" font-weight="700" letter-spacing="0.04em" fill="currentColor" opacity="0.6">FEATURE</text>
+
+          <rect x="270" y="30" width="220" height="190" rx="12" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="3,4"/>
+          <text x="284" y="20" font-size="11" font-weight="700" letter-spacing="0.04em" fill="currentColor" opacity="0.6">DOMAIN</text>
+
+          <rect x="510" y="30" width="230" height="190" rx="12" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="3,4"/>
+          <text x="524" y="20" font-size="11" font-weight="700" letter-spacing="0.04em" fill="currentColor" opacity="0.6">DATA</text>
+
+          <!-- Feature boxes -->
+          <rect x="40" y="60" width="190" height="42" rx="8" fill="var(--surface)" stroke="currentColor" stroke-opacity="0.55"/>
+          <text x="135" y="86" font-size="12" text-anchor="middle" class="mono">SplashView</text>
+
+          <rect x="40" y="150" width="190" height="42" rx="8" fill="var(--surface)" stroke="currentColor" stroke-opacity="0.55"/>
+          <text x="135" y="176" font-size="12" text-anchor="middle" class="mono">SplashViewModel</text>
+
+          <line x1="135" y1="102" x2="135" y2="150" stroke="currentColor" marker-end="url(#arrow)"/>
+          <text x="145" y="130" font-size="10" fill="currentColor" opacity="0.65">.task { start() }</text>
+
+          <!-- Domain boxes -->
+          <rect x="290" y="60" width="180" height="42" rx="8" fill="var(--surface)" stroke="currentColor" stroke-opacity="0.55"/>
+          <text x="380" y="80" font-size="11.5" text-anchor="middle" class="mono">CheckAppVersionUseCase</text>
+          <text x="380" y="94" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.6">(Interface)</text>
+
+          <rect x="290" y="150" width="180" height="42" rx="8" fill="var(--surface)" stroke="currentColor" stroke-opacity="0.55"/>
+          <text x="380" y="170" font-size="11.5" text-anchor="middle" class="mono">+Live</text>
+          <text x="380" y="184" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.6">@Dependency(versionRepository)</text>
+
+          <line x1="380" y1="102" x2="380" y2="150" stroke="currentColor" marker-end="url(#arrow)"/>
+
+          <line x1="230" y1="171" x2="290" y2="81" stroke="currentColor" marker-end="url(#arrow)"/>
+          <text x="238" y="118" font-size="10" fill="currentColor" opacity="0.65">execute()</text>
+
+          <!-- Data boxes -->
+          <rect x="530" y="60" width="190" height="42" rx="8" fill="var(--surface)" stroke="currentColor" stroke-opacity="0.55"/>
+          <text x="625" y="80" font-size="11.5" text-anchor="middle" class="mono">VersionRepository+Live</text>
+
+          <rect x="530" y="150" width="190" height="42" rx="8" fill="var(--surface)" stroke="currentColor" stroke-opacity="0.55"/>
+          <text x="625" y="170" font-size="11.5" text-anchor="middle" class="mono">VersionDataSource</text>
+          <text x="625" y="184" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.6">→ NetworkClient</text>
+
+          <line x1="625" y1="102" x2="625" y2="150" stroke="currentColor" marker-end="url(#arrow)"/>
+
+          <line x1="470" y1="171" x2="530" y2="81" stroke="currentColor" marker-end="url(#arrow)"/>
+          <text x="478" y="118" font-size="10" fill="currentColor" opacity="0.65">checkAppVersion()</text>
+
+          <!-- external -->
+          <rect x="780" y="150" width="150" height="42" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <text x="855" y="176" font-size="11" text-anchor="middle" class="mono">GET /init/versions</text>
+
+          <line x1="720" y1="171" x2="780" y2="171" stroke="currentColor" marker-end="url(#arrow)"/>
+
+          <!-- return path -->
+          <path d="M 855 192 L 855 245 L 135 245 L 135 192" fill="none" stroke="currentColor" stroke-opacity="0.55" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
+          <text x="490" y="262" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">AppVersionCheckResult · 실패/타임아웃 시 nil (fail-open)</text>
+
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <figcaption>
+        View는 UseCase만 알고, UseCase의 <code>liveValue</code>가 Repository를, Repository의
+        <code>liveValue</code>가 DataSource를 부른다. 실패·타임아웃 시 결과는 다시 <code>nil</code>로
+        같은 경로를 되짚어 온다 — 별도의 에러 채널이 없다.
+      </figcaption>
+    </figure>
+
+    <div class="layer-grid">
+      <div class="layer-card">
+        <span class="name">Domain Interface</span>
+        <ul>
+          <li><code>Model/Version/VersionModels.swift</code></li>
+          <li><code>Repository/Version/VersionRepository.swift</code></li>
+          <li><code>UseCase/Version/CheckAppVersionUseCase.swift</code></li>
+        </ul>
+      </div>
+      <div class="layer-card">
+        <span class="name">Domain</span>
+        <ul>
+          <li><code>Sources/Version/CheckAppVersionUseCase+Live.swift</code></li>
+        </ul>
+      </div>
+      <div class="layer-card">
+        <span class="name">Data</span>
+        <ul>
+          <li><code>Version/VersionTargetType.swift</code></li>
+          <li><code>Version/AppVersionResponseDTO.swift</code></li>
+          <li><code>Version/VersionDataSource(+Live).swift</code></li>
+          <li><code>Repository/Version/VersionRepository+Live.swift</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> 스플래시 실행 타임라인</h2>
+    <p>
+      <code>SplashViewModel.start()</code>는 버전 체크와 세션 체크를 <code>async let</code>으로
+      동시에 띄우고, 각각 독립적으로 5초 타임아웃을 갖는다. 다만 최종 분기는 <b>두 결과를 튜플로
+      묶어 함께 기다린 뒤</b>에야 일어난다 — 버전 체크가 먼저 끝나도 세션 체크가 끝날 때까지는
+      대기 상태로 남는다.
+    </p>
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 960 340" role="img" aria-label="버전 체크가 0.4초 만에 forceUpdate 결과를 확보해도, 세션 체크가 5초 타임아웃까지 끝나지 않으면 두 결과를 함께 기다리는 지점(await 튜플)이 5초 시점까지 미뤄진다. 그 이후 url이 있으면 모달을 표시해 진입을 차단하고, 없으면 onFinish로 진행한다.">
+          <!-- axis -->
+          <line x1="90" y1="40" x2="710" y2="40" stroke="currentColor" stroke-opacity="0.5"/>
+          <g font-size="10" fill="currentColor" opacity="0.6" text-anchor="middle">
+            <line x1="100" y1="36" x2="100" y2="44" stroke="currentColor" stroke-opacity="0.5"/>
+            <text x="100" y="56">0s</text>
+            <line x1="228" y1="36" x2="228" y2="44" stroke="currentColor" stroke-opacity="0.5"/>
+            <text x="228" y="56">1s</text>
+            <line x1="356" y1="36" x2="356" y2="44" stroke="currentColor" stroke-opacity="0.5"/>
+            <text x="356" y="56">2s</text>
+            <line x1="484" y1="36" x2="484" y2="44" stroke="currentColor" stroke-opacity="0.5"/>
+            <text x="484" y="56">3s</text>
+            <line x1="612" y1="36" x2="612" y2="44" stroke="currentColor" stroke-opacity="0.5"/>
+            <text x="612" y="56">4s</text>
+            <line x1="700" y1="36" x2="700" y2="44" stroke="currentColor" stroke-opacity="0.5"/>
+            <text x="700" y="56">5s</text>
+          </g>
+
+          <!-- minimum exposure floor -->
+          <line x1="356" y1="40" x2="356" y2="300" stroke="currentColor" stroke-opacity="0.3" stroke-dasharray="2,4"/>
+          <text x="356" y="24" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.55">최소 노출 2초</text>
+
+          <!-- lane A: version check -->
+          <text x="30" y="99" font-size="11.5" font-weight="600">버전 체크</text>
+          <rect x="100" y="84" width="60" height="26" rx="4" fill="var(--accent)"/>
+          <text x="130" y="78" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.75">0.4s</text>
+          <line x1="160" y1="97" x2="700" y2="97" stroke="currentColor" stroke-opacity="0.45" stroke-dasharray="2,4"/>
+          <text x="430" y="88" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.6">forceUpdate 결과 확보, 대기 중</text>
+
+          <!-- lane B: session check -->
+          <text x="30" y="179" font-size="11.5" font-weight="600">세션 체크</text>
+          <rect x="100" y="164" width="600" height="26" rx="4" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-opacity="0.4"/>
+          <text x="400" y="181" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">5.0s 타임아웃 → onboarding으로 폴백</text>
+
+          <!-- connectors to merge -->
+          <line x1="700" y1="97" x2="700" y2="235" stroke="currentColor" stroke-opacity="0.45" stroke-dasharray="2,4"/>
+          <line x1="700" y1="190" x2="700" y2="235" stroke="currentColor" marker-end="url(#arrow2)"/>
+          <circle cx="700" cy="240" r="4" fill="currentColor"/>
+          <text x="700" y="258" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">await (storeURL, destination)</text>
+
+          <!-- branch -->
+          <line x1="700" y1="240" x2="700" y2="272" stroke="currentColor"/>
+          <line x1="700" y1="272" x2="560" y2="300" stroke="currentColor" marker-end="url(#arrow2)"/>
+          <line x1="700" y1="272" x2="840" y2="300" stroke="currentColor" marker-end="url(#arrow2)"/>
+          <text x="605" y="285" font-size="10" fill="currentColor" opacity="0.7">url ≠ nil</text>
+          <text x="790" y="285" font-size="10" fill="currentColor" opacity="0.7">url = nil</text>
+
+          <rect x="460" y="304" width="200" height="30" rx="6" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <text x="560" y="323" font-size="10.5" text-anchor="middle">모달 표시 · 진입 차단</text>
+
+          <rect x="740" y="304" width="200" height="30" rx="6" fill="var(--surface)" stroke="currentColor" stroke-opacity="0.4"/>
+          <text x="840" y="323" font-size="10.5" text-anchor="middle">onFinish(destination)</text>
+
+          <defs>
+            <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <figcaption>
+        버전 체크가 0.4초 만에 <code>forceUpdate: true</code>를 확보해도, 세션 체크가 5초
+        타임아웃까지 끝나지 않으면 분기점(<code>await (storeURL, destination)</code>)은 5초
+        시점까지 미뤄진다 — 이미 알고 있는 차단 결정이 무관한 네트워크 호출 때문에 늦게 반영되는
+        지점이다.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> 모달 UI</h2>
+    <p>
+      <code>DesignSystem</code>의 기존 <code>DSModal</code> + <code>momogoModalOverlay</code>를
+      그대로 재사용한다. <code>onClose</code>와 <code>secondaryTitle</code>을 넘기지 않으면
+      X 버튼도 보조 버튼도 렌더링되지 않고, 오버레이 자체에 dim 탭 제스처가 없어 닫을 방법이
+      없다 — 이번 기능이 이 컴포넌트의 첫 실사용 사례다.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>속성</th><th>값</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td>컨테이너 패딩</td><td>top 24 · h 16 · bottom 16</td><td>Figma 실측과 픽셀 단위 일치</td></tr>
+          <tr><td>Wrap ↔ Button 간격</td><td>24pt</td><td>기존 16pt에서 수정</td></tr>
+          <tr><td>Title ↔ Description 간격</td><td>8pt</td><td></td></tr>
+          <tr><td>버튼 높이</td><td>48pt</td><td><code>.large</code> 사이즈, 패딩만으로 산출</td></tr>
+          <tr><td>오버레이 여백</td><td>24pt</td><td>화면 좌우</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <span>worktree · <code class="mono">.claude/worktrees/feature/034-force-version-update</code></span>
+    <span>2026-08-10</span>
+  </footer>
+
+</main>
+</body>
+</html>
