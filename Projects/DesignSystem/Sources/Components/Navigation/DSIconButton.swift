@@ -9,9 +9,11 @@ public struct DSIconButton: View {
     }
 
     /// `circular`은 nav bar 위에 얹히는 반투명 흰색 원형 배경 버튼.
+    /// `filled`은 홈 배너처럼 어두운 배경 위에 얹히는 불투명 `gray800` 원형 배경 버튼.
     public enum Style {
         case plain
         case circular
+        case filled
     }
 
     private let icon: Icon
@@ -35,8 +37,13 @@ public struct DSIconButton: View {
                 .frame(width: iconSize, height: iconSize)
                 .padding(padding)
                 .background {
-                    if style == .circular {
+                    switch style {
+                    case .plain:
+                        EmptyView()
+                    case .circular:
                         Circle().fill(DesignSystem.Color.white.opacity(0.5))
+                    case .filled:
+                        Circle().fill(DesignSystem.Color.gray800)
                     }
                 }
         }
@@ -62,10 +69,14 @@ public struct DSIconButton: View {
     }
 
     private var iconSize: CGFloat {
-        style == .circular ? 20 : 24
+        style == .plain ? 24 : 20
     }
 
     private var padding: CGFloat {
-        style == .circular ? 8 : 0
+        switch style {
+        case .plain: 0
+        case .circular: 8
+        case .filled: 12
+        }
     }
 }

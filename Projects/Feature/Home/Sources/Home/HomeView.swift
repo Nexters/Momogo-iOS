@@ -9,22 +9,35 @@ public struct HomeView: View {
         _viewModel = State(initialValue: viewModel)
     }
 
+    /// 순수 UI 상태라 ViewModel이 아닌 View가 소유한다.
+    @State private var isAddGroupMenuPresented = false
+
+    private var isGroupEmpty: Bool {
+        viewModel.hasLoaded && viewModel.groups.isEmpty
+    }
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                TodayCardView()
+                TodayCardView(hasGroups: !isGroupEmpty, onTapAddGroup: toggleAddGroupMenu)
 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("내 그룹")
                         .momogoTypography(.heading20)
                         .foregroundStyle(DesignSystem.Color.gray50)
 
-                    ForEach(viewModel.groups, id: \.groupId) { group in
-                        GroupCardView(group: group)
+                    if isGroupEmpty {
+                        GroupEmptyView()
+                    } else {
+                        ForEach(viewModel.groups) { group in
+                            GroupCardView(group: group)
+                        }
                     }
                 }
 
-                ReactionCardView(posterCount: viewModel.todayPosterCount)
+                if !isGroupEmpty {
+                    ReactionCardView(posterCount: viewModel.todayPosterCount)
+                }
 
                 // 플로우 검증용 임시 버튼들 — Settings 화면이 생기면 그쪽으로 옮기고 여기서는 제거한다.
                 VStack(alignment: .leading, spacing: 8) {
@@ -39,20 +52,23 @@ public struct HomeView: View {
             .padding(.bottom, 40)
         }
         .background(DesignSystem.Color.gray950.ignoresSafeArea())
-        .safeAreaInset(edge: .top) {
-            DSTopNavigationBar(
-                leading: { DSNavigationLogo() },
-                trailing: {
-                    HStack(spacing: 12) {
-                        DSIconButton(.plus, style: .circular, action: {})
-                        DSIconButton(.settings, style: .circular, action: {})
-                    }
-                }
-            )
-            .background(DesignSystem.Color.gray950)
-        }
+        // 딤·메뉴는 ScrollView 바깥에 걸어야 화면 전체를 덮고 스크롤에 클리핑되지 않는다.
+        .momogoMenuOverlay(
+            isPresented: $isAddGroupMenuPresented,
+            items: [
+                DSMenu.Item("그룹 생성", icon: DesignSystemAsset.usersThree, action: {}),
+                DSMenu.Item("그룹 참여", icon: DesignSystemAsset.login, action: {})
+            ],
+            anchorContent: {
+                DSIconButton(.plus, style: .filled, action: toggleAddGroupMenu)
+            }
+        )
         .task {
             await viewModel.load()
         }
+    }
+
+    private func toggleAddGroupMenu() {
+        withAnimation { isAddGroupMenuPresented.toggle() }
     }
 }

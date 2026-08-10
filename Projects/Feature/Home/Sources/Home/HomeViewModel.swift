@@ -9,6 +9,8 @@ public final class HomeViewModel {
     var groups: [GroupSummary] = []
     var isLoading: Bool = false
     var errorMessage: String?
+    /// 최초 로드 완료 여부. `groups.isEmpty`만으로는 로드 전 초기값과 실제 빈 상태를 구분할 수 없다.
+    private(set) var hasLoaded: Bool = false
 
     @ObservationIgnored
     @Dependency(\.getGroupsUseCase) private var getGroupsUseCase
@@ -31,7 +33,10 @@ public final class HomeViewModel {
     func load() async {
         isLoading = true
         errorMessage = nil
-        defer { isLoading = false }
+        defer {
+            isLoading = false
+            hasLoaded = true
+        }
 
         do {
             groups = try await getGroupsUseCase.execute().groups

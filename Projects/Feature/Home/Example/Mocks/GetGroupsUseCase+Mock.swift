@@ -23,6 +23,11 @@ extension GetGroupsUseCase {
         ])
     }
 
+    static let emptyPath = GetGroupsUseCase {
+        try? await Task.sleep(for: .seconds(0.4))
+        return GetGroupsResponse(groups: [])
+    }
+
     static let failedPath = GetGroupsUseCase {
         try? await Task.sleep(for: .seconds(0.4))
         throw GetGroupsMockError.failed
