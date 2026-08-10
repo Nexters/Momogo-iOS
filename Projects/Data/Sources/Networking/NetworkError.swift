@@ -6,6 +6,7 @@ public struct ProblemDetail: Decodable, Sendable {
     public let status: Int
     public let detail: String
     public let instance: String?
+    public let code: String?
 }
 
 public enum NetworkError: Error {

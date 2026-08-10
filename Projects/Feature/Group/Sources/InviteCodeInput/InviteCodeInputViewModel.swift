@@ -1,6 +1,7 @@
 import Foundation
 
 import Dependencies
+import DesignSystem
 import DomainInterface
 import SwiftUINavigation
 
@@ -21,7 +22,7 @@ public final class InviteCodeInputViewModel {
 
     var destination: Destination?
     var isLoading: Bool = false
-    var errorMessage: String?
+    var toast: DSTopToastContent?
 
     @ObservationIgnored
     @Dependency(\.checkGroupByCodeUseCase) private var checkGroupByCodeUseCase
@@ -51,7 +52,7 @@ public final class InviteCodeInputViewModel {
         guard !isLoading, isJoinEnabled else { return }
 
         isLoading = true
-        errorMessage = nil
+        toast = nil
 
         Task {
             defer { isLoading = false }
@@ -61,8 +62,10 @@ public final class InviteCodeInputViewModel {
                 _ = try await joinGroupByCodeUseCase.execute(code)
                 let joinConfirmViewModel = JoinConfirmViewModel(groupName: groupInfo.groupName, onFinish: onFinish)
                 destination = .joinConfirm(joinConfirmViewModel)
+            } catch let error as GroupJoinError {
+                toast = DSTopToastContent(error)
             } catch {
-                errorMessage = "잠시 후 다시 시도해주세요."
+                toast = .fallback
             }
         }
     }

@@ -13,6 +13,16 @@ extension JoinGroupByCodeUseCase {
         try? await Task.sleep(for: .seconds(0.4))
         throw JoinGroupByCodeMockError.failed
     }
+
+    static let groupFullPath = JoinGroupByCodeUseCase { _ in
+        try? await Task.sleep(for: .seconds(0.4))
+        throw GroupJoinError.groupFull
+    }
+
+    static let alreadyJoinedPath = JoinGroupByCodeUseCase { _ in
+        try? await Task.sleep(for: .seconds(0.4))
+        throw GroupJoinError.alreadyJoined
+    }
 }
 
 private enum JoinGroupByCodeMockError: Error {

@@ -273,6 +273,11 @@ struct DesignSystemDetailView: View {
                 DSToast("Error", tone: .error)
                 DSToast("Success", tone: .success)
             }
+            VStack(alignment: .leading, spacing: 8) {
+                DSTopToast("Notice", tone: .notice)
+                DSTopToast("Error", tone: .error)
+                DSTopToast("Success", tone: .success)
+            }
             DSTooltip("Tooltip", arrowDirection: .down)
         }
     }

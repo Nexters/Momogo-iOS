@@ -19,6 +19,11 @@ extension CheckGroupByCodeUseCase {
         try? await Task.sleep(for: .seconds(0.4))
         throw CheckGroupByCodeMockError.failed
     }
+
+    static let invalidCodePath = CheckGroupByCodeUseCase { _ in
+        try? await Task.sleep(for: .seconds(0.4))
+        throw GroupJoinError.invalidInvitationCode
+    }
 }
 
 private enum CheckGroupByCodeMockError: Error {

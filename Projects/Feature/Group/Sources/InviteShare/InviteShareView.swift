@@ -48,6 +48,6 @@ struct InviteShareView: View {
         .ignoresSafeArea(edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .momogoToast(isPresented: $viewModel.showsCopiedToast, message: "클립보드에 복사되었어요", tone: .success)
+        .momogoTopToast($viewModel.toast)
     }
 }

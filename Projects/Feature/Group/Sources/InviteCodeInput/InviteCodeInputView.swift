@@ -54,6 +54,7 @@ public struct InviteCodeInputView: View {
         .ignoresSafeArea(.container, edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .momogoTopToast($viewModel.toast)
         .navigationDestination(item: $viewModel.destination.joinConfirm) { joinConfirmViewModel in
             JoinConfirmView(viewModel: joinConfirmViewModel)
         }
@@ -72,6 +73,6 @@ public struct InviteCodeInputView: View {
     }
 
     private var fieldComment: String? {
-        viewModel.isLengthExceeded ? InviteCodeInputViewModel.codeLengthErrorMessage : viewModel.errorMessage
+        viewModel.isLengthExceeded ? InviteCodeInputViewModel.codeLengthErrorMessage : nil
     }
 }

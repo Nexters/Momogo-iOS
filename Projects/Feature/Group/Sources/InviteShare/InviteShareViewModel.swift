@@ -1,11 +1,13 @@
 import Foundation
 import UIKit
 
+import DesignSystem
+
 @Observable
 @MainActor
 final class InviteShareViewModel {
     let inviteCode: String
-    var showsCopiedToast: Bool = false
+    var toast: DSTopToastContent?
 
     private let onFinish: () -> Void
 
@@ -16,7 +18,7 @@ final class InviteShareViewModel {
 
     func copyCodeTapped() {
         UIPasteboard.general.string = inviteCode
-        showsCopiedToast = true
+        toast = .copiedToClipboard
     }
 
     func goToMainTapped() {

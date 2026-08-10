@@ -44,5 +44,7 @@ struct JoinConfirmView: View {
         .ignoresSafeArea(edges: .bottom)
         .background(DesignSystem.Color.gray950.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .momogoTopToast($viewModel.toast)
+        .onAppear { viewModel.screenAppeared() }
     }
 }
