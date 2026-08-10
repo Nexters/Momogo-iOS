@@ -60,11 +60,7 @@ public struct HomeView: View {
                 DSMenu.Item("그룹 참여", icon: DesignSystemAsset.login, action: {})
             ],
             anchorContent: {
-                HomeHeaderIconButton(
-                    asset: DesignSystemAsset.plus,
-                    accessibilityLabel: "그룹 추가",
-                    action: toggleAddGroupMenu
-                )
+                DSIconButton(.plus, style: .filled, action: toggleAddGroupMenu)
             }
         )
         .task {

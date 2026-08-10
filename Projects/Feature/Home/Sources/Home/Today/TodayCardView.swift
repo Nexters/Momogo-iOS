@@ -63,9 +63,9 @@ struct TodayCardView: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 10) {
-                HomeHeaderIconButton(asset: DesignSystemAsset.plus, accessibilityLabel: "그룹 추가", action: onTapAddGroup)
+                DSIconButton(.plus, style: .filled, action: onTapAddGroup)
                     .dsMenuAnchor()
-                HomeHeaderIconButton(asset: DesignSystemAsset.settings, accessibilityLabel: "설정", action: onTapSettings)
+                DSIconButton(.settings, style: .filled, action: onTapSettings)
             }
         }
     }
