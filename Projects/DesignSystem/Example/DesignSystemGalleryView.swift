@@ -256,6 +256,12 @@ struct DesignSystemDetailView: View {
                 primaryAction: {},
                 onClose: {}
             )
+            DSModal(
+                title: "Multiline Title",
+                description: "First line of description.\nSecond line of description.",
+                primaryTitle: "Button",
+                primaryAction: {}
+            )
         }
     }
 

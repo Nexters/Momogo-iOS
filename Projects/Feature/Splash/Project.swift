@@ -14,6 +14,7 @@ let project = Project.makeModule(
         .feature(tests: .splash, factory: .init(
             dependencies: [
                 .feature(implements: .splash),
+                .domainInterface,
                 .dependencies
             ]
         )),

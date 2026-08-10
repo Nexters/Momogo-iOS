@@ -29,14 +29,18 @@ public struct DSModal: View {
 
     public var body: some View {
         ZStack(alignment: .topTrailing) {
-            VStack(alignment: .center, spacing: 8) {
-                Text(title)
-                    .momogoTypography(.xlSemistrong)
-                    .foregroundStyle(DesignSystem.Color.gray50)
-                if let description {
-                    Text(description)
-                        .momogoTypography(.mdMedium)
-                        .foregroundStyle(DesignSystem.Color.gray300)
+            // Figma 실측: Wrap(title+description, gap 8) ↔ Button, gap 24.
+            VStack(alignment: .center, spacing: 24) {
+                VStack(alignment: .center, spacing: 8) {
+                    Text(title)
+                        .momogoTypography(.xlSemistrong)
+                        .foregroundStyle(DesignSystem.Color.gray50)
+                    if let description {
+                        Text(description)
+                            .momogoMultilineTypography(.mdMedium)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(DesignSystem.Color.gray300)
+                    }
                 }
                 HStack(spacing: 8) {
                     if let secondaryTitle, let secondaryAction {
@@ -49,7 +53,6 @@ public struct DSModal: View {
                             .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .large, isFullWidth: true))
                     }
                 }
-                .padding(.top, 8)
             }
             .padding(.top, 24)
             .padding(.horizontal, 16)

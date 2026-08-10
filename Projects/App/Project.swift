@@ -7,7 +7,9 @@ let project = Project.makeModule(
         .app(factory: .init(
             infoPlist: .extendingDefault(with: [
                 "API_BASE_URL": "$(API_BASE_URL)",
-                "UILaunchScreen": .dictionary([:])
+                "UILaunchScreen": .dictionary([:]),
+                "CFBundleShortVersionString": .string(env.appVersion),
+                "CFBundleVersion": "1"
             ]),
             sources: ["Sources/**"],
             resources: ["Resources/**"],

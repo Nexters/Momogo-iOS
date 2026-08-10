@@ -30,5 +30,14 @@ public struct SplashView: View {
         .task {
             await viewModel.start()
         }
+        // 강제 업데이트 모달은 사용자가 닫을 수 없으므로 되돌릴 바인딩이 필요 없다.
+        .momogoModalOverlay(isPresented: .constant(viewModel.forceUpdateStoreURL != nil)) {
+            DSModal(
+                title: "최신 버전 업데이트",
+                description: "최신 버전 업데이트가 있어요.\n스토어로 이동하시겠어요?",
+                primaryTitle: "확인",
+                primaryAction: { viewModel.updateConfirmTapped() }
+            )
+        }
     }
 }
