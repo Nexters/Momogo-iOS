@@ -28,7 +28,8 @@ public final class SplashViewModel {
     }
 
     /// 세션 체크가 아무리 빨리 끝나도 스플래시는 최소 2초간 노출하며, 세션 체크·버전 체크는 각각 최대 5초까지만 기다린다.
-    /// 강제 업데이트가 필요하면 세션 체크 결과와 무관하게 진입을 차단한다.
+    /// 두 체크는 동시에 시작하지만, 강제 업데이트 여부는 세션 체크를 기다리지 않고 확인되는 대로 즉시 반영한다.
+    /// (세션 체크가 느려서 이미 알고 있는 차단 결정이 늦게 반영되는 것을 막기 위함)
     func start() async {
         let checkSessionUseCase = checkSessionUseCase
         let checkAppVersionUseCase = checkAppVersionUseCase
@@ -37,13 +38,11 @@ public final class SplashViewModel {
         async let destination = Self.resolveDestination(checkSessionUseCase: checkSessionUseCase)
         try? await Task.sleep(for: Constants.minimumExposureDuration)
 
-        let (url, next) = await (storeURL, destination)
-
-        if let url {
+        if let url = await storeURL {
             forceUpdateStoreURL = url
             return
         }
-        onFinish(next)
+        onFinish(await destination)
     }
 
     /// 강제 업데이트 모달의 "확인" 버튼 액션. 스토어로 이동한 뒤에도 모달은 닫히지 않아 진입 차단이 유지된다.
