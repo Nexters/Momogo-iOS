@@ -11,7 +11,7 @@ struct TodayCardView: View {
     }()
 
     private var dateText: String {
-        Self.dateFormatter.string(from: Date())
+        Self.dateFormatter.string(from: .now)
     }
 
     var hasGroups: Bool = true
@@ -28,13 +28,9 @@ struct TodayCardView: View {
     /// 기준으로 계산해야 헤드라인이 길어져도 라벨을 침범하지 않는다.
     private let cameraTopGap: CGFloat = 25
 
-    /// Figma 스펙: 툴팁은 3초 후 자동으로 사라짐(`DSTooltip` 내부 처리)
-    @State private var showsInviteTooltip = true
-
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // 배경(색상+일러스트)에만 라운드 클립을 적용한다. 카드 전체를 클립하면 카드 경계 밖으로
-            // 확장되는 초대 툴팁까지 함께 잘려나간다.
+            // 배경(색상+일러스트)에만 라운드 클립을 적용한다.
             ZStack(alignment: .topLeading) {
                 DesignSystem.Color.primary500
                 illustration
@@ -42,16 +38,6 @@ struct TodayCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
 
             content
-
-            if showsInviteTooltip {
-                DSTooltip("초대코드를 받았나요?", arrowDirection: .up)
-                    .offset(x: 170, y: 70)
-                    .transition(.opacity)
-                    .task {
-                        try? await Task.sleep(for: .seconds(3))
-                        showsInviteTooltip = false
-                    }
-            }
         }
         .frame(height: 358)
         .frame(maxWidth: .infinity)

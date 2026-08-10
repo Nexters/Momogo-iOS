@@ -9,7 +9,7 @@ public struct HomeView: View {
         _viewModel = State(initialValue: viewModel)
     }
 
-    /// 순수 UI 상태라 ViewModel이 아닌 View가 소유한다(`TodayCardView.showsInviteTooltip`과 동일한 원칙).
+    /// 순수 UI 상태라 ViewModel이 아닌 View가 소유한다.
     @State private var isAddGroupMenuPresented = false
 
     private var isGroupEmpty: Bool {
@@ -19,10 +19,7 @@ public struct HomeView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                TodayCardView(
-                    hasGroups: !isGroupEmpty,
-                    onTapAddGroup: { withAnimation { isAddGroupMenuPresented.toggle() } }
-                )
+                TodayCardView(hasGroups: !isGroupEmpty, onTapAddGroup: toggleAddGroupMenu)
 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("내 그룹")
@@ -32,7 +29,7 @@ public struct HomeView: View {
                     if isGroupEmpty {
                         GroupEmptyView()
                     } else {
-                        ForEach(viewModel.groups, id: \.groupId) { group in
+                        ForEach(viewModel.groups) { group in
                             GroupCardView(group: group)
                         }
                     }
@@ -63,13 +60,19 @@ public struct HomeView: View {
                 DSMenu.Item("그룹 참여", icon: DesignSystemAsset.login, action: {})
             ],
             anchorContent: {
-                HomeHeaderIconButton(asset: DesignSystemAsset.plus, accessibilityLabel: "그룹 추가") {
-                    withAnimation { isAddGroupMenuPresented.toggle() }
-                }
+                HomeHeaderIconButton(
+                    asset: DesignSystemAsset.plus,
+                    accessibilityLabel: "그룹 추가",
+                    action: toggleAddGroupMenu
+                )
             }
         )
         .task {
             await viewModel.load()
         }
+    }
+
+    private func toggleAddGroupMenu() {
+        withAnimation { isAddGroupMenuPresented.toggle() }
     }
 }

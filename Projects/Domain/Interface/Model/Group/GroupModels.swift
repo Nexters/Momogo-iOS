@@ -67,11 +67,13 @@ public struct JoinGroupByCodeResponse: Sendable, Equatable {
 }
 
 /// 그룹 목록의 개별 그룹 요약 정보.
-public struct GroupSummary: Sendable, Equatable {
+public struct GroupSummary: Sendable, Equatable, Identifiable {
     public let groupId: Int
     public let groupName: String
     public let totalMemberCount: Int
     public let todayPhotoUploaderCount: Int
+
+    public var id: Int { groupId }
 
     public init(
         groupId: Int,
