@@ -6,7 +6,9 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .photo, factory: .init(
             dependencies: [
-                .designSystem
+                .designSystem,
+                .dependencies,
+                .domainInterface
             ]
         )),
         .feature(tests: .photo, factory: .init(
@@ -16,7 +18,9 @@ let project = Project.makeModule(
         )),
         .feature(example: .photo, factory: .init(
             dependencies: [
-                .feature(implements: .photo)
+                .feature(implements: .photo),
+                .dependencies,
+                .domainInterface
             ]
         ))
     ],

@@ -31,15 +31,26 @@ public struct PhotoUploadConfirmView: View {
 
             gradientFade
 
-            Button(ViewCopy.confirmButtonTitle, action: viewModel.confirmTapped)
-                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
-                .disabled(!viewModel.isConfirmEnabled)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 32)
+            Button(ViewCopy.confirmButtonTitle) {
+                Task { await viewModel.confirmTapped() }
+            }
+            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
+            .disabled(!viewModel.isConfirmEnabled)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(DesignSystem.Color.gray950.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .task { await viewModel.onAppear() }
+        .momogoToast(
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { isPresented in if !isPresented { viewModel.errorMessage = nil } }
+            ),
+            message: viewModel.errorMessage ?? "",
+            tone: .error
+        )
     }
 
     private var photoPreview: some View {
@@ -68,14 +79,22 @@ public struct PhotoUploadConfirmView: View {
         }
     }
 
+    @ViewBuilder
     private var groupList: some View {
-        VStack(spacing: 8) {
-            ForEach(viewModel.groups) { group in
-                GroupUploadSelectionCard(
-                    group: group,
-                    isSelected: viewModel.isSelected(group),
-                    action: { viewModel.toggle(group) }
-                )
+        if viewModel.isLoadingGroups {
+            ProgressView()
+                .tint(DesignSystem.Color.gray50)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+        } else {
+            VStack(spacing: 8) {
+                ForEach(viewModel.groups) { group in
+                    GroupUploadSelectionCard(
+                        group: group,
+                        isSelected: viewModel.isSelected(group),
+                        action: { viewModel.toggle(group) }
+                    )
+                }
             }
         }
     }

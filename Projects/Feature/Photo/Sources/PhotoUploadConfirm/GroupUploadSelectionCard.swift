@@ -16,10 +16,13 @@ struct GroupUploadSelectionCard: View {
                     Text(group.groupName)
                         .momogoTypography(.lgSemistrong)
                         .foregroundStyle(DesignSystem.Color.gray50)
-                    Text(group.memberNamesText)
-                        .momogoTypography(.smMedium)
-                        .foregroundStyle(DesignSystem.Color.gray300)
-                        .lineLimit(1)
+                    // 멤버 이름은 아직 어떤 API도 내려주지 않아, 값이 있을 때만 노출한다.
+                    if !group.memberNames.isEmpty {
+                        Text(group.memberNamesText)
+                            .momogoTypography(.smMedium)
+                            .foregroundStyle(DesignSystem.Color.gray300)
+                            .lineLimit(1)
+                    }
                 }
 
                 Spacer(minLength: 0)

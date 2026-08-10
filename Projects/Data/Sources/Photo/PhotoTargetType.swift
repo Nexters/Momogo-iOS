@@ -3,13 +3,13 @@ import Foundation
 import Moya
 
 enum PhotoTargetType: NetworkTargetType {
-    case createUploadSession(CreateUploadSessionRequestDTO)
-    case confirm(ConfirmUploadRequestDTO)
+    case issueUploadURL(PhotoUploadUrlRequestDTO)
+    case confirm(PhotoCreateRequestDTO)
 
     var path: String {
         switch self {
-        case .createUploadSession:
-            "/photos/upload-sessions"
+        case .issueUploadURL:
+            "/photos/upload-urls"
         case .confirm:
             "/photos"
         }
@@ -21,7 +21,7 @@ enum PhotoTargetType: NetworkTargetType {
 
     var task: Moya.Task {
         switch self {
-        case let .createUploadSession(dto):
+        case let .issueUploadURL(dto):
             .requestJSONEncodable(dto)
         case let .confirm(dto):
             .requestJSONEncodable(dto)
