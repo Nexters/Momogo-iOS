@@ -32,7 +32,10 @@ private var providerPlugins: [PluginType] {
 
     var plugins: [PluginType] = [AuthorizationPlugin(tokenStore: accessTokenStore)]
     #if DEBUG
-        plugins.append(NetworkLoggerPlugin())
+        let logOptions: NetworkLoggerPlugin.Configuration.LogOptions = [
+            .requestMethod, .requestHeaders, .errorResponseBody
+        ]
+        plugins.append(NetworkLoggerPlugin(configuration: .init(logOptions: logOptions)))
     #endif
     return plugins
 }
