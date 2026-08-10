@@ -26,7 +26,7 @@ public struct DSMenu: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            ForEach(items.enumerated(), id: \.offset) { index, item in
+            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                 button(item)
 
                 if index < items.count - 1 {
