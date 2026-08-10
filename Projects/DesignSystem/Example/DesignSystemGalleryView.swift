@@ -87,7 +87,9 @@ struct DesignSystemDetailView: View {
         case .menu: menuSection
         }
     }
+}
 
+extension DesignSystemDetailView {
     private var colorSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             swatchRow(DesignSystem.Color.black, DesignSystem.Color.white)
