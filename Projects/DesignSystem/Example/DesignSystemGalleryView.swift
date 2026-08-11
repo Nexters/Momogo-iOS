@@ -155,7 +155,9 @@ extension DesignSystemDetailView {
             (DesignSystemAsset.x, "x"),
             (DesignSystemAsset.share2, "share2"),
             (DesignSystemAsset.settings, "settings"),
-            (DesignSystemAsset.ellipsisVertical, "ellipsisVertical")
+            (DesignSystemAsset.ellipsisVertical, "ellipsisVertical"),
+            (DesignSystemAsset.profile, "profile"),
+            (DesignSystemAsset.document, "document")
         ]
         let columns = [GridItem(.adaptive(minimum: 64), spacing: 16)]
         return LazyVGrid(columns: columns, spacing: 16) {
