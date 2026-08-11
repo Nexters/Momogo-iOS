@@ -3,7 +3,7 @@ import SwiftUI
 import DesignSystem
 
 struct InviteShareView: View {
-    @Bindable private var viewModel: InviteShareViewModel
+    private let viewModel: InviteShareViewModel
     @Environment(\.dismiss) private var dismiss
 
     init(viewModel: InviteShareViewModel) {
@@ -48,6 +48,5 @@ struct InviteShareView: View {
         .ignoresSafeArea(edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .momogoTopToast($viewModel.toast)
     }
 }

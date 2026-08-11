@@ -11,7 +11,6 @@ public final class SettingsViewModel {
     var destination: Destination?
     var showsWithdrawConfirm = false
     var isWithdrawing = false
-    var toast: DSTopToastContent?
 
     @ObservationIgnored
     @Dependency(\.deleteAccountUseCase) private var deleteAccountUseCase
@@ -32,7 +31,7 @@ public final class SettingsViewModel {
         // 저장 성공 시 destination을 정리해 편집 화면을 되돌린다 (dismiss()가 아닌 navigationDestination 해제로 pop).
         destination = .nicknameEdit(NicknameEditViewModel(onFinish: { [weak self] in
             self?.destination = nil
-            self?.toast = DSTopToastContent(message: "닉네임이 저장되었어요", tone: .success)
+            DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "닉네임이 저장되었어요", tone: .success))
         }))
     }
 
@@ -57,7 +56,7 @@ public final class SettingsViewModel {
                 try await deleteAccountUseCase.execute()
                 onSessionEnded()
             } catch {
-                toast = DSTopToastContent(message: "계정 삭제에 실패했어요. 잠시 후 다시 시도해주세요", tone: .error)
+                DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "계정 삭제에 실패했어요. 잠시 후 다시 시도해주세요", tone: .error))
             }
         }
     }

@@ -7,7 +7,6 @@ import DesignSystem
 @MainActor
 final class InviteShareViewModel {
     let inviteCode: String
-    var toast: DSTopToastContent?
 
     private let onFinish: () -> Void
 
@@ -18,7 +17,7 @@ final class InviteShareViewModel {
 
     func copyCodeTapped() {
         UIPasteboard.general.string = inviteCode
-        toast = .copiedToClipboard
+        DSTopToastWindowPresenter.shared.show(.copiedToClipboard)
     }
 
     func goToMainTapped() {

@@ -56,7 +56,6 @@ public struct SettingsView: View {
                 secondaryAction: viewModel.withdrawConfirmed
             )
         }
-        .momogoTopToast($viewModel.toast)
     }
 
     private func openTermsTapped() {
