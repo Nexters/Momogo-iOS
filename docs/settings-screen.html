@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>설정 화면, 무엇이 새로 생겼나</title>
+<style>
+  :root {
+    --bg: #f1f0f6;
+    --surface: #ffffff;
+    --surface-2: #e6e3ee;
+    --ink: #17162a;
+    --ink-soft: #4a4760;
+    --ink-faint: #827e97;
+    --line: #d8d4e3;
+    --accent: #5b4fd6;
+    --accent-ink: #423692;
+    --accent-soft: #ece9fb;
+    --patch: #0e7c86;
+    --patch-soft: #e3f1f1;
+    --delete: #a83730;
+    --delete-soft: #f7e4e2;
+    --code-bg: #14121f;
+    --code-ink: #e6e1fa;
+    --code-faint: #837da3;
+    --shadow: 0 1px 2px rgba(23, 22, 42, 0.05), 0 8px 24px rgba(23, 22, 42, 0.07);
+
+    --font-kr: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+
+    /* Momogo 앱 실제 다크 UI 토큰 (컴포넌트 미리보기 재현용) */
+    --app-bg: #1d1c1c;
+    --app-label: #efefef;
+    --app-sub: #b7b6b5;
+    --app-chevron: #464443;
+    --app-divider: #302f2e;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d0c15;
+      --surface: #17152a;
+      --surface-2: #201d31;
+      --ink: #ece9f7;
+      --ink-soft: #b2adc9;
+      --ink-faint: #756f92;
+      --line: #2c2842;
+      --accent: #9384f5;
+      --accent-ink: #d4cdfd;
+      --accent-soft: #241f3d;
+      --patch: #4fc7cf;
+      --patch-soft: #163338;
+      --delete: #e2837c;
+      --delete-soft: #3a201d;
+      --code-bg: #0a0912;
+      --code-ink: #e6e1fa;
+      --code-faint: #756f92;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0d0c15;
+    --surface: #17152a;
+    --surface-2: #201d31;
+    --ink: #ece9f7;
+    --ink-soft: #b2adc9;
+    --ink-faint: #756f92;
+    --line: #2c2842;
+    --accent: #9384f5;
+    --accent-ink: #d4cdfd;
+    --accent-soft: #241f3d;
+    --patch: #4fc7cf;
+    --patch-soft: #163338;
+    --delete: #e2837c;
+    --delete-soft: #3a201d;
+    --code-bg: #0a0912;
+    --code-ink: #e6e1fa;
+    --code-faint: #756f92;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-kr);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header.masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 28px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 700;
+    line-height: 1.28;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .chiprow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  section { margin-bottom: 48px; }
+
+  h2 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--ink-faint); }
+
+  .section-lede {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    max-width: 64ch;
+    margin: 0 0 20px;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--surface-2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--accent-ink);
+  }
+
+  /* API 표 */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  th { font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+  td.mono, td.path { font-family: var(--font-mono); font-size: 12.5px; white-space: nowrap; }
+  td.flow { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); white-space: normal; }
+
+  .method {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 5px;
+    letter-spacing: 0.02em;
+  }
+  .method.patch { background: var(--patch-soft); color: var(--patch); }
+  .method.delete { background: var(--delete-soft); color: var(--delete); }
+
+  /* 화면 카드 */
+  .screen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  .screen-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .screen-card .route {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+  .screen-card h3 { margin: 0; font-size: 16px; font-weight: 700; }
+  .screen-card p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .screen-card ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 4px; }
+
+  /* 다이어그램 */
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 16px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  .diagram-card .mermaid { display: flex; justify-content: center; min-width: 560px; }
+
+  /* Momogo 실제 UI 재현 미리보기 */
+  .app-preview {
+    background: var(--app-bg);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    max-width: 340px;
+    box-shadow: var(--shadow);
+  }
+  .app-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--app-divider);
+  }
+  .app-row:last-child { border-bottom: none; }
+  .app-row svg { width: 20px; height: 20px; color: var(--app-sub); flex-shrink: 0; }
+  .app-row span.label { color: var(--app-label); font-size: 14.5px; font-weight: 500; flex: 1; }
+  .app-row svg.chevron { width: 20px; height: 20px; color: var(--app-chevron); }
+
+  .component-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 18px; }
+  .icon-swatch-group { display: flex; gap: 14px; }
+  .icon-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    min-width: 76px;
+    box-shadow: var(--shadow);
+  }
+  .icon-swatch svg { width: 22px; height: 22px; color: var(--accent); }
+  .icon-swatch span { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .screen-card, .icon-swatch { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .screen-card:hover, .icon-swatch:hover { transform: translateY(-1px); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">#Momogo/38 · FeatureSettings</div>
+    <h1>설정 화면, 무엇이 새로 생겼나</h1>
+    <p class="subtitle">닉네임 변경·계정 삭제 API 연동부터 설정 화면 2개, Home 진입 플로우, DesignSystem 컴포넌트까지 — 이번 작업으로 추가된 것만 정리했다.</p>
+    <div class="chiprow">
+      <span class="chip">PATCH /user</span>
+      <span class="chip">DELETE /user</span>
+      <span class="chip">FeatureSettings (신규 모듈)</span>
+      <span class="chip">Home 연동</span>
+      <span class="chip">PR #47 → develop</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> 추가된 API</h2>
+    <p class="section-lede">Domain(UseCase·Repository interface)부터 Data(Repository liveValue)까지 새로 뚫은 엔드포인트 2개.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>API</th><th>UseCase</th><th>호출 경로</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method patch">PATCH</span> <span class="path">/user</span></td>
+            <td class="path">UpdateNicknameUseCase</td>
+            <td class="flow">userRepository.updateNickname → userDataSource.update</td>
+            <td>요청 <code>UpdateUserRequestDTO(nickname:)</code>, 응답 <code>UpdateUserResponseDTO(userId, nickname)</code></td>
+          </tr>
+          <tr>
+            <td><span class="method delete">DELETE</span> <span class="path">/user</span></td>
+            <td class="path">DeleteAccountUseCase</td>
+            <td class="flow">userRepository.deleteAccount → userDataSource.delete</td>
+            <td>성공 시 accessToken·refreshToken·게스트 UUID까지 로컬에서 함께 정리</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> 추가된 화면</h2>
+    <p class="section-lede"><code>FeatureSettings</code> 모듈이 신규로 생기면서 그 안에 화면 2개가 만들어졌다.</p>
+    <div class="screen-grid">
+      <div class="screen-card">
+        <span class="route">SettingsView</span>
+        <h3>설정</h3>
+        <p>닉네임 변경 · 약관 · 계정 삭제로 이어지는 설정 메인 화면.</p>
+        <ul>
+          <li>"닉네임 변경" → NicknameEdit 화면 push</li>
+          <li>"약관" → 외부 Safari로 링크 오픈</li>
+          <li>"계정 삭제" → 확인 모달 → 탈퇴 처리</li>
+        </ul>
+      </div>
+      <div class="screen-card">
+        <span class="route">NicknameEditView</span>
+        <h3>닉네임 변경</h3>
+        <p>"어떤 닉네임으로 불러드릴까요?" — 온보딩과 동일한 문구·검증 규칙을 쓰는 전용 편집 화면.</p>
+        <ul>
+          <li>6자 제한, 한글/영문/숫자/특수문자만 허용 (이모지 필터)</li>
+          <li>"저장하기" → 저장 성공 시 설정 화면으로 복귀 + 상단 토스트</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> 추가된 플로우</h2>
+    <p class="section-lede">Home의 톱니 아이콘에서 시작해 설정 화면 안에서 갈라지는 네비게이션 전체 경로.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+flowchart TD
+    Home["Home<br/>오늘 카드 톱니 아이콘"] -->|push| Settings["Settings"]
+    Settings -->|push| Edit["NicknameEdit"]
+    Edit -->|"저장 성공 → pop + 토스트"| Settings
+    Settings -->|외부 링크| Safari[("Safari<br/>약관")]
+    Settings -->|모달| Confirm{"정말 떠나시겠어요?"}
+    Confirm -->|취소| Settings
+    Confirm -->|"떠나기 → 탈퇴 성공"| Onboarding["Onboarding"]
+
+    classDef node fill:#ece9fb,stroke:#5b4fd6,color:#17162a;
+    classDef ext fill:none,stroke:#827e97,color:#4a4760,stroke-dasharray:3 3;
+    class Home,Settings,Edit,Onboarding node;
+    class Safari,Confirm ext;
+      </pre>
+    </div>
+
+    <p class="section-lede" style="margin-top:28px;">두 API 모두 같은 계층을 타고 서버까지 내려간다.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+flowchart LR
+    View["SettingsView /<br/>NicknameEditView"] --> VM["ViewModel"]
+    VM --> UC["UseCase"]
+    UC --> Repo["UserRepository.liveValue"]
+    Repo --> DS["UserDataSource"]
+    DS --> Server[("서버<br/>PATCH · DELETE /user")]
+
+    classDef node fill:#ece9fb,stroke:#5b4fd6,color:#17162a;
+    class View,VM,UC,Repo,DS,Server node;
+      </pre>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> 추가된 DesignSystem 컴포넌트</h2>
+    <p class="section-lede"><code>DSMenuListRow</code>와 아이콘 2종이 새로 생겼다 — 아이콘 20pt, 우측 chevron 24pt, 하단 1px 구분선으로 구성된 행 하나가 72pt 높이를 갖는다.</p>
+    <div class="component-row">
+      <div class="app-preview">
+        <div class="app-row">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M12.5519 14.2993C11.7052 11.6218 9.43021 10.0877 6.30771 10.0877H6.28521C3.15438 10.0702 0.867712 11.6152 0.0193787 14.2993C-0.0382652 14.482 0.0358824 14.6811 0.199379 14.781C1.83105 15.776 3.86605 16.2802 6.24605 16.2802C6.27271 16.2802 6.29938 16.2802 6.32521 16.2802C8.73855 16.2802 10.7169 15.7893 12.3719 14.781C12.5354 14.6811 12.6095 14.482 12.5519 14.2993Z"/><path d="M6.28565 8.23083C8.55482 8.23083 10.4015 6.385 10.4015 4.11583C10.4015 1.84583 8.55482 0 6.28565 0C4.01648 0 2.17065 1.84583 2.17065 4.11583C2.17065 6.385 4.01648 8.23083 6.28565 8.23083Z"/></svg>
+          <span class="label">닉네임 변경</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="currentColor"><path d="M9.29289 5.29289C9.68342 4.90237 10.3164 4.90237 10.707 5.29289L16.707 11.2929C17.0975 11.6834 17.0975 12.3164 16.707 12.707L10.707 18.707C10.3164 19.0975 9.68342 19.0975 9.29289 18.707C8.90237 18.3164 8.90237 17.6834 9.29289 17.2929L14.5859 11.9999L9.29289 6.70696C8.90237 6.31643 8.90237 5.68342 9.29289 5.29289Z"/></svg>
+        </div>
+        <div class="app-row">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.74583 5.81583C3.74583 6.16101 4.02566 6.44083 4.37083 6.44083H9.42917C9.77435 6.44083 10.0542 6.16101 10.0542 5.81583C10.0542 5.47066 9.77434 5.19083 9.42917 5.19083H4.37083C4.02565 5.19083 3.74583 5.47066 3.74583 5.81583ZM3.74583 9.28583C3.74583 9.63101 4.02566 9.91083 4.37083 9.91083H6.30083C6.64601 9.91083 6.92583 9.63101 6.92583 9.28583C6.92583 8.94065 6.64601 8.66083 6.30083 8.66083H4.37083C4.02566 8.66083 3.74583 8.94065 3.74583 9.28583ZM0 14.75C0 15.5784 0.671573 16.25 1.5 16.25H13.2892C14.1176 16.25 14.7892 15.5784 14.7892 14.75V1.5C14.7892 0.671573 14.1176 0 13.2892 0H1.5C0.671575 0 0 0.671573 0 1.5V14.75Z"/></svg>
+          <span class="label">약관</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="currentColor"><path d="M9.29289 5.29289C9.68342 4.90237 10.3164 4.90237 10.707 5.29289L16.707 11.2929C17.0975 11.6834 17.0975 12.3164 16.707 12.707L10.707 18.707C10.3164 19.0975 9.68342 19.0975 9.29289 18.707C8.90237 18.3164 8.90237 17.6834 9.29289 17.2929L14.5859 11.9999L9.29289 6.70696C8.90237 6.31643 8.90237 5.68342 9.29289 5.29289Z"/></svg>
+        </div>
+      </div>
+      <div class="icon-swatch-group">
+        <div class="icon-swatch">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M12.5519 14.2993C11.7052 11.6218 9.43021 10.0877 6.30771 10.0877H6.28521C3.15438 10.0702 0.867712 11.6152 0.0193787 14.2993C-0.0382652 14.482 0.0358824 14.6811 0.199379 14.781C1.83105 15.776 3.86605 16.2802 6.24605 16.2802C6.27271 16.2802 6.29938 16.2802 6.32521 16.2802C8.73855 16.2802 10.7169 15.7893 12.3719 14.781C12.5354 14.6811 12.6095 14.482 12.5519 14.2993Z"/><path d="M6.28565 8.23083C8.55482 8.23083 10.4015 6.385 10.4015 4.11583C10.4015 1.84583 8.55482 0 6.28565 0C4.01648 0 2.17065 1.84583 2.17065 4.11583C2.17065 6.385 4.01648 8.23083 6.28565 8.23083Z"/></svg>
+          <span>profile</span>
+        </div>
+        <div class="icon-swatch">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.74583 5.81583C3.74583 6.16101 4.02566 6.44083 4.37083 6.44083H9.42917C9.77435 6.44083 10.0542 6.16101 10.0542 5.81583C10.0542 5.47066 9.77434 5.19083 9.42917 5.19083H4.37083C4.02565 5.19083 3.74583 5.47066 3.74583 5.81583ZM3.74583 9.28583C3.74583 9.63101 4.02566 9.91083 4.37083 9.91083H6.30083C6.64601 9.91083 6.92583 9.63101 6.92583 9.28583C6.92583 8.94065 6.64601 8.66083 6.30083 8.66083H4.37083C4.02566 8.66083 3.74583 8.94065 3.74583 9.28583ZM0 14.75C0 15.5784 0.671573 16.25 1.5 16.25H13.2892C14.1176 16.25 14.7892 15.5784 14.7892 14.75V1.5C14.7892 0.671573 14.1176 0 13.2892 0H1.5C0.671575 0 0 0.671573 0 1.5V14.75Z"/></svg>
+          <span>document</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Momogo-iOS · docs/settings-screen.html</footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  var isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var palette = isDark
+    ? {
+        background: "transparent",
+        primaryColor: "#241f3d",
+        primaryTextColor: "#ece9f7",
+        primaryBorderColor: "#9384f5",
+        lineColor: "#756f92",
+        secondaryColor: "#201d31",
+        tertiaryColor: "#17152a",
+        textColor: "#ece9f7",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif"
+      }
+    : {
+        background: "transparent",
+        primaryColor: "#ece9fb",
+        primaryTextColor: "#17162a",
+        primaryBorderColor: "#5b4fd6",
+        lineColor: "#827e97",
+        secondaryColor: "#e6e3ee",
+        tertiaryColor: "#ffffff",
+        textColor: "#17162a",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif"
+      };
+
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: palette,
+    securityLevel: "loose",
+    flowchart: { htmlLabels: true, curve: "basis" }
+  });
+</script>
+</body>
+</html>
