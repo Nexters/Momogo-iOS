@@ -1,12 +1,11 @@
+import Foundation
+
 import Dependencies
 import DomainInterface
-import FeatureGroup
-import SwiftUINavigation
-import SwiftUI
 
 @Observable
 @MainActor
-final class NicknameViewModel {
+public final class NicknameEditViewModel {
     var nickname: String = "" {
         didSet {
             let sanitized = NicknamePolicy.sanitize(nickname)
@@ -16,34 +15,29 @@ final class NicknameViewModel {
         }
     }
 
-    var destination: Destination?
     var isLoading: Bool = false
     var errorMessage: String?
 
     @ObservationIgnored
-    @Dependency(\.signUpUseCase) private var signUpUseCase
+    @Dependency(\.updateNicknameUseCase) private var updateNicknameUseCase
 
+    /// 저장 성공 시 상위(SettingsViewModel)의 destination을 정리해 화면을 되돌린다.
     private let onFinish: () -> Void
 
-    init(onFinish: @escaping () -> Void) {
+    public init(onFinish: @escaping () -> Void = {}) {
         self.onFinish = onFinish
-    }
-
-    @CasePathable
-    enum Destination {
-        case groupSelect(GroupSelectViewModel)
     }
 
     var isLengthExceeded: Bool {
         nickname.count > NicknamePolicy.characterLimit
     }
 
-    var isNextEnabled: Bool {
+    var isSaveEnabled: Bool {
         NicknamePolicy.isValid(nickname)
     }
 
-    func nextTapped() {
-        guard !isLoading, isNextEnabled else { return }
+    func saveTapped() {
+        guard !isLoading, isSaveEnabled else { return }
 
         isLoading = true
         errorMessage = nil
@@ -52,8 +46,8 @@ final class NicknameViewModel {
             defer { isLoading = false }
 
             do {
-                _ = try await signUpUseCase.execute(nickname)
-                destination = .groupSelect(GroupSelectViewModel(nickname: nickname, onFinish: onFinish))
+                try await updateNicknameUseCase.execute(nickname)
+                onFinish()
             } catch {
                 errorMessage = "잠시 후 다시 시도해주세요."
             }

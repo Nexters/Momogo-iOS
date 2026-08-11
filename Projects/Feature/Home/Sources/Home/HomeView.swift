@@ -1,6 +1,8 @@
 import SwiftUI
 
 import DesignSystem
+import FeatureSettings
+import SwiftUINavigation
 
 public struct HomeView: View {
     @State private var viewModel: HomeViewModel
@@ -17,9 +19,19 @@ public struct HomeView: View {
     }
 
     public var body: some View {
+        NavigationStack {
+            content
+        }
+    }
+
+    private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                TodayCardView(hasGroups: !isGroupEmpty, onTapAddGroup: toggleAddGroupMenu)
+                TodayCardView(
+                    hasGroups: !isGroupEmpty,
+                    onTapAddGroup: toggleAddGroupMenu,
+                    onTapSettings: viewModel.settingsTapped
+                )
 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("내 그룹")
@@ -38,14 +50,6 @@ public struct HomeView: View {
                 if !isGroupEmpty {
                     ReactionCardView(posterCount: viewModel.todayPosterCount)
                 }
-
-                // 플로우 검증용 임시 버튼들 — Settings 화면이 생기면 그쪽으로 옮기고 여기서는 제거한다.
-                VStack(alignment: .leading, spacing: 8) {
-                    Button("로그아웃 (임시)", action: viewModel.logoutTapped)
-                    Button("refresh/UUID 토큰 초기화 (임시)", action: viewModel.clearLocalAuthStateTapped)
-                }
-                .momogoTypography(.smMedium)
-                .foregroundStyle(DesignSystem.Color.gray100)
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
@@ -65,6 +69,10 @@ public struct HomeView: View {
         )
         .task {
             await viewModel.load()
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(item: $viewModel.destination.settings) { settingsViewModel in
+            SettingsView(viewModel: settingsViewModel)
         }
     }
 

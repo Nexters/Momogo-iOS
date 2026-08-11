@@ -9,7 +9,8 @@ let project = Project.makeModule(
                 .domainInterface,
                 .designSystem,
                 .dependencies,
-                .swiftUINavigation
+                .swiftUINavigation,
+                .feature(implements: .settings)
             ]
         )),
         .feature(tests: .home, factory: .init(
