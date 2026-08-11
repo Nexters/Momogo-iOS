@@ -10,6 +10,7 @@ let project = Project.makeModule(
                 .designSystem,
                 .dependencies,
                 .swiftUINavigation,
+                .feature(implements: .group),
                 .feature(implements: .settings)
             ]
         )),

@@ -19,23 +19,6 @@ extension CheckGroupByCodeUseCase {
         try? await Task.sleep(for: .seconds(0.4))
         throw CheckGroupByCodeMockError.failed
     }
-
-    static let invalidCodePath = CheckGroupByCodeUseCase { _ in
-        try? await Task.sleep(for: .seconds(0.4))
-        throw GroupJoinError.invalidInvitationCode
-    }
-
-    /// 풀스크린 로딩 오버레이(`momogoLoadingOverlay`)를 Example에서 눈으로 확인하기 위한 지연 시나리오.
-    static let longDelay = CheckGroupByCodeUseCase { _ in
-        try? await Task.sleep(for: .seconds(5))
-
-        return CheckGroupByCodeResponse(
-            groupId: 10,
-            groupName: "우리 가족",
-            totalMemberCount: 4,
-            participated: false
-        )
-    }
 }
 
 private enum CheckGroupByCodeMockError: Error {

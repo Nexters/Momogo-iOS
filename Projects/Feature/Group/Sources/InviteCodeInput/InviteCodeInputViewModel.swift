@@ -3,7 +3,6 @@ import Foundation
 import Dependencies
 import DesignSystem
 import DomainInterface
-import SwiftUINavigation
 
 @Observable
 @MainActor
@@ -20,7 +19,6 @@ public final class InviteCodeInputViewModel {
         }
     }
 
-    var destination: Destination?
     var isLoading: Bool = false
     var toast: DSTopToastContent?
 
@@ -33,11 +31,6 @@ public final class InviteCodeInputViewModel {
 
     public init(onFinish: @escaping () -> Void) {
         self.onFinish = onFinish
-    }
-
-    @CasePathable
-    enum Destination {
-        case joinConfirm(JoinConfirmViewModel)
     }
 
     var isLengthExceeded: Bool {
@@ -58,10 +51,11 @@ public final class InviteCodeInputViewModel {
             defer { isLoading = false }
 
             do {
-                let groupInfo = try await checkGroupByCodeUseCase.execute(code)
+                // 참여 확인 화면 없이 곧바로 완료 처리하므로 그룹 정보 자체는 쓰지 않지만,
+                // 초대코드 유효성(404 invalidInvitationCode)을 여기서 먼저 검증하는 단계는 유지한다.
+                _ = try await checkGroupByCodeUseCase.execute(code)
                 _ = try await joinGroupByCodeUseCase.execute(code)
-                let joinConfirmViewModel = JoinConfirmViewModel(groupName: groupInfo.groupName, onFinish: onFinish)
-                destination = .joinConfirm(joinConfirmViewModel)
+                onFinish()
             } catch let error as GroupJoinError {
                 toast = DSTopToastContent(error)
             } catch {

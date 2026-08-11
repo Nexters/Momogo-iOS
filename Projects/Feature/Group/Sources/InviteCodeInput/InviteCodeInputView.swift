@@ -1,7 +1,6 @@
 import SwiftUI
 
 import DesignSystem
-import SwiftUINavigation
 
 public struct InviteCodeInputView: View {
     @Bindable private var viewModel: InviteCodeInputViewModel
@@ -36,28 +35,20 @@ public struct InviteCodeInputView: View {
 
             Spacer()
 
-            Button {
-                viewModel.joinTapped()
-            } label: {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Text("참여하기")
-                }
-            }
-            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
-            .disabled(viewModel.isLoading || !viewModel.isJoinEnabled)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 32)
+            Button("참여하기", action: viewModel.joinTapped)
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
+                .disabled(viewModel.isLoading || !viewModel.isJoinEnabled)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(.container, edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .momogoLoadingOverlay(isPresented: viewModel.isLoading)
+        // 로딩 오버레이가 화면을 덮어 탭은 막지만, 인터랙티브 스와이프 백 제스처는 별개로 계속 동작하므로 같이 막는다.
+        .navigationBarBackButtonHidden(viewModel.isLoading)
         .momogoTopToast($viewModel.toast)
-        .navigationDestination(item: $viewModel.destination.joinConfirm) { joinConfirmViewModel in
-            JoinConfirmView(viewModel: joinConfirmViewModel)
-        }
     }
 
     private var textFieldState: DSTextField.State {

@@ -81,7 +81,7 @@ let project = Project.makeModule(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: [.feature, .domain, .domainInterface, .data, .firebaseCrashlytics],
+            dependencies: [.feature, .domain, .domainInterface, .data, .designSystem, .firebaseCrashlytics],
             settings: .settings(
                 base: ["OTHER_LDFLAGS": ["-ObjC"]],
                 configurations: [
