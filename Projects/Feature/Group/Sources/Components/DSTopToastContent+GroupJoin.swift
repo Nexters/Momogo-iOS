@@ -23,8 +23,8 @@ extension DSTopToastContent {
     // 접근할 때마다 새 인스턴스(=새 id)를 만들어야 `.task(id:)` 타이머가 매번 재시작된다.
     static var fallback: DSTopToastContent { DSTopToastContent(message: fallbackMessage, tone: .error) }
 
-    /// 그룹 참여를 완료하고 JoinConfirm 화면에 도착했을 때 뜨는 토스트.
-    static var joinCompleted: DSTopToastContent { DSTopToastContent(message: "그룹에 합류했어요!", tone: .success) }
+    /// 그룹 참여를 완료하고 홈으로 돌아왔을 때 뜨는 토스트. 확인 화면 없이 바로 홈으로 복귀하므로 호출부(홈)에서 띄운다.
+    public static var joinCompleted: DSTopToastContent { DSTopToastContent(message: "그룹에 합류했어요!", tone: .success) }
 
     /// 초대코드를 클립보드에 복사했을 때 뜨는 토스트. 복사 자체는 실패하지 않는 동작이라 항상 success 톤이다.
     static var copiedToClipboard: DSTopToastContent { DSTopToastContent(message: "클립보드에 복사되었어요", tone: .success) }

@@ -1,5 +1,6 @@
 import SwiftUI
 
+import DesignSystem
 import DomainInterface
 import FeatureHome
 import FeatureOnboarding
@@ -27,22 +28,29 @@ private struct RootView: View {
     }
 
     @State private var destination: RootDestination = .splash
+    @State private var toast: DSTopToastContent?
 
     var body: some View {
-        switch destination {
-        case .splash:
-            SplashView(viewModel: SplashViewModel(onFinish: { splashDestination in
-                switch splashDestination {
-                case .home:
-                    destination = .home
-                case .onboarding:
-                    destination = .onboarding
-                }
-            }))
-        case .home:
-            HomeView(viewModel: HomeViewModel(onLogout: { destination = .onboarding }))
-        case .onboarding:
-            OnboardingView(viewModel: OnboardingViewModel(onFinish: { destination = .home }))
+        Group {
+            switch destination {
+            case .splash:
+                SplashView(viewModel: SplashViewModel(onFinish: { splashDestination in
+                    switch splashDestination {
+                    case .home:
+                        destination = .home
+                    case .onboarding:
+                        destination = .onboarding
+                    }
+                }))
+            case .home:
+                HomeView(viewModel: HomeViewModel(
+                    onLogout: { destination = .onboarding },
+                    onGroupJoined: { toast = $0 }
+                ))
+            case .onboarding:
+                OnboardingView(viewModel: OnboardingViewModel(onFinish: { destination = .home }))
+            }
         }
+        .momogoTopToast($toast)
     }
 }

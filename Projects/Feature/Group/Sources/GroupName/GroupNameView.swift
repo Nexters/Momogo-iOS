@@ -36,24 +36,19 @@ public struct GroupNameView: View {
 
             Spacer()
 
-            Button {
-                viewModel.createGroupTapped()
-            } label: {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Text("그룹 만들기")
-                }
-            }
-            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
-            .disabled(viewModel.isLoading || !viewModel.isCreateEnabled)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 32)
+            Button("그룹 만들기", action: viewModel.createGroupTapped)
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
+                .disabled(viewModel.isLoading || !viewModel.isCreateEnabled)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(.container, edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .momogoLoadingOverlay(isPresented: viewModel.isLoading)
+        // 로딩 오버레이가 화면을 덮어 탭은 막지만, 인터랙티브 스와이프 백 제스처는 별개로 계속 동작하므로 같이 막는다.
+        .navigationBarBackButtonHidden(viewModel.isLoading)
         .navigationDestination(item: $viewModel.destination.inviteShare) { inviteShareViewModel in
             InviteShareView(viewModel: inviteShareViewModel)
         }
