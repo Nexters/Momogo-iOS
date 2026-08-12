@@ -50,6 +50,16 @@ extension GroupRepository: DependencyKey {
                         )
                     }
                 )
+            },
+            getGroupDetail: { request in
+                let dto = try await groupDataSource.detail(request.groupId, request.date)
+                return GetGroupDetailResponse(
+                    groupId: dto.groupId,
+                    groupName: dto.groupName,
+                    members: dto.members.map { member in
+                        GroupMember(userId: member.userId, nickname: member.nickname, isMine: member.mine)
+                    }
+                )
             }
         )
     }

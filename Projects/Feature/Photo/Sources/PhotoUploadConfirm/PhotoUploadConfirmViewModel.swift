@@ -20,6 +20,8 @@ public final class PhotoUploadConfirmViewModel {
     @ObservationIgnored
     @Dependency(\.getGroupsUseCase) private var getGroupsUseCase
     @ObservationIgnored
+    @Dependency(\.getGroupDetailUseCase) private var getGroupDetailUseCase
+    @ObservationIgnored
     @Dependency(\.uploadPhotoUseCase) private var uploadPhotoUseCase
 
     /// - Parameters:
@@ -74,9 +76,23 @@ public final class PhotoUploadConfirmViewModel {
 
         do {
             let response = try await getGroupsUseCase.execute()
-            groups = response.groups.map {
-                PhotoUploadGroupOption(id: $0.groupId, groupName: $0.groupName, memberNames: [])
+            var loadedGroups: [PhotoUploadGroupOption] = []
+            for summary in response.groups {
+                // 그룹 목록 API에는 멤버 이름이 없어, 그룹마다 상세 조회를 한 번씩 더 호출해 채운다.
+                // 상세 조회가 실패해도 화면 전체를 막지 않고 해당 그룹의 멤버 이름만 비워둔다.
+                let memberNames = try? await getGroupDetailUseCase
+                    .execute(GetGroupDetailRequest(groupId: summary.groupId))
+                    .members
+                    .map(\.nickname)
+                loadedGroups.append(
+                    PhotoUploadGroupOption(
+                        id: summary.groupId,
+                        groupName: summary.groupName,
+                        memberNames: memberNames ?? []
+                    )
+                )
             }
+            groups = loadedGroups
         } catch {
             errorMessage = ViewModelCopy.groupsLoadFailed
         }

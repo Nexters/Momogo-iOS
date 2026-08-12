@@ -6,22 +6,26 @@ public struct GroupRepository: Sendable {
     public typealias CheckGroupByCode = @Sendable (CheckGroupByCodeRequest) async throws -> CheckGroupByCodeResponse
     public typealias JoinGroupByCode = @Sendable (JoinGroupByCodeRequest) async throws -> JoinGroupByCodeResponse
     public typealias GetGroups = @Sendable () async throws -> GetGroupsResponse
+    public typealias GetGroupDetail = @Sendable (GetGroupDetailRequest) async throws -> GetGroupDetailResponse
 
     public var createGroup: CreateGroup
     public var checkGroupByCode: CheckGroupByCode
     public var joinGroupByCode: JoinGroupByCode
     public var getGroups: GetGroups
+    public var getGroupDetail: GetGroupDetail
 
     public init(
         createGroup: @escaping CreateGroup,
         checkGroupByCode: @escaping CheckGroupByCode,
         joinGroupByCode: @escaping JoinGroupByCode,
-        getGroups: @escaping GetGroups
+        getGroups: @escaping GetGroups,
+        getGroupDetail: @escaping GetGroupDetail
     ) {
         self.createGroup = createGroup
         self.checkGroupByCode = checkGroupByCode
         self.joinGroupByCode = joinGroupByCode
         self.getGroups = getGroups
+        self.getGroupDetail = getGroupDetail
     }
 }
 
@@ -30,7 +34,8 @@ extension GroupRepository: TestDependencyKey {
         createGroup: unimplemented("\(Self.self).createGroup"),
         checkGroupByCode: unimplemented("\(Self.self).checkGroupByCode"),
         joinGroupByCode: unimplemented("\(Self.self).joinGroupByCode"),
-        getGroups: unimplemented("\(Self.self).getGroups")
+        getGroups: unimplemented("\(Self.self).getGroups"),
+        getGroupDetail: unimplemented("\(Self.self).getGroupDetail")
     )
 }
 

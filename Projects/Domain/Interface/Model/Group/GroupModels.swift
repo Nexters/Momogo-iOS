@@ -96,3 +96,41 @@ public struct GetGroupsResponse: Sendable, Equatable {
         self.groups = groups
     }
 }
+
+/// 그룹 상세를 조회할 때 사용하는 요청 모델.
+public struct GetGroupDetailRequest: Sendable, Equatable {
+    public let groupId: Int
+    /// 조회할 날짜(yyyy-MM-dd). nil이면 서버가 오늘(Asia/Seoul) 기준으로 조회한다.
+    public let date: String?
+
+    public init(groupId: Int, date: String? = nil) {
+        self.groupId = groupId
+        self.date = date
+    }
+}
+
+/// 그룹 상세의 그룹원 한 명의 정보.
+public struct GroupMember: Sendable, Equatable {
+    public let userId: Int
+    public let nickname: String
+    public let isMine: Bool
+
+    public init(userId: Int, nickname: String, isMine: Bool) {
+        self.userId = userId
+        self.nickname = nickname
+        self.isMine = isMine
+    }
+}
+
+/// 그룹 상세 조회 응답 모델.
+public struct GetGroupDetailResponse: Sendable, Equatable {
+    public let groupId: Int
+    public let groupName: String
+    public let members: [GroupMember]
+
+    public init(groupId: Int, groupName: String, members: [GroupMember]) {
+        self.groupId = groupId
+        self.groupName = groupName
+        self.members = members
+    }
+}

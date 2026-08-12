@@ -9,6 +9,7 @@ struct PhotoExampleApp: App {
     init() {
         prepareDependencies {
             $0.getGroupsUseCase = .happyPath
+            $0.getGroupDetailUseCase = .happyPath
             $0.uploadPhotoUseCase = .happyPath
         }
     }
