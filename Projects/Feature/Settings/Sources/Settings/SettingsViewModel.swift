@@ -56,7 +56,9 @@ public final class SettingsViewModel {
                 try await deleteAccountUseCase.execute()
                 onSessionEnded()
             } catch {
-                DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "계정 삭제에 실패했어요. 잠시 후 다시 시도해주세요", tone: .error))
+                DSTopToastWindowPresenter.shared.show(
+                    DSTopToastContent(message: "계정 삭제에 실패했어요. 잠시 후 다시 시도해주세요", tone: .error)
+                )
             }
         }
     }

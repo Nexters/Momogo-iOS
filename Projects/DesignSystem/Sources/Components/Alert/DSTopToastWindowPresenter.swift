@@ -39,11 +39,15 @@ public final class DSTopToastWindowPresenter {
 
     @discardableResult
     private func ensureWindow() -> Bool {
-        if window != nil { return true }
+        // 활성 scene을 못 찾은 시점에도, 이전에 붙여둔 window가 아직 유효하다면(예: 일시적으로
+        // 백그라운드 상태) 그대로 재사용한다 — 여기서 nil을 반환하면 store.toast가 갱신되지 않아
+        // 앱이 다시 foreground로 돌아와도 토스트가 표시되지 않는다.
+        guard let scene = Self.currentScene() else { return window != nil }
 
-        guard let scene = UIApplication.shared.connectedScenes
-            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
-        else { return false }
+        // window가 이미 같은 scene에 붙어 있으면 재사용한다. scene이 disconnect되고 새 scene이
+        // 생긴 경우(iPad 멀티 윈도우 등)에는 window != nil만으로 재사용 여부를 판단할 수 없으므로,
+        // 매 호출마다 현재 scene과 비교해 필요할 때만 새로 만든다.
+        if let window, window.windowScene === scene { return true }
 
         let hostingController = UIHostingController(rootView: ToastHostView(store: store))
         hostingController.view.backgroundColor = .clear
@@ -56,39 +60,12 @@ public final class DSTopToastWindowPresenter {
         self.window = window
         return true
     }
-}
 
-@Observable
-private final class ToastStore {
-    var toast: DSTopToastContent?
-}
-
-/// 기존 `momogoTopToast(_:)`(현재는 제거됨)와 동일한 위치·애니메이션을 재현한다:
-/// 좌우 16pt·상단 28pt 여백에, 위에서 슬라이드 + 페이드로 등장·소멸한다.
-private struct ToastHostView: View {
-    let store: ToastStore
-
-    var body: some View {
-        Group {
-            if let value = store.toast {
-                DSTopToast(value.message, tone: value.tone)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 28)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-        }
-        // maxHeight 없이 maxWidth만 채우면 프레임이 콘텐츠 높이만큼만 생겨서, 그 작은 프레임이
-        // UIHostingController 전체 화면 안에서 기본값(가운데)으로 배치된다. 화면 전체를 프레임으로
-        // 잡아야 `alignment: .top`이 콘텐츠를 화면 상단에 붙인다.
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .animation(.default, value: store.toast)
-    }
-}
-
-/// 토스트가 실제로 그려진 영역 밖의 터치는 아래(메인 윈도우) 화면으로 그대로 전달되어야 한다.
-private final class PassthroughWindow: UIWindow {
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        guard let hitView = super.hitTest(point, with: event) else { return nil }
-        return hitView == rootViewController?.view ? nil : hitView
+    /// `.foregroundActive` scene을 우선하되, 시스템 알림·전화 배너 등으로 일시적으로
+    /// `.foregroundInactive`가 된 경우에도 창을 만들 수 있도록 차선책으로 허용한다.
+    private static func currentScene() -> UIWindowScene? {
+        let windowScenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return windowScenes.first { $0.activationState == .foregroundActive }
+            ?? windowScenes.first { $0.activationState == .foregroundInactive }
     }
 }
