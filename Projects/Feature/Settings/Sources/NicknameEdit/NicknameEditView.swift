@@ -2,19 +2,17 @@ import SwiftUI
 
 import DesignSystem
 import DomainInterface
-import FeatureGroup
-import SwiftUINavigation
 
-struct NicknameView: View {
-    @Bindable private var viewModel: NicknameViewModel
+public struct NicknameEditView: View {
+    @Bindable private var viewModel: NicknameEditViewModel
     @FocusState private var isNicknameFieldFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
-    init(viewModel: NicknameViewModel) {
+    public init(viewModel: NicknameEditViewModel) {
         self.viewModel = viewModel
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(spacing: 0) {
             DSTopNavigationBar(leading: {
                 DSBackButton(action: { dismiss() })
@@ -39,16 +37,16 @@ struct NicknameView: View {
             Spacer()
 
             Button {
-                viewModel.nextTapped()
+                viewModel.saveTapped()
             } label: {
                 if viewModel.isLoading {
                     ProgressView()
                 } else {
-                    Text("다음으로")
+                    Text("저장하기")
                 }
             }
             .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
-            .disabled(viewModel.isLoading || !viewModel.isNextEnabled)
+            .disabled(viewModel.isLoading || !viewModel.isSaveEnabled)
             .padding(.horizontal, 16)
             .padding(.bottom, 32)
         }
@@ -56,9 +54,6 @@ struct NicknameView: View {
         .ignoresSafeArea(.container, edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .navigationDestination(item: $viewModel.destination.groupSelect) { groupSelectViewModel in
-            GroupSelectView(viewModel: groupSelectViewModel)
-        }
     }
 
     private var textFieldState: DSTextField.State {
