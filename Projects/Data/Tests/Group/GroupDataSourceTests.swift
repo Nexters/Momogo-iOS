@@ -81,8 +81,8 @@ struct GroupDataSourceTests {
         let dataSource = withDependencies {
             $0.networkClient = NetworkClient { _ in
                 Foundation.Data(#"""
-                {"date":"2026-07-25 14:30:00.123456+00","todayVerifiedCount":2,"totalMemberCount":4,
-                "invitationCode":"A1B2C3D4","members":[]}
+                {"groupId":10,"groupName":"우리 가족","createdAt":"2026-08-01T09:00:00.123456",
+                "date":"2026-08-05","members":[{"userId":1,"nickname":"엄마","mine":true,"photo":null}]}
                 """#.utf8)
             }
         } operation: {
@@ -91,7 +91,8 @@ struct GroupDataSourceTests {
 
         let response = try await dataSource.detail(10, nil)
 
-        #expect(response.todayVerifiedCount == 2)
+        #expect(response.groupId == 10)
+        #expect(response.members.map(\.nickname) == ["엄마"])
     }
 
     @Test("그룹 나가기 성공 시 에러 없이 완료된다")

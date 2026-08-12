@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CreateUploadSessionRequestDTO: Encodable, Sendable {
+public struct PhotoUploadUrlRequestDTO: Encodable, Sendable {
     public let contentType: String
 
     public init(contentType: String) {

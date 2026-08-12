@@ -82,7 +82,7 @@ public struct DSBackButton: View {
     public var body: some View {
         Button(action: action) {
             Image(asset: DesignSystemAsset.chevronLeft)
-                .foregroundStyle(DesignSystem.Color.white)
+                .foregroundStyle(DesignSystem.Color.gray400)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }

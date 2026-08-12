@@ -8,8 +8,8 @@ extension PhotoDataSource: DependencyKey {
         @Dependency(\.mediaUploadClient) var mediaUploadClient
 
         return PhotoDataSource(
-            createUploadSession: { request in
-                try await networkClient.requestDecodable(PhotoTargetType.createUploadSession(request))
+            issueUploadURL: { request in
+                try await networkClient.requestDecodable(PhotoTargetType.issueUploadURL(request))
             },
             confirm: { request in
                 try await networkClient.requestDecodable(PhotoTargetType.confirm(request))
@@ -21,7 +21,7 @@ extension PhotoDataSource: DependencyKey {
     }
 
     public static let testValue = PhotoDataSource(
-        createUploadSession: unimplemented("\(Self.self).createUploadSession"),
+        issueUploadURL: unimplemented("\(Self.self).issueUploadURL"),
         confirm: unimplemented("\(Self.self).confirm"),
         upload: unimplemented("\(Self.self).upload")
     )
