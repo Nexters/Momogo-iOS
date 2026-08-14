@@ -34,7 +34,11 @@ public struct HomeView: View {
                     onTapSettings: viewModel.settingsTapped
                 )
 
-                GroupListSection(groups: viewModel.groups, isEmpty: isGroupEmpty)
+                GroupListSection(
+                    groups: viewModel.groups,
+                    isEmpty: isGroupEmpty,
+                    onTapGroup: viewModel.groupTapped
+                )
 
                 if !isGroupEmpty {
                     ReactionCardView(posterCount: viewModel.todayPosterCount)
@@ -71,6 +75,9 @@ public struct HomeView: View {
         }
         .navigationDestination(item: $viewModel.destination.settings) { settingsViewModel in
             SettingsView(viewModel: settingsViewModel)
+        }
+        .navigationDestination(item: $viewModel.destination.groupDetail) { groupDetailViewModel in
+            GroupDetailView(viewModel: groupDetailViewModel)
         }
     }
 

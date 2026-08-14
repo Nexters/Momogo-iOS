@@ -1,14 +1,22 @@
 import SwiftUI
 
 public struct DSMenu: View {
+    /// `destructive`는 그룹 떠나기·계정 삭제처럼 되돌리기 어려운 항목에 쓴다(텍스트/아이콘이 systemRed로 표시).
+    public enum Tone {
+        case `default`
+        case destructive
+    }
+
     public struct Item {
         let title: String
         let icon: DesignSystemImages
+        let tone: Tone
         let action: () -> Void
 
-        public init(_ title: String, icon: DesignSystemImages, action: @escaping () -> Void) {
+        public init(_ title: String, icon: DesignSystemImages, tone: Tone = .default, action: @escaping () -> Void) {
             self.title = title
             self.icon = icon
+            self.tone = tone
             self.action = action
         }
     }
@@ -60,11 +68,11 @@ public struct DSMenu: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 16, height: 16)
-                    .foregroundStyle(DesignSystem.Color.gray200)
+                    .foregroundStyle(iconColor(for: item.tone))
 
                 Text(item.title)
                     .momogoTypography(.smMedium)
-                    .foregroundStyle(DesignSystem.Color.white)
+                    .foregroundStyle(textColor(for: item.tone))
 
                 Spacer(minLength: 0)
             }
@@ -73,6 +81,14 @@ public struct DSMenu: View {
         .buttonStyle(.plain)
         .padding(.vertical, 8)
         .contentShape(Rectangle())
+    }
+
+    private func iconColor(for tone: Tone) -> Color {
+        tone == .destructive ? DesignSystem.Color.systemRed400 : DesignSystem.Color.gray200
+    }
+
+    private func textColor(for tone: Tone) -> Color {
+        tone == .destructive ? DesignSystem.Color.systemRed500 : DesignSystem.Color.white
     }
 }
 
@@ -124,7 +140,7 @@ public extension View {
                         }
 
                     DSMenu(items.map { item in
-                        DSMenu.Item(item.title, icon: item.icon) {
+                        DSMenu.Item(item.title, icon: item.icon, tone: item.tone) {
                             isPresented.wrappedValue = false
                             item.action()
                         }

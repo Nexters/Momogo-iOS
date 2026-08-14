@@ -44,6 +44,19 @@ public final class HomeViewModel {
         case groupName(GroupNameViewModel)
         case inviteCode(InviteCodeInputViewModel)
         case settings(SettingsViewModel)
+        case groupDetail(GroupDetailViewModel)
+    }
+
+    func groupTapped(_ group: GroupSummary) {
+        guard destination == nil else { return }
+        destination = .groupDetail(
+            GroupDetailViewModel(
+                groupId: group.groupId,
+                groupName: group.groupName,
+                todayPhotoUploaderCount: group.todayPhotoUploaderCount,
+                onLeave: { [weak self] in self?.destination = nil }
+            )
+        )
     }
 
     func settingsTapped() {
