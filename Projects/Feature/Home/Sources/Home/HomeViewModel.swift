@@ -33,17 +33,9 @@ public final class HomeViewModel {
     @Dependency(\.getGroupsUseCase) private var getGroupsUseCase
 
     private let onLogout: () -> Void
-    /// 그룹 참여 완료 토스트를 홈이 아닌 앱 최상위(RootView)에서 띄우기 위한 콜백.
-    /// 홈의 NavigationStack 안에 두면 pop 트랜지션 등 화면 전환에 종속되어 가려질 수 있어,
-    /// 어떤 화면 전환과도 무관한 window 레벨로 전달만 하고 표시는 상위에 위임한다.
-    private let onGroupJoined: (DSTopToastContent) -> Void
 
-    public init(
-        onLogout: @escaping () -> Void = {},
-        onGroupJoined: @escaping (DSTopToastContent) -> Void = { _ in }
-    ) {
+    public init(onLogout: @escaping () -> Void = {}) {
         self.onLogout = onLogout
-        self.onGroupJoined = onGroupJoined
     }
 
     /// 그룹 추가 메뉴에서 이미 생성/참여를 선택했으므로 `GroupSelectView`를 거치지 않고 각 플로우의 첫 화면으로 바로 들어간다.
@@ -80,9 +72,8 @@ public final class HomeViewModel {
         guard destination == nil else { return }
         destination = .inviteCode(InviteCodeInputViewModel(onFinish: { [weak self] in
             // 참여는 확인 화면 없이 곧바로 홈으로 돌아오므로, 완료 피드백을 여기서 대신 알린다.
-            // 실제 표시는 onGroupJoined를 통해 앱 최상위에 위임한다.
             self?.destination = nil
-            self?.onGroupJoined(.joinCompleted)
+            DSTopToastWindowPresenter.shared.show(.joinCompleted)
         }))
     }
 

@@ -20,7 +20,6 @@ public final class InviteCodeInputViewModel {
     }
 
     var isLoading: Bool = false
-    var toast: DSTopToastContent?
 
     @ObservationIgnored
     @Dependency(\.checkGroupByCodeUseCase) private var checkGroupByCodeUseCase
@@ -45,7 +44,7 @@ public final class InviteCodeInputViewModel {
         guard !isLoading, isJoinEnabled else { return }
 
         isLoading = true
-        toast = nil
+        DSTopToastWindowPresenter.shared.dismiss()
 
         Task {
             defer { isLoading = false }
@@ -57,9 +56,9 @@ public final class InviteCodeInputViewModel {
                 _ = try await joinGroupByCodeUseCase.execute(code)
                 onFinish()
             } catch let error as GroupJoinError {
-                toast = DSTopToastContent(error)
+                DSTopToastWindowPresenter.shared.show(DSTopToastContent(error))
             } catch {
-                toast = .fallback
+                DSTopToastWindowPresenter.shared.show(.fallback)
             }
         }
     }
