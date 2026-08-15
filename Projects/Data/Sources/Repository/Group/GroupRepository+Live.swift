@@ -77,6 +77,16 @@ extension GroupRepository: DependencyKey {
             },
             leaveGroup: { request in
                 try await groupDataSource.leave(request.groupId)
+            },
+            reportPhoto: { request in
+                try await groupDataSource.reportPhoto(
+                    request.groupId,
+                    request.photoId,
+                    PhotoReportRequestDTO(reason: request.reason)
+                )
+            },
+            deletePhoto: { request in
+                try await groupDataSource.unlinkPhoto(request.groupId, request.photoId)
             }
         )
     }

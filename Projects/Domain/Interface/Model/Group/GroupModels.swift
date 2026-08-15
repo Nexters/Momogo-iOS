@@ -180,3 +180,27 @@ public struct LeaveGroupRequest: Sendable, Equatable {
         self.groupId = groupId
     }
 }
+
+/// 사진 신고 요청 모델.
+public struct ReportPhotoRequest: Sendable, Equatable {
+    public let groupId: Int
+    public let photoId: Int
+    public let reason: String
+
+    public init(groupId: Int, photoId: Int, reason: String) {
+        self.groupId = groupId
+        self.photoId = photoId
+        self.reason = reason
+    }
+}
+
+/// 그룹에서 사진을 내리는(삭제하는) 요청 모델. 내가 올린 사진만 내릴 수 있다.
+public struct DeletePhotoRequest: Sendable, Equatable {
+    public let groupId: Int
+    public let photoId: Int
+
+    public init(groupId: Int, photoId: Int) {
+        self.groupId = groupId
+        self.photoId = photoId
+    }
+}

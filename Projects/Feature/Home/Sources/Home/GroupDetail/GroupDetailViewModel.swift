@@ -11,6 +11,7 @@ public final class GroupDetailViewModel {
     @CasePathable
     enum Destination {
         case renameGroup(GroupRenameViewModel)
+        case reportPhoto(ReportPhotoViewModel)
     }
 
     let groupId: Int
@@ -26,10 +27,17 @@ public final class GroupDetailViewModel {
     var showsLeaveConfirm: Bool = false
     var isLeaving: Bool = false
 
+    /// 삭제 확인 모달 대상. nil이 아니면 모달이 노출된다(그룹 나가기의 `showsLeaveConfirm`과 달리
+    /// 확인 대상 사진 정보까지 함께 들고 있어야 해서 Bool 대신 Optional로 상태를 겸한다).
+    var deletingPhotoMember: GroupMember?
+    var isDeletingPhoto: Bool = false
+
     @ObservationIgnored
     @Dependency(\.getGroupDetailUseCase) private var getGroupDetailUseCase
     @ObservationIgnored
     @Dependency(\.leaveGroupUseCase) private var leaveGroupUseCase
+    @ObservationIgnored
+    @Dependency(\.deletePhotoUseCase) private var deletePhotoUseCase
 
     /// 그룹 탈퇴 완료 시 상위(HomeViewModel)에 알려 화면을 되돌리고 목록을 새로고침한다.
     private let onLeave: () -> Void
@@ -124,6 +132,45 @@ public final class GroupDetailViewModel {
         do {
             try await leaveGroupUseCase.execute(groupId)
             onLeave()
+        } catch {
+            DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "잠시 후 다시 시도해주세요.", tone: .error))
+        }
+    }
+
+    /// 사진 카드 더보기 메뉴의 "신고하기" 항목. 남의 사진에만 노출되므로 `member.isMine`을 다시
+    /// 확인하지 않는다. 사진이 없는(placeholder) 카드에서는 메뉴 자체가 뜨지 않아 호출되지 않는다.
+    func reportTapped(_ member: GroupMember) {
+        guard member.photo != nil else { return }
+
+        destination = .reportPhoto(
+            ReportPhotoViewModel(
+                groupId: groupId,
+                member: member,
+                dateText: formattedDate,
+                onFinish: { [weak self] in self?.destination = nil }
+            )
+        )
+    }
+
+    /// 내 사진 삭제 확인 모달·API 연동은 완료돼 있지만, 카드 더보기 메뉴의 "삭제하기" 디자인이
+    /// 아직 나오지 않아 트리거할 진입점이 없다. `deletingPhotoMember`를 채우는 곳이 생기면
+    /// (Figma 확정 후) 이 메서드들이 곧바로 동작한다.
+    func deletePhotoCancelled() {
+        deletingPhotoMember = nil
+    }
+
+    func deletePhotoConfirmed() async {
+        guard !isDeletingPhoto, let photoId = deletingPhotoMember?.photo?.photoId else { return }
+
+        isDeletingPhoto = true
+        // 재확인하지 않도록 모달을 먼저 닫는다. 실패해도 모달을 다시 띄우지 않고 토스트로만 알린다.
+        deletingPhotoMember = nil
+        defer { isDeletingPhoto = false }
+
+        do {
+            try await deletePhotoUseCase.execute(DeletePhotoRequest(groupId: groupId, photoId: photoId))
+            await load()
+            DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "사진을 삭제했어요", tone: .success))
         } catch {
             DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "잠시 후 다시 시도해주세요.", tone: .error))
         }

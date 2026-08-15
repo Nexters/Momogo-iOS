@@ -33,10 +33,17 @@ public struct GroupDetailView: View {
         let menuRenameGroupTitle = "그룹명 변경"
         let menuLeaveGroupTitle = "그룹 떠나기"
 
+        let photoMenuReportTitle = "신고하기"
+
         let leaveConfirmTitle = "그룹을 떠나시겠어요?"
         let leaveConfirmDescription = "내가 업로드한 기록이 사라져요"
         let leaveConfirmCancelTitle = "취소"
         let leaveConfirmConfirmTitle = "떠나기"
+
+        let deleteConfirmTitle = "사진을 삭제하시겠어요?"
+        let deleteConfirmDescription = "이 그룹에서 사진이 사라져요"
+        let deleteConfirmCancelTitle = "취소"
+        let deleteConfirmConfirmTitle = "삭제"
     }
 
     private let constants = Constants()
@@ -45,6 +52,10 @@ public struct GroupDetailView: View {
     @Environment(\.dismiss) private var dismiss
     /// 순수 UI 상태라 ViewModel이 아닌 View가 소유한다(Home의 그룹 추가 메뉴와 동일한 이유).
     @State private var isMenuPresented = false
+    /// 더보기 메뉴가 열려 있는 사진 카드의 `userId`. 카드마다 `.dsMenuAnchor()`를 항상 붙이면
+    /// `DSMenuAnchorKey`가 마지막 카드 위치로 덮어써져 엉뚱한 곳에 메뉴가 뜬다 — 이 카드만
+    /// 조건부로 앵커를 붙여(GroupPhotoCardView 참고) 한 번에 하나의 메뉴만 정확한 위치에 뜨게 한다.
+    @State private var photoMenuTargetId: Int?
 
     private var columns: [GridItem] {
         [
@@ -65,13 +76,19 @@ public struct GroupDetailView: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: constants.gridSpacing) {
                     ForEach(Array(viewModel.members.enumerated()), id: \.element.id) { index, member in
-                        GroupPhotoCardView(member: member, rotationDegrees: rotationDegrees(forIndex: index))
+                        GroupPhotoCardView(
+                            member: member,
+                            rotationDegrees: rotationDegrees(forIndex: index),
+                            isMenuAnchor: photoMenuTargetId == member.userId,
+                            onTapMenu: { togglePhotoMenu(for: member) }
+                        )
                     }
                 }
                 .padding(.horizontal, constants.gridHorizontalPadding)
                 .padding(.top, constants.gridTopPadding)
                 .padding(.bottom, constants.gridBottomPadding)
             }
+            .refreshable { await viewModel.load() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(DesignSystem.Color.gray950.ignoresSafeArea())
@@ -79,6 +96,9 @@ public struct GroupDetailView: View {
         .task { await viewModel.load() }
         .navigationDestination(item: $viewModel.destination.renameGroup) { renameViewModel in
             GroupRenameView(viewModel: renameViewModel)
+        }
+        .navigationDestination(item: $viewModel.destination.reportPhoto) { reportPhotoViewModel in
+            ReportPhotoView(viewModel: reportPhotoViewModel)
         }
         .momogoMenuOverlay(
             isPresented: $isMenuPresented,
@@ -104,7 +124,13 @@ public struct GroupDetailView: View {
                 DSIconButton(.more, action: toggleMenu)
             }
         )
+        .momogoMenuOverlay(
+            isPresented: isPhotoMenuPresented,
+            items: photoMenuItems,
+            anchorContent: { PhotoMenuBadge() }
+        )
         .momogoModalOverlay(isPresented: $viewModel.showsLeaveConfirm) { leaveConfirmModal }
+        .momogoModalOverlay(isPresented: showsDeletePhotoConfirm) { deleteConfirmModal }
     }
 
     private var navigationBar: some View {
@@ -199,6 +225,59 @@ public struct GroupDetailView: View {
             primaryAction: { Task { await viewModel.leaveConfirmed() } },
             secondaryTitle: constants.leaveConfirmCancelTitle,
             secondaryAction: viewModel.leaveCancelled
+        )
+    }
+
+    private var isPhotoMenuPresented: Binding<Bool> {
+        Binding(
+            get: { photoMenuTargetId != nil },
+            set: { isPresented in
+                guard !isPresented else { return }
+                photoMenuTargetId = nil
+            }
+        )
+    }
+
+    /// 메뉴 항목의 액션 클로저가 만들어지는 시점(= `body` 렌더 시점)에 `member`를 값으로 캡처한다.
+    /// 항목을 탭하면 `momogoMenuOverlay`가 먼저 `isPresented`를 false로 되돌려 `photoMenuTargetId`가
+    /// nil이 되므로, 액션 안에서 다시 조회하면 이미 늦다.
+    private var photoMenuItems: [DSMenu.Item] {
+        guard let member = viewModel.members.first(where: { $0.userId == photoMenuTargetId }) else { return [] }
+
+        return [
+            DSMenu.Item(constants.photoMenuReportTitle, icon: DesignSystemAsset.warningTriangle) {
+                viewModel.reportTapped(member)
+            }
+        ]
+    }
+
+    private func togglePhotoMenu(for member: GroupMember) {
+        withAnimation {
+            photoMenuTargetId = (photoMenuTargetId == member.userId) ? nil : member.userId
+        }
+    }
+
+    /// `momogoModalOverlay`는 `Binding<Bool>`을 요구하지만, ViewModel은 삭제 대상 사진 정보까지
+    /// 함께 들고 있어야 해서 `deletingPhotoMember: GroupMember?`로 상태를 겸한다. 여기서 Bool로 어댑팅한다.
+    private var showsDeletePhotoConfirm: Binding<Bool> {
+        Binding(
+            get: { viewModel.deletingPhotoMember != nil },
+            set: { isPresented in
+                guard !isPresented else { return }
+                viewModel.deletingPhotoMember = nil
+            }
+        )
+    }
+
+    /// Figma 스펙(그룹 나가기 모달)과 동일하게 "취소"(outlined, 왼쪽) / "삭제"(solid primary, 오른쪽).
+    private var deleteConfirmModal: DSModal {
+        DSModal(
+            title: constants.deleteConfirmTitle,
+            description: constants.deleteConfirmDescription,
+            primaryTitle: constants.deleteConfirmConfirmTitle,
+            primaryAction: { Task { await viewModel.deletePhotoConfirmed() } },
+            secondaryTitle: constants.deleteConfirmCancelTitle,
+            secondaryAction: viewModel.deletePhotoCancelled
         )
     }
 

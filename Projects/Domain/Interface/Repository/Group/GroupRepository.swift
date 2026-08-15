@@ -9,6 +9,8 @@ public struct GroupRepository: Sendable {
     public typealias GetGroupDetail = @Sendable (GetGroupDetailRequest) async throws -> GetGroupDetailResponse
     public typealias UpdateGroupName = @Sendable (UpdateGroupNameRequest) async throws -> UpdateGroupNameResponse
     public typealias LeaveGroup = @Sendable (LeaveGroupRequest) async throws -> Void
+    public typealias ReportPhoto = @Sendable (ReportPhotoRequest) async throws -> Void
+    public typealias DeletePhoto = @Sendable (DeletePhotoRequest) async throws -> Void
 
     public var createGroup: CreateGroup
     public var checkGroupByCode: CheckGroupByCode
@@ -17,6 +19,8 @@ public struct GroupRepository: Sendable {
     public var getGroupDetail: GetGroupDetail
     public var updateGroupName: UpdateGroupName
     public var leaveGroup: LeaveGroup
+    public var reportPhoto: ReportPhoto
+    public var deletePhoto: DeletePhoto
 
     public init(
         createGroup: @escaping CreateGroup,
@@ -25,7 +29,9 @@ public struct GroupRepository: Sendable {
         getGroups: @escaping GetGroups,
         getGroupDetail: @escaping GetGroupDetail,
         updateGroupName: @escaping UpdateGroupName,
-        leaveGroup: @escaping LeaveGroup
+        leaveGroup: @escaping LeaveGroup,
+        reportPhoto: @escaping ReportPhoto,
+        deletePhoto: @escaping DeletePhoto
     ) {
         self.createGroup = createGroup
         self.checkGroupByCode = checkGroupByCode
@@ -34,6 +40,8 @@ public struct GroupRepository: Sendable {
         self.getGroupDetail = getGroupDetail
         self.updateGroupName = updateGroupName
         self.leaveGroup = leaveGroup
+        self.reportPhoto = reportPhoto
+        self.deletePhoto = deletePhoto
     }
 }
 
@@ -45,7 +53,9 @@ extension GroupRepository: TestDependencyKey {
         getGroups: unimplemented("\(Self.self).getGroups"),
         getGroupDetail: unimplemented("\(Self.self).getGroupDetail"),
         updateGroupName: unimplemented("\(Self.self).updateGroupName"),
-        leaveGroup: unimplemented("\(Self.self).leaveGroup")
+        leaveGroup: unimplemented("\(Self.self).leaveGroup"),
+        reportPhoto: unimplemented("\(Self.self).reportPhoto"),
+        deletePhoto: unimplemented("\(Self.self).deletePhoto")
     )
 }
 

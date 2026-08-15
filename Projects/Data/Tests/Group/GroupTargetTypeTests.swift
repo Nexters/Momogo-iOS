@@ -85,4 +85,32 @@ struct GroupTargetTypeTests {
             return
         }
     }
+
+    @Test("reportPhoto는 POST /groups/{groupId}/photos/{photoId}/reports, JSON 인코딩된 reason")
+    func reportPhoto_hasCorrectRouting() {
+        let target = GroupTargetType.reportPhoto(
+            groupId: 10,
+            photoId: 501,
+            request: PhotoReportRequestDTO(reason: "부적절한 사진이 포함되어 있습니다.")
+        )
+
+        #expect(target.path == "/groups/10/photos/501/reports")
+        #expect(target.method == .post)
+        guard case .requestJSONEncodable = target.task else {
+            Issue.record("requestJSONEncodable을 기대했지만 다른 task가 반환됨")
+            return
+        }
+    }
+
+    @Test("unlinkPhoto는 DELETE /groups/{groupId}/photos/{photoId}, requestPlain")
+    func unlinkPhoto_hasCorrectRouting() {
+        let target = GroupTargetType.unlinkPhoto(groupId: 10, photoId: 501)
+
+        #expect(target.path == "/groups/10/photos/501")
+        #expect(target.method == .delete)
+        guard case .requestPlain = target.task else {
+            Issue.record("requestPlain을 기대했지만 다른 task가 반환됨")
+            return
+        }
+    }
 }

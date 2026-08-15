@@ -147,4 +147,32 @@ struct GroupRepositoryLiveTests {
 
         try await repository.leaveGroup(LeaveGroupRequest(groupId: 10))
     }
+
+    @Test("reportPhoto는 요청 필드를 DTO로 매핑해 전달하고, 에러 없이 완료된다")
+    func reportPhoto_success_completesWithoutThrowing() async throws {
+        let repository = withDependencies {
+            $0.groupDataSource.reportPhoto = { groupId, photoId, dto in
+                #expect(groupId == 10)
+                #expect(photoId == 501)
+                #expect(dto.reason == "부적절한 사진이 포함되어 있습니다.")
+            }
+        } operation: {
+            GroupRepository.liveValue
+        }
+
+        try await repository.reportPhoto(
+            ReportPhotoRequest(groupId: 10, photoId: 501, reason: "부적절한 사진이 포함되어 있습니다.")
+        )
+    }
+
+    @Test("deletePhoto는 에러 없이 완료된다")
+    func deletePhoto_success_completesWithoutThrowing() async throws {
+        let repository = withDependencies {
+            $0.groupDataSource.unlinkPhoto = { _, _ in }
+        } operation: {
+            GroupRepository.liveValue
+        }
+
+        try await repository.deletePhoto(DeletePhotoRequest(groupId: 10, photoId: 501))
+    }
 }
