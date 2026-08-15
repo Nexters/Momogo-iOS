@@ -29,7 +29,7 @@ let project = Project.makeModule(
         .scheme(
             name: "FeatureSplashExample",
             buildAction: .buildAction(targets: [.target("FeatureSplashExample")]),
-            runAction: .runAction(executable: .target("FeatureSplashExample"))
+            runAction: .runAction(configuration: .dev, executable: .target("FeatureSplashExample"))
         )
     ]
 )

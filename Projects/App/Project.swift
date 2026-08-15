@@ -3,6 +3,8 @@ import ProjectDescription
 
 let project = Project.makeModule(
     name: env.appName,
+    // 자동 생성 스킴(Momogo)을 끄고 아래 DEV/PROD 스킴만 노출한다.
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .app(factory: .init(
             infoPlist: .extendingDefault(with: [
@@ -40,7 +42,7 @@ let project = Project.makeModule(
                       grep -E '^[A-Za-z_][A-Za-z0-9_]*[[:space:]]*=' "$1" | sed -E 's/^([A-Za-z_][A-Za-z0-9_]*).*/\\1/' | sort -u
                     }
 
-                    for CONFIG_NAME in Debug Release; do
+                    for CONFIG_NAME in DEV PROD; do
                       TEMPLATE="${SECRETS_DIR}/${CONFIG_NAME}.xcconfig.template"
                       ACTUAL="${SECRETS_DIR}/${CONFIG_NAME}.xcconfig"
                       if [ ! -f "$ACTUAL" ]; then
@@ -61,7 +63,7 @@ let project = Project.makeModule(
                 ),
                 .post(
                     script: """
-                    if [ "$CONFIGURATION" != "Release" ]; then
+                    if [ "$CONFIGURATION" != "PROD" ]; then
                       echo "Skipping Crashlytics symbol upload for $CONFIGURATION configuration."
                       exit 0
                     fi
@@ -86,17 +88,36 @@ let project = Project.makeModule(
             settings: .settings(
                 base: ["OTHER_LDFLAGS": ["-ObjC"]],
                 configurations: [
-                    .debug(name: "Debug", xcconfig: .relativeToRoot("Projects/App/Config/Debug.xcconfig")),
-                    .release(name: "Release", xcconfig: .relativeToRoot("Projects/App/Config/Release.xcconfig"))
+                    .debug(
+                        name: .dev,
+                        settings: ["ASSETCATALOG_COMPILER_APPICON_NAME": "AppIconDev"],
+                        xcconfig: .relativeToRoot("Projects/App/Config/DEV.xcconfig")
+                    ),
+                    .release(
+                        name: .prod,
+                        settings: ["ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon"],
+                        xcconfig: .relativeToRoot("Projects/App/Config/PROD.xcconfig")
+                    )
                 ]
             )
         ))
     ],
     schemes: [
         .scheme(
-            name: env.appName,
+            name: "\(env.appName)-DEV",
             buildAction: .buildAction(targets: [.target(env.appName)]),
-            runAction: .runAction(configuration: .debug)
+            runAction: .runAction(configuration: .dev),
+            archiveAction: .archiveAction(configuration: .dev),
+            profileAction: .profileAction(configuration: .dev),
+            analyzeAction: .analyzeAction(configuration: .dev)
+        ),
+        .scheme(
+            name: "\(env.appName)-PROD",
+            buildAction: .buildAction(targets: [.target(env.appName)]),
+            runAction: .runAction(configuration: .prod),
+            archiveAction: .archiveAction(configuration: .prod),
+            profileAction: .profileAction(configuration: .prod),
+            analyzeAction: .analyzeAction(configuration: .prod)
         )
     ]
 )

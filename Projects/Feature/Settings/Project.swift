@@ -29,7 +29,7 @@ let project = Project.makeModule(
         .scheme(
             name: "FeatureSettingsExample",
             buildAction: .buildAction(targets: [.target("FeatureSettingsExample")]),
-            runAction: .runAction(executable: .target("FeatureSettingsExample"))
+            runAction: .runAction(configuration: .dev, executable: .target("FeatureSettingsExample"))
         )
     ]
 )

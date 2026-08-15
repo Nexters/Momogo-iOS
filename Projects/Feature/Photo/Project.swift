@@ -28,7 +28,7 @@ let project = Project.makeModule(
         .scheme(
             name: "FeaturePhotoExample",
             buildAction: .buildAction(targets: [.target("FeaturePhotoExample")]),
-            runAction: .runAction(executable: .target("FeaturePhotoExample"))
+            runAction: .runAction(configuration: .dev, executable: .target("FeaturePhotoExample"))
         )
     ]
 )

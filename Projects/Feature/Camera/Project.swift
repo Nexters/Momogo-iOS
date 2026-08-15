@@ -35,7 +35,7 @@ let project = Project.makeModule(
         .scheme(
             name: "FeatureCameraExample",
             buildAction: .buildAction(targets: [.target("FeatureCameraExample")]),
-            runAction: .runAction(executable: .target("FeatureCameraExample"))
+            runAction: .runAction(configuration: .dev, executable: .target("FeatureCameraExample"))
         )
     ]
 )

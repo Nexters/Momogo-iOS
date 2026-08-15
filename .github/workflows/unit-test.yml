@@ -17,7 +17,7 @@ jobs:
     runs-on: macos-15
 
     env:
-      # Momogo 스킴은 앱 실행용 커스텀 스킴이라 테스트 액션이 비어 있으므로,
+      # Momogo-DEV/Momogo-PROD 스킴은 앱 실행용 커스텀 스킴이라 테스트 액션이 비어 있으므로,
       # Tuist가 자동 생성한 워크스페이스 스킴(전체 모듈 테스트 포함)을 사용합니다.
       SCHEME: Momogo-Workspace
       # 필요에 맞게 시뮬레이터 기종/OS를 조정하세요.
@@ -33,8 +33,8 @@ jobs:
           API_BASE_URL_PROD: ${{ secrets.API_BASE_URL_PROD }}
         run: |
           mkdir -p Projects/App/Config/Secrets
-          printf '%s\n' "API_BASE_URL = https:/\$()/${API_BASE_URL_DEV}/" > Projects/App/Config/Secrets/Debug.xcconfig
-          printf '%s\n' "API_BASE_URL = https:/\$()/${API_BASE_URL_PROD}/" > Projects/App/Config/Secrets/Release.xcconfig
+          printf '%s\n' "API_BASE_URL = https:/\$()/${API_BASE_URL_DEV}/" > Projects/App/Config/Secrets/DEV.xcconfig
+          printf '%s\n' "API_BASE_URL = https:/\$()/${API_BASE_URL_PROD}/" > Projects/App/Config/Secrets/PROD.xcconfig
 
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1

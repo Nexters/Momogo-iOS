@@ -23,7 +23,7 @@ let project = Project.makeModule(
         .scheme(
             name: "DesignSystemExample",
             buildAction: .buildAction(targets: [.target("DesignSystemExample")]),
-            runAction: .runAction(executable: .target("DesignSystemExample"))
+            runAction: .runAction(configuration: .dev, executable: .target("DesignSystemExample"))
         )
     ]
 )
