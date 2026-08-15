@@ -4,7 +4,10 @@ import UIKit
 import DesignSystem
 
 public struct PhotoUploadConfirmView: View {
+    private static let previewSide: CGFloat = 200
+
     @Bindable private var viewModel: PhotoUploadConfirmViewModel
+    @State private var previewImage: UIImage?
 
     public init(viewModel: PhotoUploadConfirmViewModel) {
         self.viewModel = viewModel
@@ -56,13 +59,36 @@ public struct PhotoUploadConfirmView: View {
         )
     }
 
+    /// `body` 안에서 `UIImage(data:)`를 부르면 그룹 체크박스를 누를 때마다(=상태가 바뀔 때마다)
+    /// 원본 해상도 JPEG를 메인스레드에서 다시 디코드한다. 표시 크기는 200pt 고정이므로 진입 시
+    /// 한 번만, 메인 밖에서, 썸네일 크기로 만들어 들고 있는다.
     private var photoPreview: some View {
-        Image(uiImage: UIImage(data: viewModel.photoData) ?? UIImage())
-            .resizable()
-            .aspectRatio(1, contentMode: .fill)
-            .frame(width: 200, height: 200)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r24))
-            .clipped()
+        Group {
+            if let previewImage {
+                Image(uiImage: previewImage)
+                    .resizable()
+                    .aspectRatio(1, contentMode: .fill)
+            } else {
+                DesignSystem.Color.gray900
+            }
+        }
+        .frame(width: Self.previewSide, height: Self.previewSide)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r24))
+        .clipped()
+        .task {
+            guard previewImage == nil else { return }
+            previewImage = await Self.makePreviewImage(from: viewModel.photoData)
+        }
+    }
+
+    private static func makePreviewImage(from data: Data) async -> UIImage? {
+        // 최신 기기 최대 배율(3x) 기준으로 만든다. 2x 기기에서는 조금 더 큰 썸네일이 되지만,
+        // 원본(4000px 급)에 비하면 무시할 수준이라 기기별로 나누지 않는다.
+        let side = previewSide * 3
+        return await Task.detached(priority: .userInitiated) {
+            guard let image = UIImage(data: data) else { return nil }
+            return image.preparingThumbnail(of: CGSize(width: side, height: side)) ?? image
+        }.value
     }
 
     private var header: some View {
