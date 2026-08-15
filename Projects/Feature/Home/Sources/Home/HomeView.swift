@@ -38,6 +38,7 @@ public struct HomeView: View {
             VStack(alignment: .leading, spacing: 24) {
                 TodayCardView(
                     hasGroups: !isGroupEmpty,
+                    recentPhotoURL: viewModel.recentPhotoURL,
                     onTapAddGroup: toggleAddGroupMenu,
                     onTapSettings: viewModel.settingsTapped,
                     onTapShoot: presentCamera

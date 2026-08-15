@@ -30,6 +30,21 @@ extension PhotoRepository: DependencyKey {
                     PhotoCreateRequestDTO(objectKey: request.objectKey, groupIds: request.groupIDs)
                 )
                 return ConfirmPhotoUploadResponse(photoId: dto.photoId, objectKey: dto.objectKey)
+            },
+            getMyPhotos: { request in
+                let dto = try await photoDataSource.myPhotos(request.date)
+                return GetMyPhotosResponse(
+                    date: dto.date,
+                    photos: dto.photos.map { photo in
+                        MyPhoto(
+                            photoId: photo.photoId,
+                            downloadUrl: photo.downloadUrl,
+                            contentType: photo.contentType,
+                            createdAt: photo.createdAt,
+                            expiresAt: photo.expiresAt
+                        )
+                    }
+                )
             }
         )
     }
