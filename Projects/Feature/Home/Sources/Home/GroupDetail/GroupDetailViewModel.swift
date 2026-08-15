@@ -49,6 +49,11 @@ public final class GroupDetailViewModel {
         self.onLeave = onLeave
     }
 
+    /// 이 화면에서 진행 중인 API 요청이 하나라도 있는지. `momogoLoadingOverlay`를 하나로 묶어 걸기 위한 값이다.
+    var isBusy: Bool {
+        isLoading || isLeaving || isDeletingPhoto
+    }
+
     var isToday: Bool {
         Self.calendar.isDate(selectedDate, inSameDayAs: Self.today)
     }

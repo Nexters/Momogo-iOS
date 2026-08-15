@@ -45,22 +45,19 @@ struct ReportPhotoView: View {
                 .padding(constants.contentPadding)
             }
 
-            Button(action: viewModel.submitTapped) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Text(constants.submitButtonTitle)
-                }
-            }
-            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
-            .disabled(viewModel.isLoading || !viewModel.isSubmitEnabled)
-            .padding(.horizontal, constants.contentPadding)
-            .padding(.bottom, constants.submitButtonBottomPadding)
+            Button(constants.submitButtonTitle, action: viewModel.submitTapped)
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
+                .disabled(viewModel.isLoading || !viewModel.isSubmitEnabled)
+                .padding(.horizontal, constants.contentPadding)
+                .padding(.bottom, constants.submitButtonBottomPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(.container, edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .momogoLoadingOverlay(isPresented: viewModel.isLoading)
+        // 로딩 오버레이가 화면을 덮어 탭은 막지만, 인터랙티브 스와이프 백 제스처는 별개로 계속 동작하므로 같이 막는다.
+        .navigationBarBackButtonHidden(viewModel.isLoading)
     }
 
     private var photoCard: some View {

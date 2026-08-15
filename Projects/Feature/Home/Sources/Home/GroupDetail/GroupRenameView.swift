@@ -48,24 +48,19 @@ struct GroupRenameView: View {
 
             Spacer()
 
-            Button {
-                viewModel.saveTapped()
-            } label: {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Text(constants.saveButtonTitle)
-                }
-            }
-            .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
-            .disabled(viewModel.isLoading || !viewModel.isSaveEnabled)
-            .padding(.horizontal, constants.contentPadding)
-            .padding(.bottom, constants.saveButtonBottomPadding)
+            Button(constants.saveButtonTitle, action: viewModel.saveTapped)
+                .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
+                .disabled(viewModel.isLoading || !viewModel.isSaveEnabled)
+                .padding(.horizontal, constants.contentPadding)
+                .padding(.bottom, constants.saveButtonBottomPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(.container, edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .momogoLoadingOverlay(isPresented: viewModel.isLoading)
+        // 로딩 오버레이가 화면을 덮어 탭은 막지만, 인터랙티브 스와이프 백 제스처는 별개로 계속 동작하므로 같이 막는다.
+        .navigationBarBackButtonHidden(viewModel.isLoading)
     }
 
     private var textFieldState: DSTextField.State {
