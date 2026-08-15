@@ -2,16 +2,19 @@ import Foundation
 import UIKit
 
 import DesignSystem
+import DomainInterface
 
 @Observable
 @MainActor
 final class InviteShareViewModel {
-    let inviteCode: String
+    private let response: CreateGroupResponse
+    /// 그룹 상세로 바로 이동할 수 있도록, 완료 콜백에 생성된 그룹 정보를 함께 전달한다.
+    private let onFinish: (CreateGroupResponse) -> Void
 
-    private let onFinish: () -> Void
+    var inviteCode: String { response.invitationCode }
 
-    init(inviteCode: String, onFinish: @escaping () -> Void) {
-        self.inviteCode = inviteCode
+    init(response: CreateGroupResponse, onFinish: @escaping (CreateGroupResponse) -> Void) {
+        self.response = response
         self.onFinish = onFinish
     }
 
@@ -21,6 +24,6 @@ final class InviteShareViewModel {
     }
 
     func goToMainTapped() {
-        onFinish()
+        onFinish(response)
     }
 }

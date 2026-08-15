@@ -32,6 +32,8 @@ private struct RootView: View {
     private static let transitionAnimation: Animation = .easeInOut(duration: 0.4)
 
     @State private var destination: RootDestination = .splash
+    /// 온보딩에서 그룹까지 만들고 끝난 경우, 홈이 그 그룹의 상세로 바로 진입할 수 있도록 잠시 들고 있는다.
+    @State private var pendingCreatedGroup: CreateGroupResponse?
 
     var body: some View {
         Group {
@@ -50,12 +52,16 @@ private struct RootView: View {
                 .transition(.opacity)
             case .home:
                 HomeView(viewModel: HomeViewModel(
+                    initialCreatedGroup: pendingCreatedGroup,
                     onLogout: { withAnimation(Self.transitionAnimation) { destination = .onboarding } }
                 ))
                 .transition(.opacity)
             case .onboarding:
-                OnboardingView(viewModel: OnboardingViewModel(onFinish: {
-                    withAnimation(Self.transitionAnimation) { destination = .home }
+                OnboardingView(viewModel: OnboardingViewModel(onFinish: { createdGroup in
+                    withAnimation(Self.transitionAnimation) {
+                        pendingCreatedGroup = createdGroup
+                        destination = .home
+                    }
                 }))
                 .transition(.opacity)
             }

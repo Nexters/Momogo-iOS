@@ -1,5 +1,6 @@
 import Foundation
 
+import DomainInterface
 import SwiftUINavigation
 
 @Observable
@@ -14,9 +15,9 @@ public final class GroupSelectViewModel {
     var selection: Selection = .createGroup
     var destination: Destination?
 
-    private let onFinish: () -> Void
+    private let onFinish: (CreateGroupResponse?) -> Void
 
-    public init(nickname: String, onFinish: @escaping () -> Void) {
+    public init(nickname: String, onFinish: @escaping (CreateGroupResponse?) -> Void) {
         self.nickname = nickname
         self.onFinish = onFinish
     }
@@ -34,9 +35,9 @@ public final class GroupSelectViewModel {
     func nextTapped() {
         switch selection {
         case .createGroup:
-            destination = .groupName(GroupNameViewModel(onFinish: onFinish))
+            destination = .groupName(GroupNameViewModel(onFinish: { [weak self] response in self?.onFinish(response) }))
         case .joinWithCode:
-            destination = .inviteCode(InviteCodeInputViewModel(onFinish: onFinish))
+            destination = .inviteCode(InviteCodeInputViewModel(onFinish: { [weak self] in self?.onFinish(nil) }))
         }
     }
 }
