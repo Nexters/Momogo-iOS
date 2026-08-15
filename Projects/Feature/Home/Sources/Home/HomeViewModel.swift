@@ -25,6 +25,9 @@ public final class HomeViewModel {
         let url: URL
     }
 
+    /// groupId → 마지막으로 본 시점의 latestUploadAt 스냅샷. New 배지 판정에 쓰인다.
+    private var visits: [Int: String] = [:]
+
     /// 그룹 생성/참여 플로우의 push 상태.
     ///
     /// nil로 되돌아오는 경로는 종착 화면 CTA(`onFinish`)와 뒤로가기 pop 두 가지인데, 후자에서도
@@ -44,6 +47,10 @@ public final class HomeViewModel {
     @Dependency(\.getMyPhotosUseCase) private var getMyPhotosUseCase
     @ObservationIgnored
     @Dependency(\.getGroupDetailUseCase) private var getGroupDetailUseCase
+    @ObservationIgnored
+    @Dependency(\.getGroupVisitsUseCase) private var getGroupVisitsUseCase
+    @ObservationIgnored
+    @Dependency(\.markGroupVisitedUseCase) private var markGroupVisitedUseCase
 
     private let onLogout: () -> Void
 
@@ -74,20 +81,6 @@ public final class HomeViewModel {
         case inviteCode(InviteCodeInputViewModel)
         case settings(SettingsViewModel)
         case groupDetail(GroupDetailViewModel)
-    }
-
-    func groupTapped(_ group: GroupSummary) {
-        guard destination == nil else { return }
-        destination = .groupDetail(
-            GroupDetailViewModel(
-                groupId: group.groupId,
-                groupName: group.groupName,
-                todayPhotoUploaderCount: group.todayPhotoUploaderCount,
-                onLeave: { [weak self] in self?.destination = nil },
-                onPhotoDeleted: { [weak self] in Task { await self?.load() } },
-                onPhotoUploaded: { [weak self] in Task { await self?.load() } }
-            )
-        )
     }
 
     func settingsTapped() {
@@ -136,6 +129,7 @@ public final class HomeViewModel {
 
         do {
             groups = try await groupsResult.groups
+            visits = getGroupVisitsUseCase.execute()
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
         }
@@ -170,5 +164,31 @@ public final class HomeViewModel {
         return photos
             .first { activePhotoIds.contains($0.photoId) }
             .flatMap { photo in URL(string: photo.downloadUrl).map { RecentPhoto(photoId: photo.photoId, url: $0) } }
+    }
+
+    /// 그룹에 마지막으로 본 뒤 새 사진이 올라왔는지. 카드의 New 배지 표시 여부에 쓰인다.
+    func hasNewPhoto(_ group: GroupSummary) -> Bool {
+        group.hasNewPhoto(lastSeenUploadAt: visits[group.groupId])
+    }
+
+    /// 그룹 카드를 탭했을 때 방문을 기록하고 상세 화면으로 이동한다.
+    func groupTapped(_ group: GroupSummary) {
+        guard destination == nil else { return }
+        markGroupVisitedUseCase.execute(group.groupId, group.latestUploadAt)
+        // 재조회 없이 배지가 즉시 사라지도록 낙관적으로 갱신한다. latestUploadAt이 nil이면 그대로
+        // 대입할 경우 딕셔너리에서 키가 삭제되어 기존 방문 기록이 사라지므로, nil일 때는 건드리지 않는다.
+        if let latestUploadAt = group.latestUploadAt {
+            visits[group.groupId] = latestUploadAt
+        }
+        destination = .groupDetail(
+            GroupDetailViewModel(
+                groupId: group.groupId,
+                groupName: group.groupName,
+                todayPhotoUploaderCount: group.todayPhotoUploaderCount,
+                onLeave: { [weak self] in self?.destination = nil },
+                onPhotoDeleted: { [weak self] in Task { await self?.load() } },
+                onPhotoUploaded: { [weak self] in Task { await self?.load() } }
+            )
+        )
     }
 }

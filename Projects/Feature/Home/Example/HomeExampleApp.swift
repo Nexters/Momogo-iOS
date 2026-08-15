@@ -1,31 +1,12 @@
 import SwiftUI
 
-import Dependencies
-import DomainInterface
-import FeatureHome
-
 @main
 struct HomeExampleApp: App {
-    init() {
-        prepareDependencies {
-            $0.getGroupsUseCase = .happyPath
-            $0.getMyPhotosUseCase = .happyPath
-            // 그룹 생성·참여 플로우는 FeatureGroup 화면이 담당하므로 해당 UseCase도 함께 주입해야 push 이후가 동작한다.
-            // 다만 getGroupsUseCase가 고정 목록을 돌려주므로, 생성 후 목록이 늘어나는 것까지는 실제 앱에서 확인해야 한다.
-            $0.createGroupUseCase = .happyPath
-            $0.checkGroupByCodeUseCase = .happyPath
-            $0.joinGroupByCodeUseCase = .happyPath
-            $0.getGroupDetailUseCase = .happyPath
-            $0.updateGroupNameUseCase = .happyPath
-            $0.leaveGroupUseCase = .happyPath
-            $0.reportPhotoUseCase = .happyPath
-            $0.deletePhotoUseCase = .happyPath
-        }
-    }
-
+    // 시나리오별 의존성 주입은 HomeExampleRootView가 진입 시점마다 새로 구성한다
+    // (New 배지 데모는 시나리오마다 독립된 방문 기록 mock이 필요해 앱 시작 시점의 고정 주입으로는 부족하다).
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: HomeViewModel())
+            HomeExampleRootView()
         }
     }
 }

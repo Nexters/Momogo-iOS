@@ -57,7 +57,8 @@ extension GroupRepository: DependencyKey {
                                     }
                                 )
                             },
-                            todayPhotoUploaded: summary.todayPhotoUploaded
+                            todayPhotoUploaded: summary.todayPhotoUploaded,
+                            latestUploadAt: summary.latestUploadAt
                         )
                     }
                 )

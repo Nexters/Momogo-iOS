@@ -76,6 +76,10 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
     /// 오늘 이 그룹에 내가 이미 활성 사진을 올렸는지 여부. 정책상 사진을 지우기 전까지는 같은
     /// 그룹에 다시 업로드할 수 없어, 업로드 대상 그룹을 고를 때 이 값으로 선택 가능 여부를 가른다.
     public let todayPhotoUploaded: Bool
+    /// 나를 제외한 다른 그룹원이 올린 최신 사진의 등록 시각(Asia/Seoul, 타임존 표기 없는 서버 원본 문자열).
+    /// 활성 사진이 없으면 nil. 고정폭 ISO-8601 형식이라 사전순 비교가 곧 시간순 비교이므로,
+    /// Date로 파싱하지 않고 문자열째로 들고 있다가 대소 비교만 한다(`hasNewPhoto` 참고).
+    public let latestUploadAt: String?
 
     public var id: Int { groupId }
 
@@ -85,7 +89,8 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
         totalMemberCount: Int,
         todayPhotoUploaderCount: Int,
         members: [GroupMember] = [],
-        todayPhotoUploaded: Bool = false
+        todayPhotoUploaded: Bool = false,
+        latestUploadAt: String? = nil
     ) {
         self.groupId = groupId
         self.groupName = groupName
@@ -93,6 +98,15 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
         self.todayPhotoUploaderCount = todayPhotoUploaderCount
         self.members = members
         self.todayPhotoUploaded = todayPhotoUploaded
+        self.latestUploadAt = latestUploadAt
+    }
+
+    /// 마지막으로 그룹을 봤을 때의 `latestUploadAt` 스냅샷과 비교해 새 사진 여부를 판정한다.
+    /// 방문 기록이 없으면(nil) 아직 한 번도 안 본 그룹으로 보고, 활성 사진이 있으면 새 사진으로 간주한다.
+    public func hasNewPhoto(lastSeenUploadAt: String?) -> Bool {
+        guard let latestUploadAt else { return false }
+        guard let lastSeenUploadAt else { return true }
+        return latestUploadAt > lastSeenUploadAt
     }
 }
 

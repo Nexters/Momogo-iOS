@@ -48,7 +48,8 @@ public struct HomeView: View {
                 GroupListSection(
                     groups: viewModel.groups,
                     isEmpty: isGroupEmpty,
-                    onTapGroup: viewModel.groupTapped
+                    hasNewPhoto: viewModel.hasNewPhoto,
+                    onGroupTap: viewModel.groupTapped
                 )
 
                 if !isGroupEmpty {

@@ -10,6 +10,7 @@ enum DesignSystemCategory: String, CaseIterable, Identifiable {
     case shadow
     case button
     case chip
+    case badge
     case control
     case input
     case modal
@@ -30,6 +31,7 @@ enum DesignSystemCategory: String, CaseIterable, Identifiable {
         case .shadow: "Shadow"
         case .button: "Button"
         case .chip: "Chip"
+        case .badge: "Badge"
         case .control: "Control"
         case .input: "Input"
         case .modal: "Modal"
@@ -80,6 +82,7 @@ struct DesignSystemDetailView: View {
         case .shadow: shadowSection
         case .button: buttonSection
         case .chip: chipSection
+        case .badge: badgeSection
         case .control: controlSection
         case .input: inputSection
         case .modal: modalSection
@@ -229,6 +232,15 @@ extension DesignSystemDetailView {
 
     private var chipSection: some View {
         ChipGroupPreview()
+    }
+
+    private var badgeSection: some View {
+        ZStack {
+            DesignSystem.Color.gray800
+            DSBadge.new.padding(12)
+        }
+        .frame(width: 80, height: 40)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
     }
 
     private var controlSection: some View {
