@@ -43,6 +43,9 @@ public struct PhotoUploadConfirmView: View {
         .background(DesignSystem.Color.gray950.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.onAppear() }
+        // 그룹 목록 조회, 업로드 확정 두 API 호출 모두 진행 중에는 화면을 딤 처리해 상호작용을 막고
+        // 로딩 중임을 알린다. 성공/실패 상관없이 호출이 끝나면(ViewModel의 defer) 자동으로 사라진다.
+        .momogoLoadingOverlay(isPresented: viewModel.isLoadingGroups || viewModel.isUploading)
         .momogoToast(
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
@@ -79,22 +82,16 @@ public struct PhotoUploadConfirmView: View {
         }
     }
 
-    @ViewBuilder
+    // 로딩 중 표시는 momogoLoadingOverlay가 화면 전체를 딤 처리하며 대신하므로, 여기서는 로딩 여부와
+    // 무관하게 그룹 목록만 그린다(로딩 중엔 groups가 비어 있어 빈 VStack이 그려질 뿐이다).
     private var groupList: some View {
-        if viewModel.isLoadingGroups {
-            ProgressView()
-                .tint(DesignSystem.Color.gray50)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 40)
-        } else {
-            VStack(spacing: 8) {
-                ForEach(viewModel.groups) { group in
-                    GroupUploadSelectionCard(
-                        group: group,
-                        isSelected: viewModel.isSelected(group),
-                        action: { viewModel.toggle(group) }
-                    )
-                }
+        VStack(spacing: 8) {
+            ForEach(viewModel.groups) { group in
+                GroupUploadSelectionCard(
+                    group: group,
+                    isSelected: viewModel.isSelected(group),
+                    action: { viewModel.toggle(group) }
+                )
             }
         }
     }

@@ -20,8 +20,6 @@ public final class PhotoUploadConfirmViewModel {
     @ObservationIgnored
     @Dependency(\.getGroupsUseCase) private var getGroupsUseCase
     @ObservationIgnored
-    @Dependency(\.getGroupDetailUseCase) private var getGroupDetailUseCase
-    @ObservationIgnored
     @Dependency(\.uploadPhotoUseCase) private var uploadPhotoUseCase
 
     /// - Parameters:
@@ -40,8 +38,14 @@ public final class PhotoUploadConfirmViewModel {
         self.onUploaded = onUploaded
     }
 
+    /// 오늘 이미 업로드한 그룹은 선택 대상 자체가 아니므로, "모두 선택"의 기준은 전체 그룹이 아니라
+    /// 업로드 가능한 그룹만으로 계산한다.
+    private var uploadableGroups: [PhotoUploadGroupOption] {
+        groups.filter(\.isUploadable)
+    }
+
     var isAllSelected: Bool {
-        !groups.isEmpty && selectedGroupIDs.count == groups.count
+        !uploadableGroups.isEmpty && selectedGroupIDs.count == uploadableGroups.count
     }
 
     var isConfirmEnabled: Bool {
@@ -53,6 +57,8 @@ public final class PhotoUploadConfirmViewModel {
     }
 
     func toggle(_ group: PhotoUploadGroupOption) {
+        guard group.isUploadable else { return }
+
         if selectedGroupIDs.contains(group.id) {
             selectedGroupIDs.remove(group.id)
         } else {
@@ -61,7 +67,7 @@ public final class PhotoUploadConfirmViewModel {
     }
 
     func toggleSelectAll() {
-        selectedGroupIDs = isAllSelected ? [] : Set(groups.map(\.id))
+        selectedGroupIDs = isAllSelected ? [] : Set(uploadableGroups.map(\.id))
     }
 
     func backTapped() {
@@ -76,23 +82,14 @@ public final class PhotoUploadConfirmViewModel {
 
         do {
             let response = try await getGroupsUseCase.execute()
-            var loadedGroups: [PhotoUploadGroupOption] = []
-            for summary in response.groups {
-                // 그룹 목록 API에는 멤버 이름이 없어, 그룹마다 상세 조회를 한 번씩 더 호출해 채운다.
-                // 상세 조회가 실패해도 화면 전체를 막지 않고 해당 그룹의 멤버 이름만 비워둔다.
-                let memberNames = try? await getGroupDetailUseCase
-                    .execute(GetGroupDetailRequest(groupId: summary.groupId))
-                    .members
-                    .map(\.nickname)
-                loadedGroups.append(
-                    PhotoUploadGroupOption(
-                        id: summary.groupId,
-                        groupName: summary.groupName,
-                        memberNames: memberNames ?? []
-                    )
+            groups = response.groups.map { summary in
+                PhotoUploadGroupOption(
+                    id: summary.groupId,
+                    groupName: summary.groupName,
+                    memberNames: summary.members.map(\.nickname),
+                    isUploadable: !summary.todayPhotoUploaded
                 )
             }
-            groups = loadedGroups
         } catch {
             errorMessage = ViewModelCopy.groupsLoadFailed
         }

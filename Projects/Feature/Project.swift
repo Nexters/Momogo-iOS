@@ -10,7 +10,8 @@ let targets: [Target] = [
             .feature(implements: .group),
             .feature(implements: .splash),
             .feature(implements: .settings),
-            .feature(implements: .photo)
+            .feature(implements: .photo),
+            .feature(implements: .camera)
         ]
     ))
 ]

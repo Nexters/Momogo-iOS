@@ -8,6 +8,7 @@ public extension ModulePath {
         case splash = "Splash"
         case settings = "Settings"
         case photo = "Photo"
+        case camera = "Camera"
 
         public static let name = "Feature"
     }

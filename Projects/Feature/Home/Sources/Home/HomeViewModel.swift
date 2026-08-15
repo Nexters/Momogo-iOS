@@ -15,6 +15,7 @@ public final class HomeViewModel {
     var errorMessage: String?
     /// 최초 로드 완료 여부. `groups.isEmpty`만으로는 로드 전 초기값과 실제 빈 상태를 구분할 수 없다.
     private(set) var hasLoaded: Bool = false
+    var isCameraPresented: Bool = false
 
     /// 그룹 생성/참여 플로우의 push 상태.
     ///

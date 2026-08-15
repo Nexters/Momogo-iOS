@@ -72,6 +72,10 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
     public let groupName: String
     public let totalMemberCount: Int
     public let todayPhotoUploaderCount: Int
+    public let members: [GroupMember]
+    /// 오늘 이 그룹에 내가 이미 활성 사진을 올렸는지 여부. 정책상 사진을 지우기 전까지는 같은
+    /// 그룹에 다시 업로드할 수 없어, 업로드 대상 그룹을 고를 때 이 값으로 선택 가능 여부를 가른다.
+    public let todayPhotoUploaded: Bool
 
     public var id: Int { groupId }
 
@@ -79,12 +83,16 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
         groupId: Int,
         groupName: String,
         totalMemberCount: Int,
-        todayPhotoUploaderCount: Int
+        todayPhotoUploaderCount: Int,
+        members: [GroupMember] = [],
+        todayPhotoUploaded: Bool = false
     ) {
         self.groupId = groupId
         self.groupName = groupName
         self.totalMemberCount = totalMemberCount
         self.todayPhotoUploaderCount = todayPhotoUploaderCount
+        self.members = members
+        self.todayPhotoUploaded = todayPhotoUploaded
     }
 }
 
