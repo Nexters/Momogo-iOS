@@ -12,7 +12,9 @@ extension GetGroupsUseCase {
                 groupId: 10,
                 groupName: "우리 가족",
                 totalMemberCount: 4,
-                todayPhotoUploaderCount: 2
+                todayPhotoUploaderCount: 2,
+                // true여야 홈 썸네일(`GetMyPhotosUseCase.happyPath`의 사진)이 노출된다.
+                todayPhotoUploaded: true
             ),
             GroupSummary(
                 groupId: 11,

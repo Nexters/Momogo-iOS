@@ -41,7 +41,8 @@ public struct HomeView: View {
                     recentPhotoURL: viewModel.recentPhotoURL,
                     onTapAddGroup: toggleAddGroupMenu,
                     onTapSettings: viewModel.settingsTapped,
-                    onTapShoot: presentCamera
+                    onTapShoot: presentCamera,
+                    onTapCreateGroup: viewModel.createGroupTapped
                 )
 
                 GroupListSection(

@@ -14,7 +14,8 @@ extension GetGroupDetailUseCase {
                     userId: 1,
                     nickname: "나",
                     isMine: true,
-                    photo: GroupMemberPhoto(photoId: 3, downloadUrl: "https://picsum.photos/seed/3/400")
+                    // `GetMyPhotosUseCase.happyPath`의 photoId(501)와 맞물려야 홈 썸네일이 노출된다.
+                    photo: GroupMemberPhoto(photoId: 501, downloadUrl: "https://picsum.photos/seed/3/400")
                 ),
                 GroupMember(
                     userId: 2,
