@@ -8,4 +8,5 @@ public extension TargetDependency {
     static let moya: TargetDependency = .external(name: "Moya")
     static let firebaseAnalytics: TargetDependency = .external(name: "FirebaseAnalytics")
     static let firebaseCrashlytics: TargetDependency = .external(name: "FirebaseCrashlytics")
+    static let lottie: TargetDependency = .external(name: "Lottie")
 }
