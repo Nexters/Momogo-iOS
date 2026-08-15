@@ -27,6 +27,14 @@ extension GroupDataSource: DependencyKey {
             },
             leave: { groupId in
                 _ = try await networkClient.request(GroupTargetType.leave(groupId: groupId))
+            },
+            reportPhoto: { groupId, photoId, request in
+                _ = try await networkClient.request(
+                    GroupTargetType.reportPhoto(groupId: groupId, photoId: photoId, request: request)
+                )
+            },
+            unlinkPhoto: { groupId, photoId in
+                _ = try await networkClient.request(GroupTargetType.unlinkPhoto(groupId: groupId, photoId: photoId))
             }
         )
     }
@@ -38,6 +46,8 @@ extension GroupDataSource: DependencyKey {
         join: unimplemented("\(Self.self).join"),
         list: unimplemented("\(Self.self).list"),
         detail: unimplemented("\(Self.self).detail"),
-        leave: unimplemented("\(Self.self).leave")
+        leave: unimplemented("\(Self.self).leave"),
+        reportPhoto: unimplemented("\(Self.self).reportPhoto"),
+        unlinkPhoto: unimplemented("\(Self.self).unlinkPhoto")
     )
 }

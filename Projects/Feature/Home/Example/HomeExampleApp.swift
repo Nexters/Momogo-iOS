@@ -14,6 +14,11 @@ struct HomeExampleApp: App {
             $0.createGroupUseCase = .happyPath
             $0.checkGroupByCodeUseCase = .happyPath
             $0.joinGroupByCodeUseCase = .happyPath
+            $0.getGroupDetailUseCase = .happyPath
+            $0.updateGroupNameUseCase = .happyPath
+            $0.leaveGroupUseCase = .happyPath
+            $0.reportPhotoUseCase = .happyPath
+            $0.deletePhotoUseCase = .happyPath
         }
     }
 

@@ -105,4 +105,26 @@ struct GroupDataSourceTests {
 
         try await dataSource.leave(10)
     }
+
+    @Test("사진 신고 성공 시 에러 없이 완료된다")
+    func reportPhoto_success_completesWithoutThrowing() async throws {
+        let dataSource = withDependencies {
+            $0.networkClient = NetworkClient { _ in Foundation.Data("{}".utf8) }
+        } operation: {
+            GroupDataSource.liveValue
+        }
+
+        try await dataSource.reportPhoto(10, 501, PhotoReportRequestDTO(reason: "부적절한 사진이 포함되어 있습니다."))
+    }
+
+    @Test("사진 내리기 성공 시 에러 없이 완료된다")
+    func unlinkPhoto_success_completesWithoutThrowing() async throws {
+        let dataSource = withDependencies {
+            $0.networkClient = NetworkClient { _ in Foundation.Data("{}".utf8) }
+        } operation: {
+            GroupDataSource.liveValue
+        }
+
+        try await dataSource.unlinkPhoto(10, 501)
+    }
 }

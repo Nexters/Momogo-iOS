@@ -109,16 +109,31 @@ public struct GetGroupDetailRequest: Sendable, Equatable {
     }
 }
 
-/// 그룹 상세의 그룹원 한 명의 정보.
-public struct GroupMember: Sendable, Equatable {
+/// 그룹 상세의 그룹원과 선택 날짜의 사진. 서버가 "나 → 닉네임순"으로 정렬해서 내려준다.
+public struct GroupMember: Sendable, Equatable, Identifiable {
     public let userId: Int
     public let nickname: String
     public let isMine: Bool
+    public let photo: GroupMemberPhoto?
 
-    public init(userId: Int, nickname: String, isMine: Bool) {
+    public var id: Int { userId }
+
+    public init(userId: Int, nickname: String, isMine: Bool, photo: GroupMemberPhoto? = nil) {
         self.userId = userId
         self.nickname = nickname
         self.isMine = isMine
+        self.photo = photo
+    }
+}
+
+/// 그룹원이 선택 날짜에 올린 사진.
+public struct GroupMemberPhoto: Sendable, Equatable {
+    public let photoId: Int
+    public let downloadUrl: String
+
+    public init(photoId: Int, downloadUrl: String) {
+        self.photoId = photoId
+        self.downloadUrl = downloadUrl
     }
 }
 
@@ -132,5 +147,60 @@ public struct GetGroupDetailResponse: Sendable, Equatable {
         self.groupId = groupId
         self.groupName = groupName
         self.members = members
+    }
+}
+
+/// 그룹명 변경 요청 모델.
+public struct UpdateGroupNameRequest: Sendable, Equatable {
+    public let groupId: Int
+    public let groupName: String
+
+    public init(groupId: Int, groupName: String) {
+        self.groupId = groupId
+        self.groupName = groupName
+    }
+}
+
+/// 그룹명 변경 성공 시 반환되는 응답 모델.
+public struct UpdateGroupNameResponse: Sendable, Equatable {
+    public let groupId: Int
+    public let groupName: String
+
+    public init(groupId: Int, groupName: String) {
+        self.groupId = groupId
+        self.groupName = groupName
+    }
+}
+
+/// 그룹 탈퇴 요청 모델.
+public struct LeaveGroupRequest: Sendable, Equatable {
+    public let groupId: Int
+
+    public init(groupId: Int) {
+        self.groupId = groupId
+    }
+}
+
+/// 사진 신고 요청 모델.
+public struct ReportPhotoRequest: Sendable, Equatable {
+    public let groupId: Int
+    public let photoId: Int
+    public let reason: String
+
+    public init(groupId: Int, photoId: Int, reason: String) {
+        self.groupId = groupId
+        self.photoId = photoId
+        self.reason = reason
+    }
+}
+
+/// 그룹에서 사진을 내리는(삭제하는) 요청 모델. 내가 올린 사진만 내릴 수 있다.
+public struct DeletePhotoRequest: Sendable, Equatable {
+    public let groupId: Int
+    public let photoId: Int
+
+    public init(groupId: Int, photoId: Int) {
+        self.groupId = groupId
+        self.photoId = photoId
     }
 }

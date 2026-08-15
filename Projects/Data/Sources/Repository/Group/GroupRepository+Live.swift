@@ -57,9 +57,36 @@ extension GroupRepository: DependencyKey {
                     groupId: dto.groupId,
                     groupName: dto.groupName,
                     members: dto.members.map { member in
-                        GroupMember(userId: member.userId, nickname: member.nickname, isMine: member.mine)
+                        GroupMember(
+                            userId: member.userId,
+                            nickname: member.nickname,
+                            isMine: member.mine,
+                            photo: member.photo.map {
+                                GroupMemberPhoto(photoId: $0.photoId, downloadUrl: $0.downloadUrl)
+                            }
+                        )
                     }
                 )
+            },
+            updateGroupName: { request in
+                let dto = try await groupDataSource.updateName(
+                    request.groupId,
+                    UpdateGroupNameRequestDTO(groupName: request.groupName)
+                )
+                return UpdateGroupNameResponse(groupId: dto.groupId, groupName: dto.groupName)
+            },
+            leaveGroup: { request in
+                try await groupDataSource.leave(request.groupId)
+            },
+            reportPhoto: { request in
+                try await groupDataSource.reportPhoto(
+                    request.groupId,
+                    request.photoId,
+                    PhotoReportRequestDTO(reason: request.reason)
+                )
+            },
+            deletePhoto: { request in
+                try await groupDataSource.unlinkPhoto(request.groupId, request.photoId)
             }
         )
     }

@@ -10,6 +10,8 @@ public struct GroupDataSource: Sendable {
     public var list: @Sendable () async throws -> GroupListResponseDTO
     public var detail: @Sendable (Int, String?) async throws -> GroupDetailResponseDTO
     public var leave: @Sendable (Int) async throws -> Void
+    public var reportPhoto: @Sendable (_ groupId: Int, _ photoId: Int, PhotoReportRequestDTO) async throws -> Void
+    public var unlinkPhoto: @Sendable (_ groupId: Int, _ photoId: Int) async throws -> Void
 
     public init(
         create: @escaping @Sendable (CreateGroupRequestDTO) async throws -> CreateGroupResponseDTO,
@@ -18,7 +20,9 @@ public struct GroupDataSource: Sendable {
         join: @escaping @Sendable (JoinGroupByCodeRequestDTO) async throws -> JoinGroupByCodeResponseDTO,
         list: @escaping @Sendable () async throws -> GroupListResponseDTO,
         detail: @escaping @Sendable (Int, String?) async throws -> GroupDetailResponseDTO,
-        leave: @escaping @Sendable (Int) async throws -> Void
+        leave: @escaping @Sendable (Int) async throws -> Void,
+        reportPhoto: @escaping @Sendable (_ groupId: Int, _ photoId: Int, PhotoReportRequestDTO) async throws -> Void,
+        unlinkPhoto: @escaping @Sendable (_ groupId: Int, _ photoId: Int) async throws -> Void
     ) {
         self.create = create
         self.updateName = updateName
@@ -27,6 +31,8 @@ public struct GroupDataSource: Sendable {
         self.list = list
         self.detail = detail
         self.leave = leave
+        self.reportPhoto = reportPhoto
+        self.unlinkPhoto = unlinkPhoto
     }
 }
 

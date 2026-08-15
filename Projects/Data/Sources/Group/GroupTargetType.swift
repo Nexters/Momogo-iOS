@@ -10,6 +10,8 @@ enum GroupTargetType: NetworkTargetType {
     case list
     case detail(groupId: Int, date: String?)
     case leave(groupId: Int)
+    case reportPhoto(groupId: Int, photoId: Int, request: PhotoReportRequestDTO)
+    case unlinkPhoto(groupId: Int, photoId: Int)
 
     var path: String {
         switch self {
@@ -25,18 +27,22 @@ enum GroupTargetType: NetworkTargetType {
             "/groups/\(groupId)"
         case let .leave(groupId):
             "/groups/\(groupId)/members/me"
+        case let .reportPhoto(groupId, photoId, _):
+            "/groups/\(groupId)/photos/\(photoId)/reports"
+        case let .unlinkPhoto(groupId, photoId):
+            "/groups/\(groupId)/photos/\(photoId)"
         }
     }
 
     var method: Moya.Method {
         switch self {
-        case .create, .join:
+        case .create, .join, .reportPhoto:
             .post
         case .updateName:
             .patch
         case .checkInvitation, .list, .detail:
             .get
-        case .leave:
+        case .leave, .unlinkPhoto:
             .delete
         }
     }
@@ -60,6 +66,10 @@ enum GroupTargetType: NetworkTargetType {
                 .requestPlain
             }
         case .leave:
+            .requestPlain
+        case let .reportPhoto(_, _, dto):
+            .requestJSONEncodable(dto)
+        case .unlinkPhoto:
             .requestPlain
         }
     }
