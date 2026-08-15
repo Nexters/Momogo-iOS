@@ -19,6 +19,7 @@ struct TodayCardView: View {
     var onTapAddGroup: () -> Void = {}
     var onTapSettings: () -> Void = {}
     var onTapShoot: () -> Void = {}
+    var onTapCreateGroup: () -> Void = {}
 
     private let cameraSize: CGFloat = 75
     /// Figma 스펙: 카드 leading 기준 30px. `headlineBlock`은 `content`의 16px 패딩 안쪽에서 시작하므로
@@ -107,8 +108,10 @@ struct TodayCardView: View {
         // 모서리에 맞춘다(= 라벨 위에 겹쳐 위로 확장). 카메라 자신의 높이만큼 아래로 밀어 "겹침"을
         // "라벨 바로 아래 flush"로 바꾼 뒤, 거기서 gap만큼 더 내린다.
         .overlay(alignment: .bottomLeading) {
-            cameraButton
-                .offset(x: cameraLeadingOffset, y: cameraSize + cameraTopGap)
+            if hasGroups {
+                cameraButton
+                    .offset(x: cameraLeadingOffset, y: cameraSize + cameraTopGap)
+            }
         }
     }
 
@@ -146,7 +149,7 @@ struct TodayCardView: View {
     }
 
     private var shootButton: some View {
-        Button(action: onTapShoot) {
+        Button(action: hasGroups ? onTapShoot : onTapCreateGroup) {
             HStack(spacing: 6) {
                 Text(hasGroups ? "오늘의 점심 촬영하러 가기" : "새 그룹 만들러 가기")
                     .momogoTypography(.lgSemistrong)
