@@ -6,7 +6,7 @@ import SwiftUINavigation
 
 public struct SettingsView: View {
     private enum SettingsLink {
-        static let terms = URL(string: "https://www.naver.com")
+        static let terms = URL(string: "https://momogo-web.vercel.app/terms")
     }
 
     @Bindable private var viewModel: SettingsViewModel
