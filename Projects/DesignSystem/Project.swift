@@ -6,7 +6,7 @@ let project = Project.makeModule(
     targets: [
         .designSystem(factory: .init(
             resources: ["Resources/**"],
-            dependencies: []
+            dependencies: [.lottie]
         )),
         .designSystem(tests: .init(
             dependencies: [

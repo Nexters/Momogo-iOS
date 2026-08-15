@@ -17,6 +17,7 @@ enum DesignSystemCategory: String, CaseIterable, Identifiable {
     case bottomSheet
     case navigation
     case menu
+    case progress
 
     var id: String { rawValue }
 
@@ -36,6 +37,7 @@ enum DesignSystemCategory: String, CaseIterable, Identifiable {
         case .bottomSheet: "Bottom Sheet"
         case .navigation: "Navigation"
         case .menu: "Menu"
+        case .progress: "Progress"
         }
     }
 }
@@ -85,6 +87,7 @@ struct DesignSystemDetailView: View {
         case .bottomSheet: bottomSheetSection
         case .navigation: navigationSection
         case .menu: menuSection
+        case .progress: progressSection
         }
     }
 }

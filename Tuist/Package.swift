@@ -18,6 +18,7 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.3.0"),
         .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.5.0"),
         .package(url: "https://github.com/Moya/Moya", from: "15.0.0"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "11.0.0")
+        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "11.0.0"),
+        .package(url: "https://github.com/airbnb/lottie-ios", from: "4.5.0")
     ]
 )
