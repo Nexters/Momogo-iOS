@@ -16,9 +16,9 @@ struct GroupUploadSelectionCard: View {
                     Text(group.groupName)
                         .momogoTypography(.lgSemistrong)
                         .foregroundStyle(DesignSystem.Color.gray50)
-                    // 멤버 이름은 아직 어떤 API도 내려주지 않아, 값이 있을 때만 노출한다.
-                    if !group.memberNames.isEmpty {
-                        Text(group.memberNamesText)
+
+                    if let subtitle {
+                        Text(subtitle)
                             .momogoTypography(.smMedium)
                             .foregroundStyle(DesignSystem.Color.gray300)
                             .lineLimit(1)
@@ -27,9 +27,18 @@ struct GroupUploadSelectionCard: View {
 
                 Spacer(minLength: 0)
 
-                Image(asset: isSelected ? DesignSystemAsset.checkboxActive : DesignSystemAsset.checkboxInactive)
-                    .resizable()
-                    .frame(width: 20, height: 20)
+                // 오늘 이미 업로드한 그룹은 선택 대상이 아니라 체크박스 자체를 보여주지 않는다.
+                if group.isUploadable {
+                    // checkbox-inactive는 template 렌더링이라 자체 색(검정)이 무시되고 이 tint를
+                    // 따라간다. 지정하지 않으면 시스템 기본 전경색(라이트 외관에서 검정)이 적용돼
+                    // 어두운 카드 위에서 보이지 않는다. Feature/Group의 SelectionCard와 동일하게
+                    // Figma의 Gray/50(#EFEFEF)을 쓴다. checkbox-active는 original 렌더링이라
+                    // 자체 노란색을 유지하며 이 tint의 영향을 받지 않는다.
+                    Image(asset: isSelected ? DesignSystemAsset.checkboxActive : DesignSystemAsset.checkboxInactive)
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        .foregroundStyle(DesignSystem.Color.gray50)
+                }
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
@@ -38,8 +47,19 @@ struct GroupUploadSelectionCard: View {
             .clipShape(.rect(cornerRadius: DesignSystem.Radius.r16))
             .shadow(color: DesignSystem.Color.black.opacity(0.08), radius: 20, x: 0, y: 2)
             .contentShape(.rect(cornerRadius: DesignSystem.Radius.r16))
+            .opacity(group.isUploadable ? 1 : 0.4)
         }
         .buttonStyle(.plain)
+        .disabled(!group.isUploadable)
         .animation(nil, value: isSelected)
     }
+
+    private var subtitle: String? {
+        guard group.isUploadable else { return CardCopy.alreadyUploadedToday }
+        return group.memberNames.isEmpty ? nil : group.memberNamesText
+    }
+}
+
+private enum CardCopy {
+    static let alreadyUploadedToday = "오늘 이미 업로드했어요"
 }

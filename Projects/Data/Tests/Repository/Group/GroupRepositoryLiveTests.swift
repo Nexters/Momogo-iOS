@@ -71,7 +71,9 @@ struct GroupRepositoryLiveTests {
                         groupId: 10,
                         groupName: "우리 가족",
                         totalMemberCount: 4,
-                        todayPhotoUploaderCount: 2
+                        todayPhotoUploaderCount: 2,
+                        members: [GroupMemberStatusDTO(userId: 1, nickname: "엄마", mine: true, photo: nil)],
+                        todayPhotoUploaded: true
                     )
                 ])
             }
@@ -84,6 +86,8 @@ struct GroupRepositoryLiveTests {
         #expect(response.groups.count == 1)
         #expect(response.groups[0].groupId == 10)
         #expect(response.groups[0].todayPhotoUploaderCount == 2)
+        #expect(response.groups[0].members == [GroupMember(userId: 1, nickname: "엄마", isMine: true)])
+        #expect(response.groups[0].todayPhotoUploaded)
     }
 
     @Test("getGroupDetail은 DTO를 도메인 모델로 매핑하고 mine 플래그를 isMine으로 전달한다")

@@ -1,12 +1,20 @@
 import SwiftUI
 
 import DesignSystem
+import FeatureCamera
 import FeatureGroup
+import FeaturePhoto
 import FeatureSettings
 import SwiftUINavigation
 
 public struct HomeView: View {
     @State private var viewModel: HomeViewModel
+    @State private var cameraViewModel: CameraViewModel?
+    @State private var photoUploadConfirmViewModel: PhotoUploadConfirmViewModel?
+    /// 카메라 화면이 완전히 내려간 뒤(fullScreenCover onDismiss) 업로드 확인 화면을 이어서 띄우기
+    /// 위해 잠시 들고 있는 캡처 결과. 두 fullScreenCover를 동시에 전환하면 애니메이션이 깨질 수
+    /// 있어, 카메라가 내려가는 애니메이션이 끝난 뒤에 다음 화면을 띄운다.
+    @State private var pendingPhotoData: Data?
 
     public init(viewModel: HomeViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -31,7 +39,8 @@ public struct HomeView: View {
                 TodayCardView(
                     hasGroups: !isGroupEmpty,
                     onTapAddGroup: toggleAddGroupMenu,
-                    onTapSettings: viewModel.settingsTapped
+                    onTapSettings: viewModel.settingsTapped,
+                    onTapShoot: presentCamera
                 )
 
                 GroupListSection(
@@ -79,9 +88,54 @@ public struct HomeView: View {
         .navigationDestination(item: $viewModel.destination.groupDetail) { groupDetailViewModel in
             GroupDetailView(viewModel: groupDetailViewModel)
         }
+        .fullScreenCover(
+            isPresented: $viewModel.isCameraPresented,
+            onDismiss: { presentPhotoUploadConfirmIfNeeded() },
+            content: {
+                if let cameraViewModel {
+                    CameraView(viewModel: cameraViewModel)
+                }
+            }
+        )
+        .fullScreenCover(
+            isPresented: Binding(
+                get: { photoUploadConfirmViewModel != nil },
+                set: { isPresented in if !isPresented { photoUploadConfirmViewModel = nil } }
+            ),
+            content: {
+                if let photoUploadConfirmViewModel {
+                    PhotoUploadConfirmView(viewModel: photoUploadConfirmViewModel)
+                }
+            }
+        )
     }
 
     private func toggleAddGroupMenu() {
         withAnimation { isAddGroupMenuPresented.toggle() }
+    }
+
+    private func presentCamera() {
+        cameraViewModel = CameraViewModel(onFinish: { photoData in
+            pendingPhotoData = photoData
+            viewModel.isCameraPresented = false
+        })
+        viewModel.isCameraPresented = true
+    }
+
+    /// 카메라 fullScreenCover가 완전히 닫힌 뒤 호출된다. 촬영을 취소했다면(pendingPhotoData == nil)
+    /// 아무것도 하지 않고, 촬영에 성공했다면 이어서 그룹 선택(업로드 확인) 화면을 띄운다.
+    private func presentPhotoUploadConfirmIfNeeded() {
+        cameraViewModel = nil
+        guard let photoData = pendingPhotoData else { return }
+        pendingPhotoData = nil
+
+        photoUploadConfirmViewModel = PhotoUploadConfirmViewModel(
+            photoData: photoData,
+            onCancel: { photoUploadConfirmViewModel = nil },
+            onUploaded: {
+                photoUploadConfirmViewModel = nil
+                Task { await viewModel.load() }
+            }
+        )
     }
 }

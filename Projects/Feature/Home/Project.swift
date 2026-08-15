@@ -12,7 +12,9 @@ let project = Project.makeModule(
                 .swiftUINavigation,
                 .kingfisher,
                 .feature(implements: .group),
-                .feature(implements: .settings)
+                .feature(implements: .settings),
+                .feature(implements: .camera),
+                .feature(implements: .photo)
             ]
         )),
         .feature(tests: .home, factory: .init(

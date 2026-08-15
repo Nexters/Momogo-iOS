@@ -9,7 +9,8 @@ let project = Project.makeModule(
                 "API_BASE_URL": "$(API_BASE_URL)",
                 "UILaunchScreen": .dictionary([:]),
                 "CFBundleShortVersionString": .string(env.appVersion),
-                "CFBundleVersion": "1"
+                "CFBundleVersion": "1",
+                "NSCameraUsageDescription": .string(env.cameraUsageDescription)
             ]),
             sources: ["Sources/**"],
             resources: ["Resources/**"],

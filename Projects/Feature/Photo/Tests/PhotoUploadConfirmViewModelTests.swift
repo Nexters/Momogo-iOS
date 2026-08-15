@@ -17,37 +17,30 @@ struct PhotoUploadConfirmViewModelTests {
         PhotoUploadConfirmViewModel(photoData: photoData, onCancel: onCancel, onUploaded: onUploaded)
     }
 
-    /// `getGroupsUseCase`(목록)와 `getGroupDetailUseCase`(멤버 이름)를 함께 목킹한다.
-    /// `membersByGroupID`에 없는 그룹 ID는 멤버 이름 없이(빈 배열) 반환한다.
-    private func withMockGroups(
-        _ groups: [GroupSummary],
-        membersByGroupID: [Int: [String]] = [:],
-        operation: () async throws -> Void
-    ) async rethrows {
+    private func withMockGroups(_ groups: [GroupSummary], operation: () async throws -> Void) async rethrows {
         try await withDependencies {
             $0.getGroupsUseCase = GetGroupsUseCase { GetGroupsResponse(groups: groups) }
-            $0.getGroupDetailUseCase = GetGroupDetailUseCase { request in
-                let nicknames = membersByGroupID[request.groupId] ?? []
-                return GetGroupDetailResponse(
-                    groupId: request.groupId,
-                    groupName: "",
-                    members: nicknames.map { GroupMember(userId: 0, nickname: $0, isMine: false) }
-                )
-            }
         } operation: {
             try await operation()
         }
     }
 
+    private func member(_ nickname: String) -> GroupMember {
+        GroupMember(userId: 0, nickname: nickname, isMine: false)
+    }
+
     @Test("화면이 나타나면 그룹 목록과 멤버 이름을 불러와 초기에는 아무 그룹도 선택돼 있지 않다")
     func onAppear_loadsGroupsWithMemberNames_noneSelectedInitially() async throws {
-        try await withMockGroups(
-            [
-                GroupSummary(groupId: 1, groupName: "그룹1", totalMemberCount: 2, todayPhotoUploaderCount: 0),
-                GroupSummary(groupId: 2, groupName: "그룹2", totalMemberCount: 1, todayPhotoUploaderCount: 0)
-            ],
-            membersByGroupID: [1: ["나나", "가가"]]
-        ) {
+        try await withMockGroups([
+            GroupSummary(
+                groupId: 1,
+                groupName: "그룹1",
+                totalMemberCount: 2,
+                todayPhotoUploaderCount: 0,
+                members: [member("나나"), member("가가")]
+            ),
+            GroupSummary(groupId: 2, groupName: "그룹2", totalMemberCount: 1, todayPhotoUploaderCount: 0)
+        ]) {
             let viewModel = makeViewModel()
 
             await viewModel.onAppear()
@@ -74,23 +67,26 @@ struct PhotoUploadConfirmViewModelTests {
         }
     }
 
-    @Test("그룹 상세 조회가 실패해도 화면 전체는 막지 않고 해당 그룹의 멤버 이름만 빈 채로 남는다")
-    func onAppear_detailFailure_leavesMemberNamesEmptyButLoadsGroup() async throws {
-        try await withDependencies {
-            $0.getGroupsUseCase = GetGroupsUseCase {
-                GetGroupsResponse(groups: [
-                    GroupSummary(groupId: 1, groupName: "그룹1", totalMemberCount: 2, todayPhotoUploaderCount: 0)
-                ])
-            }
-            $0.getGroupDetailUseCase = GetGroupDetailUseCase { _ in throw PhotoUploadTestError.failed }
-        } operation: {
+    @Test("오늘 이미 업로드한 그룹은 선택 대상에서 제외된다")
+    func onAppear_alreadyUploadedGroup_isNotUploadableAndCannotBeToggled() async throws {
+        try await withMockGroups([
+            GroupSummary(groupId: 1, groupName: "그룹1", totalMemberCount: 2, todayPhotoUploaderCount: 0),
+            GroupSummary(
+                groupId: 2,
+                groupName: "그룹2",
+                totalMemberCount: 1,
+                todayPhotoUploaderCount: 1,
+                todayPhotoUploaded: true
+            )
+        ]) {
             let viewModel = makeViewModel()
-
             await viewModel.onAppear()
 
-            #expect(viewModel.groups.map(\.id) == [1])
-            #expect(viewModel.groups[0].memberNames == [])
-            #expect(viewModel.errorMessage == nil)
+            #expect(viewModel.groups[0].isUploadable)
+            #expect(viewModel.groups[1].isUploadable == false)
+
+            viewModel.toggle(viewModel.groups[1])
+            #expect(viewModel.isSelected(viewModel.groups[1]) == false)
         }
     }
 
@@ -109,20 +105,29 @@ struct PhotoUploadConfirmViewModelTests {
         }
     }
 
-    @Test("모두 선택을 탭하면 전체 그룹이 선택되고, 다시 탭하면 전체 해제된다")
-    func toggleSelectAll_selectsAndDeselectsAllGroups() async throws {
+    @Test("모두 선택을 탭하면 업로드 가능한 그룹만 선택되고, 다시 탭하면 전체 해제된다")
+    func toggleSelectAll_selectsOnlyUploadableGroups_andDeselectsAll() async throws {
         try await withMockGroups([
             GroupSummary(groupId: 1, groupName: "그룹1", totalMemberCount: 2, todayPhotoUploaderCount: 0),
-            GroupSummary(groupId: 2, groupName: "그룹2", totalMemberCount: 1, todayPhotoUploaderCount: 0)
+            GroupSummary(
+                groupId: 2,
+                groupName: "그룹2",
+                totalMemberCount: 1,
+                todayPhotoUploaderCount: 1,
+                todayPhotoUploaded: true
+            )
         ]) {
             let viewModel = makeViewModel()
             await viewModel.onAppear()
 
             viewModel.toggleSelectAll()
+            #expect(viewModel.isSelected(viewModel.groups[0]))
+            #expect(viewModel.isSelected(viewModel.groups[1]) == false)
             #expect(viewModel.isAllSelected)
 
             viewModel.toggleSelectAll()
             #expect(viewModel.isAllSelected == false)
+            #expect(viewModel.isSelected(viewModel.groups[0]) == false)
         }
     }
 
