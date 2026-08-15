@@ -48,7 +48,14 @@ extension GroupRepository: DependencyKey {
                             totalMemberCount: summary.totalMemberCount,
                             todayPhotoUploaderCount: summary.todayPhotoUploaderCount,
                             members: summary.members.map { member in
-                                GroupMember(userId: member.userId, nickname: member.nickname, isMine: member.mine)
+                                GroupMember(
+                                    userId: member.userId,
+                                    nickname: member.nickname,
+                                    isMine: member.mine,
+                                    photo: member.photo.map {
+                                        GroupMemberPhoto(photoId: $0.photoId, downloadUrl: $0.downloadUrl)
+                                    }
+                                )
                             },
                             todayPhotoUploaded: summary.todayPhotoUploaded
                         )

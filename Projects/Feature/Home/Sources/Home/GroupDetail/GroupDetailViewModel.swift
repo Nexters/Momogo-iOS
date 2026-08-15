@@ -41,12 +41,22 @@ public final class GroupDetailViewModel {
 
     /// 그룹 탈퇴 완료 시 상위(HomeViewModel)에 알려 화면을 되돌리고 목록을 새로고침한다.
     private let onLeave: () -> Void
+    /// 사진 삭제 성공 시 상위(HomeViewModel)에 알려 홈 썸네일을 다시 계산하게 한다. 홈은 이 화면이
+    /// pop될 때도 재조회하지만, 삭제 시점에 화면 안에 계속 머무는 경우까지 커버하려면 별도 통지가 필요하다.
+    private let onPhotoDeleted: () -> Void
 
-    public init(groupId: Int, groupName: String, todayPhotoUploaderCount: Int, onLeave: @escaping () -> Void = {}) {
+    public init(
+        groupId: Int,
+        groupName: String,
+        todayPhotoUploaderCount: Int,
+        onLeave: @escaping () -> Void = {},
+        onPhotoDeleted: @escaping () -> Void = {}
+    ) {
         self.groupId = groupId
         self.groupName = groupName
         self.todayPhotoUploaderCount = todayPhotoUploaderCount
         self.onLeave = onLeave
+        self.onPhotoDeleted = onPhotoDeleted
     }
 
     /// 이 화면에서 진행 중인 API 요청이 하나라도 있는지. `momogoLoadingOverlay`를 하나로 묶어 걸기 위한 값이다.
@@ -179,6 +189,7 @@ public final class GroupDetailViewModel {
         do {
             try await deletePhotoUseCase.execute(DeletePhotoRequest(groupId: groupId, photoId: photoId))
             await load()
+            onPhotoDeleted()
             DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "사진을 삭제했어요", tone: .success))
         } catch {
             DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "잠시 후 다시 시도해주세요.", tone: .error))
