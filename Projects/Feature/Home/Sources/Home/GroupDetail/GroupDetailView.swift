@@ -128,7 +128,9 @@ public struct GroupDetailView: View {
                 DSIconButton(.more, action: toggleMenu)
             }
         )
-        .overlay { photoMenuOverlay }
+        .overlayPreferenceValue(DSMenuAnchorKey.self) { anchor in
+            photoMenuOverlay(anchor: anchor)
+        }
         .momogoModalOverlay(isPresented: $viewModel.showsLeaveConfirm) { leaveConfirmModal }
         .momogoModalOverlay(isPresented: showsDeletePhotoConfirm) { deleteConfirmModal }
     }
@@ -233,28 +235,31 @@ public struct GroupDetailView: View {
     /// 스크롤 가능한 그리드 카드에 붙이면 원본과 사본의 위치가 미세하게 어긋나 배지가 두 개로
     /// 겹쳐 보이는 버그가 있었다(실측 확인됨). 사본을 아예 그리지 않고 메뉴만 앵커 위치에 띄우는
     /// 방식으로 바꿔 근본적으로 제거한다 — 대신 원본 배지는 다른 화면처럼 딤에 함께 어두워진다.
-    private var photoMenuOverlay: some View {
-        overlayPreferenceValue(DSMenuAnchorKey.self) { anchor in
-            if let anchor, let member = photoMenuTargetMember {
-                ZStack(alignment: .topLeading) {
-                    Button {
-                        withAnimation { photoMenuTargetId = nil }
-                    } label: {
-                        DesignSystem.Color.black.opacity(0.4).ignoresSafeArea()
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("메뉴 닫기")
-
-                    DSMenu(photoMenuItems(for: member))
-                        .visualEffect { content, proxy in
-                            let frame = proxy[anchor]
-                            return content.offset(x: frame.maxX - DSMenu.defaultWidth, y: frame.maxY + 8)
-                        }
+    ///
+    /// 앵커는 호출부(`body`)의 `overlayPreferenceValue`에서 받아 넘긴다. 이 프로퍼티 안에서 직접
+    /// `overlayPreferenceValue`를 부르면 수신자가 `GroupDetailView` 자신이 되어, 자기 오버레이 안에
+    /// 자기를 다시 그리는 무한 재귀(진입 즉시 스택 오버플로)가 된다.
+    @ViewBuilder
+    private func photoMenuOverlay(anchor: Anchor<CGRect>?) -> some View {
+        if let anchor, let member = photoMenuTargetMember {
+            ZStack(alignment: .topLeading) {
+                Button {
+                    withAnimation { photoMenuTargetId = nil }
+                } label: {
+                    DesignSystem.Color.black.opacity(0.4).ignoresSafeArea()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .transition(.opacity)
-                .accessibilityAddTraits(.isModal)
+                .buttonStyle(.plain)
+                .accessibilityLabel("메뉴 닫기")
+
+                DSMenu(photoMenuItems(for: member))
+                    .visualEffect { content, proxy in
+                        let frame = proxy[anchor]
+                        return content.offset(x: frame.maxX - DSMenu.defaultWidth, y: frame.maxY + 8)
+                    }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .transition(.opacity)
+            .accessibilityAddTraits(.isModal)
         }
     }
 
