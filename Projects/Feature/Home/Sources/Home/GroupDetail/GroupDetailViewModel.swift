@@ -157,9 +157,13 @@ public final class GroupDetailViewModel {
         )
     }
 
-    /// 내 사진 삭제 확인 모달·API 연동은 완료돼 있지만, 카드 더보기 메뉴의 "삭제하기" 디자인이
-    /// 아직 나오지 않아 트리거할 진입점이 없다. `deletingPhotoMember`를 채우는 곳이 생기면
-    /// (Figma 확정 후) 이 메서드들이 곧바로 동작한다.
+    /// 사진 카드 더보기 메뉴의 "점심 사진 지우기" 항목. 내 사진에만 노출되므로 `member.isMine`을
+    /// 다시 확인하지 않는다. 확인 모달을 띄우기만 하고, 실제 삭제는 `deletePhotoConfirmed()`에서 한다.
+    func deleteTapped(_ member: GroupMember) {
+        guard member.photo != nil else { return }
+        deletingPhotoMember = member
+    }
+
     func deletePhotoCancelled() {
         deletingPhotoMember = nil
     }

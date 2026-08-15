@@ -30,9 +30,9 @@ struct GroupPhotoCardView: View {
     /// 더보기 배지 탭 콜백. 신고 대상이 아닌(내 사진이거나 사진이 없는) 카드에서는 배지 자체가 노출되지 않는다.
     let onTapMenu: () -> Void
 
-    /// 남의 사진에만 신고 메뉴를 노출한다. 내 사진의 삭제 메뉴는 디자인이 나오면 추가한다.
+    /// 사진이 있는 카드에만 더보기 배지를 노출한다: 남의 사진이면 신고, 내 사진이면 삭제.
     private var showsMenuButton: Bool {
-        member.photo != nil && !member.isMine
+        member.photo != nil
     }
 
     var body: some View {
@@ -44,15 +44,19 @@ struct GroupPhotoCardView: View {
                         menuGradientOverlay
                     }
                 }
+                // 그라디언트는 사진과 함께 회전해야 하므로(Figma에서 한 그룹으로 묶여 같이 기운다)
+                // clipShape·rotationEffect 이전에 얹는다.
+                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
+                .rotationEffect(.degrees(rotationDegrees))
+                // 배지는 반대로 회전 *이후*에 얹는다 — `.dsMenuAnchor()`가 캡처하는 좌표는 회전이 반영되지
+                // 않는 레이아웃 프레임이라, 회전된 뷰 안쪽에 배지를 두면 실제 렌더링 위치와 앵커가 어긋나
+                // `momogoMenuOverlay`가 딤 위에 다시 그리는 "밝은 사본"이 원본과 미세하게 안 맞아
+                // 배지가 두 개 겹쳐 보이는 버그가 있었다(실측 확인됨).
                 .overlay(alignment: .topTrailing) {
                     if showsMenuButton {
                         menuButton
                     }
                 }
-                // 그라디언트·배지가 사진과 함께 회전해야 하므로(Figma에서 한 그룹으로 묶여 같이 기운다),
-                // 두 오버레이를 얹은 뒤에 clipShape·rotationEffect를 적용한다.
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
-                .rotationEffect(.degrees(rotationDegrees))
 
             HStack(spacing: constants.nameRowSpacing) {
                 Image(asset: DesignSystemAsset.arrowCornerDownLeft)
