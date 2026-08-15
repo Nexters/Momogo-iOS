@@ -26,9 +26,10 @@ public final class GroupNameViewModel {
     @ObservationIgnored
     @Dependency(\.createGroupUseCase) private var createGroupUseCase
 
-    private let onFinish: () -> Void
+    /// 그룹 생성 완료 후 상위(Home)가 그룹 상세로 바로 이동할 수 있도록 생성 결과를 함께 전달한다.
+    private let onFinish: (CreateGroupResponse) -> Void
 
-    public init(onFinish: @escaping () -> Void) {
+    public init(onFinish: @escaping (CreateGroupResponse) -> Void) {
         self.onFinish = onFinish
     }
 
@@ -56,7 +57,7 @@ public final class GroupNameViewModel {
 
             do {
                 let response = try await createGroupUseCase.execute(groupName)
-                let inviteShareViewModel = InviteShareViewModel(inviteCode: response.invitationCode, onFinish: onFinish)
+                let inviteShareViewModel = InviteShareViewModel(response: response, onFinish: onFinish)
                 destination = .inviteShare(inviteShareViewModel)
             } catch {
                 errorMessage = "잠시 후 다시 시도해주세요."

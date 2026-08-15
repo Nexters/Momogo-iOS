@@ -23,9 +23,9 @@ final class NicknameViewModel {
     @ObservationIgnored
     @Dependency(\.signUpUseCase) private var signUpUseCase
 
-    private let onFinish: () -> Void
+    private let onFinish: (CreateGroupResponse?) -> Void
 
-    init(onFinish: @escaping () -> Void) {
+    init(onFinish: @escaping (CreateGroupResponse?) -> Void) {
         self.onFinish = onFinish
     }
 

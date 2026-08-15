@@ -82,7 +82,7 @@ struct GroupExampleRootView: View {
                 withDependencies {
                     $0.createGroupUseCase = createScenario.createUseCase
                 } operation: {
-                    GroupNameView(viewModel: GroupNameViewModel(onFinish: {}))
+                    GroupNameView(viewModel: GroupNameViewModel(onFinish: { _ in }))
                 }
             }
             .navigationDestination(isPresented: $showJoin) {

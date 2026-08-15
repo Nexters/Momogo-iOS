@@ -35,8 +35,22 @@ public final class HomeViewModel {
 
     private let onLogout: () -> Void
 
-    public init(onLogout: @escaping () -> Void = {}) {
+    /// `initialCreatedGroup`이 있으면(온보딩에서 그룹까지 만들고 끝난 경우) 홈 목록을 보여주지 않고
+    /// 그 그룹의 상세로 바로 진입한다.
+    public init(initialCreatedGroup: CreateGroupResponse? = nil, onLogout: @escaping () -> Void = {}) {
         self.onLogout = onLogout
+        if let initialCreatedGroup {
+            destination = .groupDetail(makeGroupDetailViewModel(for: initialCreatedGroup))
+        }
+    }
+
+    private func makeGroupDetailViewModel(for response: CreateGroupResponse) -> GroupDetailViewModel {
+        GroupDetailViewModel(
+            groupId: response.groupId,
+            groupName: response.groupName,
+            todayPhotoUploaderCount: 0,
+            onLeave: { [weak self] in self?.destination = nil }
+        )
     }
 
     /// 그룹 추가 메뉴에서 이미 생성/참여를 선택했으므로 `GroupSelectView`를 거치지 않고 각 플로우의 첫 화면으로 바로 들어간다.
@@ -75,10 +89,12 @@ public final class HomeViewModel {
     /// 순환이 생긴다. 기존 플로우들은 상위에서 받은 `onFinish`를 그대로 넘기기만 해 순환이 없었지만,
     /// 홈은 클로저를 직접 만들어 자식에게 주는 첫 화면이라 여기서 끊어야 한다.
     /// 이 클로저는 자식이 손자(`InviteShareViewModel`)에게 그대로 전달하므로 weak가 플로우 끝까지 전파된다.
+    /// 초대코드 공유 화면에서 완료 버튼을 누르면 홈이 아닌 방금 만든 그룹의 상세 화면으로 바로 이동한다.
     func createGroupTapped() {
         guard destination == nil else { return }
-        destination = .groupName(GroupNameViewModel(onFinish: { [weak self] in
-            self?.destination = nil
+        destination = .groupName(GroupNameViewModel(onFinish: { [weak self] response in
+            guard let self else { return }
+            self.destination = .groupDetail(self.makeGroupDetailViewModel(for: response))
         }))
     }
 

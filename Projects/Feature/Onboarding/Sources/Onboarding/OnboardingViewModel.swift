@@ -13,9 +13,11 @@ public final class OnboardingViewModel {
     @ObservationIgnored
     @Dependency(\.loginUseCase) private var loginUseCase
 
-    private let onFinish: () -> Void
+    /// 그룹 생성까지 마치고 온보딩이 끝난 경우, 홈이 그 그룹의 상세로 바로 진입할 수 있도록 생성 결과를 함께 전달한다.
+    /// 기존 유저 로그인·그룹 참여로 끝난 경우에는 nil을 전달해 기존처럼 홈으로만 이동한다.
+    private let onFinish: (CreateGroupResponse?) -> Void
 
-    public init(onFinish: @escaping () -> Void = {}) {
+    public init(onFinish: @escaping (CreateGroupResponse?) -> Void = { _ in }) {
         self.onFinish = onFinish
     }
 
@@ -33,7 +35,7 @@ public final class OnboardingViewModel {
             defer { isLoading = false }
 
             if await loginUseCase.execute() {
-                onFinish()
+                onFinish(nil)
             } else {
                 destination = .nickname(NicknameViewModel(onFinish: onFinish))
             }
