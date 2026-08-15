@@ -15,6 +15,7 @@ struct TodayCardView: View {
     }
 
     var hasGroups: Bool = true
+    var recentPhotoURL: URL?
     var onTapAddGroup: () -> Void = {}
     var onTapSettings: () -> Void = {}
     var onTapShoot: () -> Void = {}
@@ -112,21 +113,36 @@ struct TodayCardView: View {
     }
 
     private var cameraButton: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: DesignSystem.Radius.r12)
-                .fill(DesignSystem.Color.gray900)
-                .stroke(Color.white.opacity(0.04), lineWidth: 1.83)
+        Button(action: onTapShoot) {
+            ZStack {
+                RoundedRectangle(cornerRadius: DesignSystem.Radius.r12)
+                    .fill(DesignSystem.Color.gray900)
+                    .stroke(Color.white.opacity(0.04), lineWidth: 1.83)
 
-            Image(asset: DesignSystemAsset.camera)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 18, height: 18)
-                .foregroundStyle(DesignSystem.Color.gray400)
+                if let recentPhotoURL {
+                    AsyncImage(url: recentPhotoURL) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        EmptyView()
+                    }
+                    .frame(width: cameraSize, height: cameraSize)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
+                } else {
+                    Image(asset: DesignSystemAsset.camera)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                        .foregroundStyle(DesignSystem.Color.gray400)
+                }
+            }
+            .frame(width: cameraSize, height: cameraSize)
         }
-        .frame(width: cameraSize, height: cameraSize)
+        .buttonStyle(.plain)
         .rotationEffect(.degrees(-2))
         .momogoShadow()
-        .accessibilityHidden(true)
+        .accessibilityLabel("사진 촬영하기")
     }
 
     private var shootButton: some View {

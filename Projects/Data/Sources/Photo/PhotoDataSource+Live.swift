@@ -16,6 +16,9 @@ extension PhotoDataSource: DependencyKey {
             },
             upload: { url, data, contentType in
                 try await mediaUploadClient.upload(url, data, contentType)
+            },
+            myPhotos: { date in
+                try await networkClient.requestDecodable(PhotoTargetType.myPhotos(date: date))
             }
         )
     }
@@ -23,6 +26,7 @@ extension PhotoDataSource: DependencyKey {
     public static let testValue = PhotoDataSource(
         issueUploadURL: unimplemented("\(Self.self).issueUploadURL"),
         confirm: unimplemented("\(Self.self).confirm"),
-        upload: unimplemented("\(Self.self).upload")
+        upload: unimplemented("\(Self.self).upload"),
+        myPhotos: unimplemented("\(Self.self).myPhotos")
     )
 }

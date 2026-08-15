@@ -16,6 +16,7 @@ public final class HomeViewModel {
     /// 최초 로드 완료 여부. `groups.isEmpty`만으로는 로드 전 초기값과 실제 빈 상태를 구분할 수 없다.
     private(set) var hasLoaded: Bool = false
     var isCameraPresented: Bool = false
+    var recentPhotoURL: URL?
 
     /// 그룹 생성/참여 플로우의 push 상태.
     ///
@@ -32,6 +33,8 @@ public final class HomeViewModel {
 
     @ObservationIgnored
     @Dependency(\.getGroupsUseCase) private var getGroupsUseCase
+    @ObservationIgnored
+    @Dependency(\.getMyPhotosUseCase) private var getMyPhotosUseCase
 
     private let onLogout: () -> Void
 
@@ -115,10 +118,18 @@ public final class HomeViewModel {
             hasLoaded = true
         }
 
+        async let groupsResult = getGroupsUseCase.execute()
+        async let myPhotosResult = getMyPhotosUseCase.execute(GetMyPhotosRequest())
+
         do {
-            groups = try await getGroupsUseCase.execute().groups
+            groups = try await groupsResult.groups
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
+        }
+
+        // 최근 사진은 홈 상단의 장식용 미리보기라 실패해도 그룹 로드 자체를 막지 않는다.
+        if let photos = try? await myPhotosResult.photos {
+            recentPhotoURL = photos.first.flatMap { URL(string: $0.downloadUrl) }
         }
     }
 }
