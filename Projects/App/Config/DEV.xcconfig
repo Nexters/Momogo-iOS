@@ -1,0 +1,3 @@
+// 실제 값은 gitignore 대상인 Secrets/DEV.xcconfig에 있다.
+// 로컬에 없으면 tuist generate는 성공하지만 실제 빌드(xcodebuild build/test)가 실패한다 — Secrets/DEV.xcconfig.template 참고.
+#include "Secrets/DEV.xcconfig"

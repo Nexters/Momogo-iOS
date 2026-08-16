@@ -108,6 +108,9 @@ graph.png
 Derived/
 Tuist/.build
 
+### App Secrets (로컬 전용 실값 — 실 서버 도메인 등) ###
+Projects/App/Config/Secrets/*.xcconfig
+
 ### Claude Code / AI tooling ###
 # Claude Code settings & local files
 .claude/
@@ -121,6 +124,7 @@ CLAUDE.local.md
 .bmad/
 bmad/
 _bmad/
+_bmad-output/
 .github/agents/
 
 # Harness / skills

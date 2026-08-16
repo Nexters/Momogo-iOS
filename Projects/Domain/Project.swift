@@ -10,16 +10,13 @@ let project = Project.makeModule(
         .domain(implements: .init(
             dependencies: [
                 .domainInterface,
-                .core,
-                .dependencies,
-                .moya
+                .dependencies
             ]
         )),
         .domain(tests: .init(
             dependencies: [
                 .domain,
                 .domainInterface,
-                .core,
                 .dependencies
             ]
         ))

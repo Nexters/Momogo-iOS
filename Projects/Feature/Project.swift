@@ -4,7 +4,14 @@ import ProjectDescription
 let targets: [Target] = [
     .feature(factory: .init(
         dependencies: [
-            .feature(implements: .home)
+            .feature(implements: .home),
+            .core,
+            .feature(implements: .onboarding),
+            .feature(implements: .group),
+            .feature(implements: .splash),
+            .feature(implements: .settings),
+            .feature(implements: .photo),
+            .feature(implements: .camera)
         ]
     ))
 ]

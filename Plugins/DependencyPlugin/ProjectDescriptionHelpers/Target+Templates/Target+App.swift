@@ -6,6 +6,7 @@ public extension Target {
         f.product = .app
         f.name = env.appName
         f.bundleId = env.bundleIDPrefix
+        f.scripts.append(.swiftLint)
         return make(factory: f)
     }
 }

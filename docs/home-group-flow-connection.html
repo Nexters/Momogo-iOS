@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>홈에서 그룹 생성·참여 플로우를 이렇게 연결했다</title>
+<style>
+  :root {
+    --bg: #eef1f3;
+    --surface: #ffffff;
+    --surface-2: #e4e9ec;
+    --ink: #101820;
+    --ink-soft: #49555e;
+    --ink-faint: #7c8890;
+    --line: #d3dbe0;
+    --accent: #0e7c86;
+    --accent-ink: #075a62;
+    --accent-soft: #e3f1f1;
+    --code-bg: #0f1720;
+    --code-ink: #d7f5ee;
+    --code-faint: #8296a3;
+    --shadow: 0 1px 2px rgba(16, 24, 32, 0.04), 0 8px 24px rgba(16, 24, 32, 0.06);
+
+    --font-kr: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220;
+      --surface: #121b2b;
+      --surface-2: #172335;
+      --ink: #e7ecf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #6d7d89;
+      --line: #223142;
+      --accent: #4fc7cf;
+      --accent-ink: #bdf0ec;
+      --accent-soft: #163338;
+      --code-bg: #070c14;
+      --code-ink: #d7f5ee;
+      --code-faint: #6d7d89;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-kr);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header.masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 28px;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(26px, 4vw, 34px);
+    line-height: 1.25;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .chiprow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .chiprow .arrow { color: var(--ink-faint); font-size: 12px; }
+
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .chip.on { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
+
+  section { margin-bottom: 44px; }
+
+  h2 {
+    font-size: 19px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num { font-family: var(--font-mono); font-size: 13px; color: var(--ink-faint); }
+
+  .section-lede {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    margin: 0 0 18px;
+    max-width: 66ch;
+  }
+
+  p { margin: 0 0 12px; }
+
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    overflow-x: auto;
+  }
+  .diagram-card .mermaid { display: flex; justify-content: center; min-width: 560px; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-2);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.path, td.mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent-ink); white-space: nowrap; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12.5px; color: var(--ink-soft); margin-top: 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+  }
+
+  a { color: var(--accent-ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">Momogo · feature/046-group-flow-connection</div>
+    <h1>홈에서 그룹 생성·참여 플로우를 이렇게 연결했다</h1>
+    <p class="subtitle">그룹 생성/참여 화면 자체는 온보딩 플로우에 이미 있었다. 이번 작업은 홈 화면의 "+" 메뉴를 그 화면들에 연결하고, 요청이 진행 중인 동안 화면을 벗어나 데이터가 어긋나는 상황을 막은 기록이다.</p>
+    <div class="chiprow">
+      <span class="chip on">HomeView</span><span class="arrow">→</span>
+      <span class="chip on">GroupNameView / InviteCodeInputView</span><span class="arrow">→</span>
+      <span class="chip">홈 목록 갱신</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> 연결된 플로우</h2>
+    <p class="section-lede">홈의 <code>+</code> 버튼 메뉴 두 항목이 <code>HomeViewModel.Destination</code>(<code>@CasePathable</code> enum)을 통해 각 화면으로 push된다. 완료 지점은 두 갈래인데, 생성은 초대코드 공유 화면을 한 번 거치고, 참여는 확인 화면 없이 곧바로 홈으로 돌아온다.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+flowchart LR
+    Menu["홈 + 메뉴"] -->|"그룹 생성"| GroupName["GroupNameView"]
+    Menu -->|"그룹 참여"| InviteCode["InviteCodeInputView"]
+    GroupName -->|"생성 성공"| InviteShare["InviteShareView<br/>초대코드 공유"]
+    InviteShare -->|"모모고 시작하기"| Home["홈<br/>목록 자동 갱신"]
+    InviteCode -->|"참여 성공"| Home
+
+    classDef done fill:#0e7c86,stroke:#075a62,color:#fff;
+    class Menu,GroupName,InviteCode,InviteShare,Home done;
+      </pre>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--accent)"></i>이번 작업에서 연결한 경로</span>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> 참여 완료 처리 정리</h2>
+    <p class="section-lede">참여 확인 화면(<code>JoinConfirmView</code>/<code>JoinConfirmViewModel</code>)을 제거했다. <code>InviteCodeInputViewModel.joinTapped()</code>가 성공하면 곧바로 <code>onFinish()</code>를 호출해 홈으로 pop되고, 완료 안내는 <code>RootView</code>가 상단 토스트("그룹에 합류했어요!")로 대신한다.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> 요청 진행 중 화면 이탈 방지</h2>
+    <p class="section-lede">그룹 생성·참여 요청이 진행되는 동안 뒤로가기 버튼과 인터랙티브 스와이프 백 제스처를 모두 막았다. 화면 전체를 덮는 로딩 오버레이가 함께 떠서 지금 요청 중임을 알린다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>대상</th><th>적용</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="path">GroupNameView</td><td><code>momogoLoadingOverlay(isPresented: viewModel.isLoading)</code> + <code>navigationBarBackButtonHidden(viewModel.isLoading)</code></td></tr>
+          <tr><td class="path">InviteCodeInputView</td><td>동일하게 적용</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> 새로 추가된 컴포넌트</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>컴포넌트</th><th>위치</th><th>역할</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="path">DSLoadingOverlay</td><td class="mono">DesignSystem</td><td>화면 전체 딤 + <code>ProgressView</code>로 상호작용을 막는 <code>momogoLoadingOverlay(isPresented:)</code> 제공. 추후 Lottie 애니메이션으로 교체될 예정</td></tr>
+          <tr><td class="path">GroupListSection</td><td class="mono">FeatureHome</td><td><code>HomeView</code>의 그룹 목록 렌더링을 별도 뷰로 분리</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> Example 앱 확장</h2>
+    <p class="section-lede">신규 로딩 오버레이를 눈으로 확인할 수 있도록 두 Example 앱에 시나리오를 추가했다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Example</th><th>추가된 것</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="path">FeatureHomeExample</td><td><code>CreateGroupUseCase</code>/<code>CheckGroupByCodeUseCase</code>/<code>JoinGroupByCodeUseCase</code> Mock — 홈에서 그룹 생성·참여 플로우 전체를 독립 실행 가능</td></tr>
+          <tr><td class="path">FeatureGroupExample</td><td>생성 화면에 시나리오 Picker 신설, 참여 시나리오에 "긴 로딩(5초)" 케이스 추가</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    Projects/Feature/Home, Projects/Feature/Group, Projects/DesignSystem · feature/046-group-flow-connection
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  var isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var palette = isDark
+    ? {
+        background: "transparent",
+        primaryColor: "#163338",
+        primaryTextColor: "#e7ecf0",
+        primaryBorderColor: "#4fc7cf",
+        lineColor: "#6d7d89",
+        secondaryColor: "#172335",
+        tertiaryColor: "#121b2b",
+        textColor: "#e7ecf0"
+      }
+    : {
+        background: "transparent",
+        primaryColor: "#e3f1f1",
+        primaryTextColor: "#101820",
+        primaryBorderColor: "#0e7c86",
+        lineColor: "#7c8890",
+        secondaryColor: "#e4e9ec",
+        tertiaryColor: "#ffffff",
+        textColor: "#101820"
+      };
+  palette.fontFamily = "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: palette,
+    securityLevel: "loose",
+    flowchart: { htmlLabels: true, curve: "basis" }
+  });
+</script>
+</body>
+</html>

@@ -6,8 +6,15 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .home, factory: .init(
             dependencies: [
+                .domainInterface,
+                .designSystem,
                 .dependencies,
-                .swiftUINavigation
+                .swiftUINavigation,
+                .kingfisher,
+                .feature(implements: .group),
+                .feature(implements: .settings),
+                .feature(implements: .camera),
+                .feature(implements: .photo)
             ]
         )),
         .feature(tests: .home, factory: .init(
@@ -19,7 +26,6 @@ let project = Project.makeModule(
         .feature(example: .home, factory: .init(
             dependencies: [
                 .feature(implements: .home),
-                .domainInterface,
                 .dependencies
             ]
         ))
@@ -28,7 +34,7 @@ let project = Project.makeModule(
         .scheme(
             name: "FeatureHomeExample",
             buildAction: .buildAction(targets: [.target("FeatureHomeExample")]),
-            runAction: .runAction(executable: .target("FeatureHomeExample"))
+            runAction: .runAction(configuration: .dev, executable: .target("FeatureHomeExample"))
         )
     ]
 )
