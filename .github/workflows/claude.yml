@@ -39,5 +39,4 @@ jobs:
       - name: Run Claude
         uses: anthropics/claude-code-action@v1
         with:
-          # claude-code-review.yml과 동일한 Claude Pro/Max 구독 토큰을 사용합니다.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
