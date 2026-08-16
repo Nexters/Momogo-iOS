@@ -9,6 +9,10 @@ final class CameraSessionManager: NSObject, @unchecked Sendable {
     private let sessionQueue = DispatchQueue(label: "com.momogo.camera.session")
     private var currentInput: AVCaptureDeviceInput?
     private var captureContinuation: CheckedContinuation<Data?, Never>?
+    private var captureTimeoutWorkItem: DispatchWorkItem?
+
+    /// 셔터를 누른 뒤 델리게이트 콜백을 기다리는 최대 시간. 정상 캡처는 1초를 넘지 않는다.
+    private static let captureTimeout: DispatchTimeInterval = .seconds(5)
 
     /// 성공하면 디바이스의 실제 줌 배율 정보를, 카메라를 찾지 못하면 nil을 반환한다.
     func configureSession() async -> CameraZoomCapability? {
@@ -26,7 +30,9 @@ final class CameraSessionManager: NSObject, @unchecked Sendable {
     }
 
     func stopSession() {
-        sessionQueue.async { [session] in
+        sessionQueue.async { [weak self, session] in
+            // 캡처 도중 세션이 멈추면 델리게이트가 오지 않을 수 있어, 먼저 대기 중인 캡처를 끊는다.
+            self?.finishCapture(with: nil)
             if session.isRunning { session.stopRunning() }
         }
     }
@@ -63,8 +69,26 @@ final class CameraSessionManager: NSObject, @unchecked Sendable {
                 }
                 captureContinuation = continuation
                 photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+                // 전화 수신·백그라운드 전환 등으로 세션이 중단되면 델리게이트가 아예 오지 않을 수
+                // 있다. 그대로 두면 continuation이 영영 resume되지 않아 셔터가 멈춘 채로 남으므로
+                // 마지막 안전장치로 시한을 건다. 캡처가 정상적으로 끝나면 finishCapture가 취소하므로,
+                // 지난 캡처의 시한이 뒤늦게 살아나 다음 캡처를 끊는 일은 없다.
+                let timeout = DispatchWorkItem { [weak self] in self?.finishCapture(with: nil) }
+                captureTimeoutWorkItem = timeout
+                sessionQueue.asyncAfter(deadline: .now() + Self.captureTimeout, execute: timeout)
             }
         }
+    }
+
+    /// 대기 중인 캡처를 정확히 한 번만 완료시킨다. 델리게이트 콜백·타임아웃·세션 중단 중 어느 것이
+    /// 먼저 오든 이 경로로만 resume하며, 모두 sessionQueue(직렬)에서만 호출되므로 경쟁이 없다.
+    private func finishCapture(with data: Data?) {
+        captureTimeoutWorkItem?.cancel()
+        captureTimeoutWorkItem = nil
+
+        guard let continuation = captureContinuation else { return }
+        captureContinuation = nil
+        continuation.resume(returning: data)
     }
 
     /// zoom factor 정보(특히 1.0 미만 초광각 구간, 광각 전환 지점)는 세션이 실제로 커밋·구동되기
@@ -194,9 +218,7 @@ final class CameraSessionManager: NSObject, @unchecked Sendable {
 extension CameraSessionManager: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         sessionQueue.async { [weak self] in
-            let data = error == nil ? photo.fileDataRepresentation() : nil
-            self?.captureContinuation?.resume(returning: data)
-            self?.captureContinuation = nil
+            self?.finishCapture(with: error == nil ? photo.fileDataRepresentation() : nil)
         }
     }
 }

@@ -2,6 +2,7 @@ import AVFoundation
 import Foundation
 
 import Dependencies
+import DesignSystem
 
 @Observable
 @MainActor
@@ -61,13 +62,32 @@ public final class CameraViewModel {
         isCapturing = true
         defer { isCapturing = false }
 
-        guard
-            let data = await sessionManager.capturePhoto(),
-            let cropped = CameraImageCropper.squareCroppedJPEGData(from: data)
-        else { return }
+        guard let data = await sessionManager.capturePhoto() else {
+            showCaptureFailure()
+            return
+        }
+
+        // 디코드 + 크롭 + JPEG 재인코딩은 12MP 기준 수백 ms짜리 CPU 작업이라, @MainActor인 이
+        // ViewModel에서 그대로 실행하면 셔터를 누르는 순간 화면이 멈춘다. 순수 함수라 밖으로 뺀다.
+        let cropped = await Task.detached(priority: .userInitiated) {
+            CameraImageCropper.squareCroppedJPEGData(from: data)
+        }.value
+
+        guard let cropped else {
+            showCaptureFailure()
+            return
+        }
 
         sessionManager.stopSession()
         onFinish(cropped)
+    }
+
+    /// 촬영이 실패하면 화면을 그대로 두고 다시 찍을 수 있게 하되, 셔터를 눌렀는데 아무 일도
+    /// 일어나지 않은 것처럼 보이지 않도록 알린다.
+    private func showCaptureFailure() {
+        DSTopToastWindowPresenter.shared.show(
+            DSTopToastContent(message: "사진을 찍지 못했어요. 다시 시도해주세요", tone: .error)
+        )
     }
 
     func cancelTapped() {
