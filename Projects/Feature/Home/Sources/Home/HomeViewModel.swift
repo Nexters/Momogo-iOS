@@ -16,7 +16,14 @@ public final class HomeViewModel {
     /// 최초 로드 완료 여부. `groups.isEmpty`만으로는 로드 전 초기값과 실제 빈 상태를 구분할 수 없다.
     private(set) var hasLoaded: Bool = false
     var isCameraPresented: Bool = false
-    var recentPhotoURL: URL?
+    var recentPhoto: RecentPhoto?
+
+    /// 최근 사진 썸네일. Kingfisher 캐시 키를 photoId로 고정하려면(`RemotePhotoSource`) URL만으로는
+    /// 부족해 photoId를 함께 들고 다닌다.
+    struct RecentPhoto: Equatable {
+        let photoId: Int
+        let url: URL
+    }
 
     /// 그룹 생성/참여 플로우의 push 상태.
     ///
@@ -103,7 +110,7 @@ public final class HomeViewModel {
         guard destination == nil else { return }
         destination = .groupName(GroupNameViewModel(onFinish: { [weak self] response in
             guard let self else { return }
-            self.destination = .groupDetail(self.makeGroupDetailViewModel(for: response))
+            destination = .groupDetail(makeGroupDetailViewModel(for: response))
         }))
     }
 
@@ -134,16 +141,16 @@ public final class HomeViewModel {
         }
 
         // 최근 사진은 홈 상단의 장식용 미리보기라 실패해도 그룹 로드 자체를 막지 않는다.
-        // 다만 실패 시 이전 URL을 남기면 삭제된 사진이 계속 보일 수 있어 nil로 되돌린다.
-        let photos = (try? await myPhotosResult.photos) ?? []
-        recentPhotoURL = await resolveRecentPhotoURL(from: photos)
+        // 다만 실패 시 이전 값을 남기면 삭제된 사진이 계속 보일 수 있어 nil로 되돌린다.
+        let photos = await (try? myPhotosResult.photos) ?? []
+        recentPhoto = await resolveRecentPhoto(from: photos)
     }
 
     /// `/photos/me`는 그룹에서 내려진(삭제된) 사진도 계속 반환할 수 있고, 그룹 목록(`GET /groups`)은
     /// 멤버별 사진을 주지 않는다(그룹 상세 응답 전용 필드라 목록엔 항상 비어 있음). 그래서 오늘 내가
     /// 사진을 올린 그룹(`todayPhotoUploaded`)의 상세만 조회해 "지금도 그룹에 걸려 있는 내 사진 id"를
     /// 모은 뒤, 최신순인 `/photos/me`와 교집합해 가장 최근 것을 고른다.
-    private func resolveRecentPhotoURL(from photos: [MyPhoto]) async -> URL? {
+    private func resolveRecentPhoto(from photos: [MyPhoto]) async -> RecentPhoto? {
         let activeGroupIds = groups.filter(\.todayPhotoUploaded).map(\.groupId)
         guard !activeGroupIds.isEmpty, !photos.isEmpty else { return nil }
 
@@ -162,6 +169,6 @@ public final class HomeViewModel {
 
         return photos
             .first { activePhotoIds.contains($0.photoId) }
-            .flatMap { URL(string: $0.downloadUrl) }
+            .flatMap { photo in URL(string: photo.downloadUrl).map { RecentPhoto(photoId: photo.photoId, url: $0) } }
     }
 }

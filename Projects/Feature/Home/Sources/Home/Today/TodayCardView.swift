@@ -1,6 +1,7 @@
 import SwiftUI
 
 import DesignSystem
+import Kingfisher
 
 struct TodayCardView: View {
     private static let dateFormatter: DateFormatter = {
@@ -15,7 +16,7 @@ struct TodayCardView: View {
     }
 
     var hasGroups: Bool = true
-    var recentPhotoURL: URL?
+    var recentPhoto: HomeViewModel.RecentPhoto?
     var onTapAddGroup: () -> Void = {}
     var onTapSettings: () -> Void = {}
     var onTapShoot: () -> Void = {}
@@ -122,16 +123,16 @@ struct TodayCardView: View {
                     .fill(DesignSystem.Color.gray900)
                     .stroke(Color.white.opacity(0.04), lineWidth: 1.83)
 
-                if let recentPhotoURL {
-                    AsyncImage(url: recentPhotoURL) { image in
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    } placeholder: {
-                        EmptyView()
-                    }
-                    .frame(width: cameraSize, height: cameraSize)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
+                if let recentPhoto {
+                    // presigned URL은 매 조회마다 서명이 바뀌므로 캐시 키를 photoId로 고정한다
+                    // (RemotePhotoSource 참고). AsyncImage(URLCache 기반)는 이 문제를 못 피해
+                    // KFImage로 바꿨다.
+                    KFImage(source: RemotePhotoSource.make(photoId: recentPhoto.photoId, downloadURL: recentPhoto.url))
+                        .resizable()
+                        .placeholder { EmptyView() }
+                        .scaledToFill()
+                        .frame(width: cameraSize, height: cameraSize)
+                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
                 } else {
                     Image(asset: DesignSystemAsset.camera)
                         .resizable()

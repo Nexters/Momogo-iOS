@@ -103,9 +103,11 @@ struct GroupPhotoCardView: View {
 
     @ViewBuilder
     private var imageContent: some View {
-        // KFImage는 기본으로 메모리+디스크에 자동 캐싱한다(재방문/재실행 시 네트워크 재요청 없이 즉시 표시).
+        // downloadUrl은 presigned URL이라 조회할 때마다 서명이 바뀐다. KFImage(url)처럼 URL
+        // 문자열을 그대로 캐시 키로 쓰면 재방문할 때마다 캐시 미스가 나 매번 재다운로드하므로,
+        // 캐시 키를 photoId로 고정해야 실제로 "재요청 없이 즉시 표시"된다(RemotePhotoSource 참고).
         if let photo = member.photo, let url = URL(string: photo.downloadUrl) {
-            KFImage(url)
+            KFImage(source: RemotePhotoSource.make(photoId: photo.photoId, downloadURL: url))
                 .resizable()
                 .fade(duration: 0.2)
                 .placeholder { placeholder }

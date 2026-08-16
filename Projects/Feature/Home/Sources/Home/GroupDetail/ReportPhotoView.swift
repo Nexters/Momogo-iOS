@@ -82,8 +82,10 @@ struct ReportPhotoView: View {
     @ViewBuilder
     private var thumbnail: some View {
         if let downloadUrl = viewModel.downloadUrl, let url = URL(string: downloadUrl) {
-            // 그리드에서 이미 캐싱된 동일 URL이면 네트워크 재요청 없이 캐시에서 즉시 표시된다.
-            KFImage(url)
+            // 캐시 키를 photoId로 고정해서(RemotePhotoSource), 그리드에서 이미 캐싱된 같은
+            // photoId면 downloadUrl(presigned 서명)이 재조회로 바뀌었어도 네트워크 재요청 없이
+            // 캐시에서 즉시 표시된다.
+            KFImage(source: RemotePhotoSource.make(photoId: viewModel.photoId, downloadURL: url))
                 .resizable()
                 .placeholder { Color.clear }
                 .scaledToFill()
