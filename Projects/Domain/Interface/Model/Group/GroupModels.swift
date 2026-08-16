@@ -149,11 +149,13 @@ public struct GroupMemberPhoto: Sendable, Equatable {
 public struct GetGroupDetailResponse: Sendable, Equatable {
     public let groupId: Int
     public let groupName: String
+    public let invitationCode: String
     public let members: [GroupMember]
 
-    public init(groupId: Int, groupName: String, members: [GroupMember]) {
+    public init(groupId: Int, groupName: String, invitationCode: String, members: [GroupMember]) {
         self.groupId = groupId
         self.groupName = groupName
+        self.invitationCode = invitationCode
         self.members = members
     }
 }

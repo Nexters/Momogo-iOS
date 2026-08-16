@@ -15,6 +15,7 @@ struct GetGroupDetailUseCaseTests {
                 return GetGroupDetailResponse(
                     groupId: 10,
                     groupName: "우리 가족",
+                    invitationCode: "ABC123",
                     members: [
                         GroupMember(userId: 1, nickname: "엄마", isMine: true),
                         GroupMember(userId: 2, nickname: "아빠", isMine: false)

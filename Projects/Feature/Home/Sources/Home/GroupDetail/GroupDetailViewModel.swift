@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 import Dependencies
 import DesignSystem
@@ -18,6 +19,7 @@ public final class GroupDetailViewModel {
     let todayPhotoUploaderCount: Int
 
     var groupName: String
+    private(set) var invitationCode: String?
     var members: [GroupMember] = []
     var selectedDate: Date = GroupDetailViewModel.today
     var isLoading: Bool = false
@@ -87,6 +89,7 @@ public final class GroupDetailViewModel {
                 GetGroupDetailRequest(groupId: groupId, date: requestDate)
             )
             groupName = response.groupName
+            invitationCode = response.invitationCode
             members = response.members
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
@@ -113,9 +116,15 @@ public final class GroupDetailViewModel {
         Task { await load() }
     }
 
-    /// 기존 그룹의 초대코드를 다시 조회하는 API가 아직 없어, 실제 공유 대신 안내 토스트만 띄운다.
+    /// `load()`가 아직 성공하지 못했으면 코드가 없다. 로딩 중엔 momogoLoadingOverlay가 탭을 막지만,
+    /// 조회 실패 후에는 메뉴가 그대로 눌리므로 여기서 방어한다.
     func inviteShareTapped() {
-        DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "초대코드 공유는 곧 지원될 예정이에요", tone: .notice))
+        guard let invitationCode else {
+            DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "잠시 후 다시 시도해주세요.", tone: .error))
+            return
+        }
+        UIPasteboard.general.string = invitationCode
+        DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "초대코드가 복사되었어요!", tone: .success))
     }
 
     func renameTapped() {

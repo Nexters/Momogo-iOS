@@ -9,6 +9,7 @@ extension GetGroupDetailUseCase {
         return GetGroupDetailResponse(
             groupId: request.groupId,
             groupName: "우리 가족",
+            invitationCode: "ABC123",
             members: [
                 GroupMember(
                     userId: 1,

@@ -97,6 +97,7 @@ struct GroupRepositoryLiveTests {
                 GroupDetailResponseDTO(
                     groupId: 10,
                     groupName: "우리 가족",
+                    inviteCode: "ABC123",
                     members: [
                         GroupMemberStatusDTO(
                             userId: 1,
