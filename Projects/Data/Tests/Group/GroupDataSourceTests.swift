@@ -81,7 +81,7 @@ struct GroupDataSourceTests {
         let dataSource = withDependencies {
             $0.networkClient = NetworkClient { _ in
                 Foundation.Data(#"""
-                {"groupId":10,"groupName":"우리 가족","createdAt":"2026-08-01T09:00:00.123456",
+                {"groupId":10,"groupName":"우리 가족","inviteCode":"ABC123","createdAt":"2026-08-01T09:00:00.123456",
                 "date":"2026-08-05","members":[{"userId":1,"nickname":"엄마","mine":true,"photo":null}]}
                 """#.utf8)
             }

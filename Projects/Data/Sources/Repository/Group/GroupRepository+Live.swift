@@ -67,6 +67,7 @@ extension GroupRepository: DependencyKey {
                 return GetGroupDetailResponse(
                     groupId: dto.groupId,
                     groupName: dto.groupName,
+                    invitationCode: dto.inviteCode,
                     members: dto.members.map { member in
                         GroupMember(
                             userId: member.userId,
