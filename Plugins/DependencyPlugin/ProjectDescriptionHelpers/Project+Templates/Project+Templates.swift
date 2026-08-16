@@ -3,6 +3,7 @@ import ProjectDescription
 public extension Project {
     static func makeModule(
         name: String,
+        options: Project.Options = .options(),
         targets: [Target],
         schemes: [Scheme] = [],
         resourceSynthesizers: [ResourceSynthesizer] = .default
@@ -10,10 +11,11 @@ public extension Project {
         return Project(
             name: name,
             organizationName: env.organizationName,
+            options: options,
             settings: .settings(
                 configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Release")
+                    .debug(name: .dev),
+                    .release(name: .prod)
                 ]
             ),
             targets: targets,
