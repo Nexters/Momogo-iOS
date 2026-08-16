@@ -9,29 +9,25 @@ import Testing
 @Suite("CameraViewModel 권한 분기")
 @MainActor
 struct CameraViewModelPermissionTests {
-    @Test("이미 거부된 상태로 진입하면 onFinish(nil)을 호출한다")
-    func deniedStatus_callsOnFinishWithNil() async {
+    @Test("이미 거부된 상태로 진입하면 onFinish를 호출하지 않고 permissionDenied 상태로 전환한다")
+    func deniedStatus_transitionsToPermissionDenied() async {
         var callCount = 0
-        var lastValue: Data?
         let viewModel = withDependencies {
             $0.cameraPermissionClient = CameraPermissionClient(
                 authorizationStatus: { .denied },
                 requestAccess: { true }
             )
         } operation: {
-            CameraViewModel(onFinish: { data in
-                callCount += 1
-                lastValue = data
-            })
+            CameraViewModel(onFinish: { _ in callCount += 1 })
         }
 
         await viewModel.onAppear()
 
-        #expect(callCount == 1)
-        #expect(lastValue == nil)
+        #expect(callCount == 0)
+        #expect(viewModel.stage == .permissionDenied)
     }
 
-    @Test("notDetermined 상태에서 요청이 거부되면 onFinish(nil)을 호출한다")
+    @Test("notDetermined 상태에서 요청이 처음 거부되면 알럿 없이 onFinish(nil)을 호출한다")
     func notDetermined_requestDenied_callsOnFinishWithNil() async {
         var callCount = 0
         var lastValue: Data?
@@ -51,5 +47,6 @@ struct CameraViewModelPermissionTests {
 
         #expect(callCount == 1)
         #expect(lastValue == nil)
+        #expect(viewModel.stage != .permissionDenied)
     }
 }

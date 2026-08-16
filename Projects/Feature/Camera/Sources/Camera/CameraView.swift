@@ -1,9 +1,11 @@
 import SwiftUI
+import UIKit
 
 import DesignSystem
 
 public struct CameraView: View {
     @Bindable private var viewModel: CameraViewModel
+    @Environment(\.openURL) private var openURL
 
     public init(viewModel: CameraViewModel) {
         self.viewModel = viewModel
@@ -26,6 +28,26 @@ public struct CameraView: View {
         }
         .task { await viewModel.onAppear() }
         .onDisappear { viewModel.stopSessionOnDisappear() }
+        .momogoModalOverlay(
+            isPresented: Binding(get: { viewModel.stage == .permissionDenied }, set: { _ in })
+        ) {
+            DSModal(
+                title: CameraCopy.permissionAlertTitle,
+                description: CameraCopy.permissionAlertMessage,
+                primaryTitle: CameraCopy.permissionAlertConfirm,
+                primaryAction: openSettingsTapped,
+                secondaryTitle: CameraCopy.permissionAlertCancel,
+                secondaryAction: { viewModel.cancelTapped() }
+            )
+        }
+    }
+
+    /// 설정 앱의 카메라 권한 화면으로 이동한 뒤, 권한 없이는 무용한 카메라 화면을 닫는다.
+    private func openSettingsTapped() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            openURL(url)
+        }
+        viewModel.cancelTapped()
     }
 
     private var topBar: some View {
@@ -153,4 +175,9 @@ private enum CameraCopy {
 
     static let closeAccessibilityLabel = "닫기"
     static let shutterAccessibilityLabel = "촬영하기"
+
+    static let permissionAlertTitle = "카메라 권한이 필요해요"
+    static let permissionAlertMessage = "설정에서 카메라 권한을 허용해주세요"
+    static let permissionAlertConfirm = "확인"
+    static let permissionAlertCancel = "취소"
 }
