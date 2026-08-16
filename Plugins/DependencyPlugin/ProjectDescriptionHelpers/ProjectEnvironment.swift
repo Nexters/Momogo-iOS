@@ -16,6 +16,6 @@ public let env = ProjectEnvironment(
     organizationName: "Momogo",
     bundleIDPrefix: "com.mogumogu.momogo",
     deploymentTargets: .iOS("17.0"),
-    destinations: .iOS,
+    destinations: [.iPhone],
     cameraUsageDescription: "모모고에서 오늘의 식사 사진을 촬영하려면 카메라 접근 권한이 필요합니다."
 )

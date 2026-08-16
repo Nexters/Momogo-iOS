@@ -12,7 +12,8 @@ let project = Project.makeModule(
                 "UILaunchScreen": .dictionary([:]),
                 "CFBundleShortVersionString": .string(env.appVersion),
                 "CFBundleVersion": "1",
-                "NSCameraUsageDescription": .string(env.cameraUsageDescription)
+                "NSCameraUsageDescription": .string(env.cameraUsageDescription),
+                "ITSAppUsesNonExemptEncryption": .boolean(false)
             ]),
             sources: ["Sources/**"],
             resources: ["Resources/**"],
