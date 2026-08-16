@@ -55,7 +55,8 @@ public final class HomeViewModel {
             groupName: response.groupName,
             todayPhotoUploaderCount: 0,
             onLeave: { [weak self] in self?.destination = nil },
-            onPhotoDeleted: { [weak self] in Task { await self?.load() } }
+            onPhotoDeleted: { [weak self] in Task { await self?.load() } },
+            onPhotoUploaded: { [weak self] in Task { await self?.load() } }
         )
     }
 
@@ -76,7 +77,8 @@ public final class HomeViewModel {
                 groupName: group.groupName,
                 todayPhotoUploaderCount: group.todayPhotoUploaderCount,
                 onLeave: { [weak self] in self?.destination = nil },
-                onPhotoDeleted: { [weak self] in Task { await self?.load() } }
+                onPhotoDeleted: { [weak self] in Task { await self?.load() } },
+                onPhotoUploaded: { [weak self] in Task { await self?.load() } }
             )
         )
     }
