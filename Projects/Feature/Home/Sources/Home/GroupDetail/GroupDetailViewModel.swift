@@ -16,7 +16,10 @@ public final class GroupDetailViewModel {
     }
 
     let groupId: Int
-    let todayPhotoUploaderCount: Int
+    /// 상위(Home)에서 최초 진입 시 전달받은 초깃값이며, 이후 `load()`가 오늘 날짜를 조회할 때마다
+    /// `members`의 실제 업로드 현황으로 다시 계산된다(`recalculateTodayPhotoUploaderCountIfNeeded()`).
+    /// 과거 날짜를 보는 동안에는 그 날짜의 인원 수로 "오늘" 표시가 오염되지 않도록 갱신하지 않는다.
+    var todayPhotoUploaderCount: Int
 
     var groupName: String
     private(set) var invitationCode: String?
@@ -34,36 +37,47 @@ public final class GroupDetailViewModel {
     var deletingPhotoMember: GroupMember?
     var isDeletingPhoto: Bool = false
 
+    /// 내 빈 카드의 카메라 아이콘을 탭했을 때 카메라 fullScreenCover를 띄우는 데 쓰인다
+    /// (`HomeViewModel.isCameraPresented`와 동일 패턴).
+    var isCameraPresented: Bool = false
+    var isUploadingPhoto: Bool = false
+
     @ObservationIgnored
     @Dependency(\.getGroupDetailUseCase) private var getGroupDetailUseCase
     @ObservationIgnored
     @Dependency(\.leaveGroupUseCase) private var leaveGroupUseCase
     @ObservationIgnored
     @Dependency(\.deletePhotoUseCase) private var deletePhotoUseCase
+    @ObservationIgnored
+    @Dependency(\.uploadPhotoUseCase) private var uploadPhotoUseCase
 
     /// 그룹 탈퇴 완료 시 상위(HomeViewModel)에 알려 화면을 되돌리고 목록을 새로고침한다.
     private let onLeave: () -> Void
     /// 사진 삭제 성공 시 상위(HomeViewModel)에 알려 홈 썸네일을 다시 계산하게 한다. 홈은 이 화면이
     /// pop될 때도 재조회하지만, 삭제 시점에 화면 안에 계속 머무는 경우까지 커버하려면 별도 통지가 필요하다.
     private let onPhotoDeleted: () -> Void
+    /// 그룹상세에서 직접 촬영·업로드했을 때도 위와 동일한 이유로 상위에 통지한다.
+    private let onPhotoUploaded: () -> Void
 
     public init(
         groupId: Int,
         groupName: String,
         todayPhotoUploaderCount: Int,
         onLeave: @escaping () -> Void = {},
-        onPhotoDeleted: @escaping () -> Void = {}
+        onPhotoDeleted: @escaping () -> Void = {},
+        onPhotoUploaded: @escaping () -> Void = {}
     ) {
         self.groupId = groupId
         self.groupName = groupName
         self.todayPhotoUploaderCount = todayPhotoUploaderCount
         self.onLeave = onLeave
         self.onPhotoDeleted = onPhotoDeleted
+        self.onPhotoUploaded = onPhotoUploaded
     }
 
     /// 이 화면에서 진행 중인 API 요청이 하나라도 있는지. `momogoLoadingOverlay`를 하나로 묶어 걸기 위한 값이다.
     var isBusy: Bool {
-        isLoading || isLeaving || isDeletingPhoto
+        isLoading || isLeaving || isDeletingPhoto || isUploadingPhoto
     }
 
     var isToday: Bool {
@@ -91,9 +105,19 @@ public final class GroupDetailViewModel {
             groupName = response.groupName
             invitationCode = response.invitationCode
             members = response.members
+            recalculateTodayPhotoUploaderCountIfNeeded()
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
         }
+    }
+
+    /// `GetGroupDetailResponse`는 업로더 수 필드를 내려주지 않아, 오늘 날짜를 보고 있을 때만
+    /// `members`(각자의 `photo` 유무)로부터 직접 센다. 초기값은 목록 화면(`GroupSummary`)에서
+    /// 전달받은 값을 그대로 쓰다가, 이 화면에서 사진을 올리거나 지워 오늘자 목록이 바뀌면
+    /// 여기서 실제 값으로 맞춘다.
+    private func recalculateTodayPhotoUploaderCountIfNeeded() {
+        guard isToday else { return }
+        todayPhotoUploaderCount = members.filter { $0.photo != nil }.count
     }
 
     func previousDayTapped() {
@@ -200,6 +224,27 @@ public final class GroupDetailViewModel {
             await load()
             onPhotoDeleted()
             DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "사진을 삭제했어요", tone: .success))
+        } catch {
+            DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "잠시 후 다시 시도해주세요.", tone: .error))
+        }
+    }
+
+    /// 내 빈 카드의 카메라 아이콘으로 촬영한 사진을 현재 그룹에 바로 업로드한다. 이 화면은 이미
+    /// `groupId`가 확정된 컨텍스트라, 홈에서 쓰는 `PhotoUploadConfirmView`(여러 그룹 중 선택)를
+    /// 다시 거치지 않고 `[groupId]` 하나만 담아 업로드한다.
+    func uploadCapturedPhoto(_ photoData: Data) async {
+        guard !isUploadingPhoto else { return }
+
+        isUploadingPhoto = true
+        defer { isUploadingPhoto = false }
+
+        do {
+            _ = try await uploadPhotoUseCase.execute(
+                UploadPhotoRequest(photoData: photoData, contentType: "image/jpeg", groupIDs: [groupId])
+            )
+            await load()
+            onPhotoUploaded()
+            DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "사진을 업로드했어요", tone: .success))
         } catch {
             DSTopToastWindowPresenter.shared.show(DSTopToastContent(message: "잠시 후 다시 시도해주세요.", tone: .error))
         }

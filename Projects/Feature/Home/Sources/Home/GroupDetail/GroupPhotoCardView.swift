@@ -17,6 +17,8 @@ struct GroupPhotoCardView: View {
         /// Figma 스펙(케밥메뉴): 사진 위쪽에 깔리는 어두운 그라디언트 띠 높이.
         let menuGradientHeight: CGFloat = 42
         let menuButtonPadding: CGFloat = 8
+
+        let cameraAccessibilityLabel = "카메라로 촬영하기"
     }
 
     private let constants = Constants()
@@ -29,6 +31,8 @@ struct GroupPhotoCardView: View {
     let isMenuAnchor: Bool
     /// 더보기 배지 탭 콜백. 신고 대상이 아닌(내 사진이거나 사진이 없는) 카드에서는 배지 자체가 노출되지 않는다.
     let onTapMenu: () -> Void
+    /// 내 카드인데 아직 사진이 없을 때 카메라 아이콘 탭 콜백. 남의 빈 카드(zzz 아이콘)에는 쓰이지 않는다.
+    let onTapCamera: () -> Void
 
     /// 사진이 있는 카드에만 더보기 배지를 노출한다: 남의 사진이면 신고, 내 사진이면 삭제.
     private var showsMenuButton: Bool {
@@ -106,6 +110,12 @@ struct GroupPhotoCardView: View {
                 .fade(duration: 0.2)
                 .placeholder { placeholder }
                 .scaledToFill()
+        } else if member.isMine {
+            Button(action: onTapCamera) {
+                placeholder
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(constants.cameraAccessibilityLabel)
         } else {
             placeholder
         }

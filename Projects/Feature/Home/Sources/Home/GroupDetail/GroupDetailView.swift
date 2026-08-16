@@ -2,6 +2,7 @@ import SwiftUI
 
 import DesignSystem
 import DomainInterface
+import FeatureCamera
 
 public struct GroupDetailView: View {
     struct Constants {
@@ -57,6 +58,9 @@ public struct GroupDetailView: View {
     /// `DSMenuAnchorKey`가 마지막 카드 위치로 덮어써져 엉뚱한 곳에 메뉴가 뜬다 — 이 카드만
     /// 조건부로 앵커를 붙여(GroupPhotoCardView 참고) 한 번에 하나의 메뉴만 정확한 위치에 뜨게 한다.
     @State private var photoMenuTargetId: Int?
+    /// 내 빈 카드의 카메라 아이콘 → 촬영 → 업로드 흐름(Home의 `presentCamera` 선례와 동일 구조).
+    @State private var cameraViewModel: CameraViewModel?
+    @State private var pendingPhotoData: Data?
 
     private var columns: [GridItem] {
         [
@@ -81,7 +85,8 @@ public struct GroupDetailView: View {
                             member: member,
                             rotationDegrees: rotationDegrees(forIndex: index),
                             isMenuAnchor: photoMenuTargetId == member.userId,
-                            onTapMenu: { togglePhotoMenu(for: member) }
+                            onTapMenu: { togglePhotoMenu(for: member) },
+                            onTapCamera: presentCamera
                         )
                     }
                 }
@@ -133,6 +138,15 @@ public struct GroupDetailView: View {
         }
         .momogoModalOverlay(isPresented: $viewModel.showsLeaveConfirm) { leaveConfirmModal }
         .momogoModalOverlay(isPresented: showsDeletePhotoConfirm) { deleteConfirmModal }
+        .fullScreenCover(
+            isPresented: $viewModel.isCameraPresented,
+            onDismiss: { uploadPendingPhotoIfNeeded() },
+            content: {
+                if let cameraViewModel {
+                    CameraView(viewModel: cameraViewModel)
+                }
+            }
+        )
     }
 
     private var navigationBar: some View {
@@ -325,5 +339,24 @@ public struct GroupDetailView: View {
 
     private func toggleMenu() {
         withAnimation { isMenuPresented.toggle() }
+    }
+
+    private func presentCamera() {
+        cameraViewModel = CameraViewModel(onFinish: { photoData in
+            pendingPhotoData = photoData
+            viewModel.isCameraPresented = false
+        })
+        viewModel.isCameraPresented = true
+    }
+
+    /// 카메라 fullScreenCover가 완전히 닫힌 뒤 호출된다. 촬영을 취소했다면(pendingPhotoData == nil)
+    /// 아무것도 하지 않고, 촬영에 성공했다면 이 그룹으로 바로 업로드한다(Home과 달리 그룹 선택
+    /// 화면을 거치지 않는다 — `groupId`가 이미 확정돼 있으므로).
+    private func uploadPendingPhotoIfNeeded() {
+        cameraViewModel = nil
+        guard let photoData = pendingPhotoData else { return }
+        pendingPhotoData = nil
+
+        Task { await viewModel.uploadCapturedPhoto(photoData) }
     }
 }

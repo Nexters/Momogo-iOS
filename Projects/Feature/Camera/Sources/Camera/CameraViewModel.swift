@@ -10,6 +10,7 @@ public final class CameraViewModel {
     public enum Stage: Equatable {
         case checking
         case granted
+        case permissionDenied
     }
 
     private(set) var stage: Stage = .checking
@@ -35,6 +36,9 @@ public final class CameraViewModel {
         case .authorized:
             await startSession()
         case .notDetermined:
+            // 시스템 권한 다이얼로그를 처음 보고 거부한 직후에는 사용자가 이미 방금 그 의사를
+            // 표현한 상태라 우리 알럿을 다시 띄우지 않고 조용히 닫는다. 알럿은 이미 거부된 상태로
+            // "재진입"했을 때만(default 분기) 보여준다.
             let granted = await cameraPermissionClient.requestAccess()
             if granted {
                 await startSession()
@@ -42,7 +46,7 @@ public final class CameraViewModel {
                 cancelTapped()
             }
         default:
-            cancelTapped()
+            stage = .permissionDenied
         }
     }
 
