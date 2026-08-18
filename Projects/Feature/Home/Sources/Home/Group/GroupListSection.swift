@@ -6,7 +6,8 @@ import DomainInterface
 struct GroupListSection: View {
     let groups: [GroupSummary]
     let isEmpty: Bool
-    let onTapGroup: (GroupSummary) -> Void
+    let hasNewPhoto: (GroupSummary) -> Bool
+    let onGroupTap: (GroupSummary) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -18,7 +19,11 @@ struct GroupListSection: View {
                 GroupEmptyView()
             } else {
                 ForEach(groups) { group in
-                    GroupCardView(group: group, action: { onTapGroup(group) })
+                    GroupCardView(
+                        group: group,
+                        hasNewPhoto: hasNewPhoto(group),
+                        onTap: { onGroupTap(group) }
+                    )
                 }
             }
         }
