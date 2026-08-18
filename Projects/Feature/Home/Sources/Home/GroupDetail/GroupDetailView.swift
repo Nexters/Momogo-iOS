@@ -3,6 +3,7 @@ import SwiftUI
 import DesignSystem
 import DomainInterface
 import FeatureCamera
+import FeatureReaction
 
 public struct GroupDetailView: View {
     struct Constants {
@@ -86,7 +87,8 @@ public struct GroupDetailView: View {
                             rotationDegrees: rotationDegrees(forIndex: index),
                             isMenuAnchor: photoMenuTargetId == member.userId,
                             onTapMenu: { togglePhotoMenu(for: member) },
-                            onTapCamera: presentCamera
+                            onTapCamera: presentCamera,
+                            onTapPhoto: { viewModel.photoTapped(member) }
                         )
                     }
                 }
@@ -108,6 +110,13 @@ public struct GroupDetailView: View {
         }
         .navigationDestination(item: $viewModel.destination.reportPhoto) { reportPhotoViewModel in
             ReportPhotoView(viewModel: reportPhotoViewModel)
+        }
+        // 반응 화면의 '신고하기'도 이 스택에 push된다. 신고 화면은 FeatureHome이 소유하므로
+        // FeatureReaction에는 대상만 넘기고 화면은 여기서 만들어 주입한다(단방향 의존 유지).
+        .navigationDestination(item: $viewModel.destination.reaction) { reactionViewModel in
+            ReactionView(viewModel: reactionViewModel) { target in
+                ReportPhotoView(viewModel: viewModel.makeReportPhotoViewModel(for: reactionViewModel, target: target))
+            }
         }
         .momogoMenuOverlay(
             isPresented: $isMenuPresented,
@@ -244,69 +253,6 @@ public struct GroupDetailView: View {
         )
     }
 
-    /// `momogoMenuOverlay`(DesignSystem)는 딤 위에 앵커 뷰의 "밝은 사본"을 다시 그려서, 원본은 딤 아래
-    /// 그대로 두고 사본만 밝게 보이게 한다. 나비 버튼처럼 화면에 고정된 앵커 1개에서는 문제없지만,
-    /// 스크롤 가능한 그리드 카드에 붙이면 원본과 사본의 위치가 미세하게 어긋나 배지가 두 개로
-    /// 겹쳐 보이는 버그가 있었다(실측 확인됨). 사본을 아예 그리지 않고 메뉴만 앵커 위치에 띄우는
-    /// 방식으로 바꿔 근본적으로 제거한다 — 대신 원본 배지는 다른 화면처럼 딤에 함께 어두워진다.
-    ///
-    /// 앵커는 호출부(`body`)의 `overlayPreferenceValue`에서 받아 넘긴다. 이 프로퍼티 안에서 직접
-    /// `overlayPreferenceValue`를 부르면 수신자가 `GroupDetailView` 자신이 되어, 자기 오버레이 안에
-    /// 자기를 다시 그리는 무한 재귀(진입 즉시 스택 오버플로)가 된다.
-    @ViewBuilder
-    private func photoMenuOverlay(anchor: Anchor<CGRect>?) -> some View {
-        if let anchor, let member = photoMenuTargetMember {
-            ZStack(alignment: .topLeading) {
-                Button {
-                    withAnimation { photoMenuTargetId = nil }
-                } label: {
-                    DesignSystem.Color.black.opacity(0.4).ignoresSafeArea()
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("메뉴 닫기")
-
-                DSMenu(photoMenuItems(for: member))
-                    .visualEffect { content, proxy in
-                        let frame = proxy[anchor]
-                        return content.offset(x: frame.maxX - DSMenu.defaultWidth, y: frame.maxY + 8)
-                    }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .transition(.opacity)
-            .accessibilityAddTraits(.isModal)
-        }
-    }
-
-    private var photoMenuTargetMember: GroupMember? {
-        viewModel.members.first { $0.userId == photoMenuTargetId }
-    }
-
-    /// Figma 스펙(2342-29262): 내 사진이면 "점심 사진 지우기", 남의 사진이면 "신고하기" — 항목이
-    /// 소유 여부로 완전히 갈리므로 한 카드에 두 항목이 동시에 뜨는 경우는 없다.
-    private func photoMenuItems(for member: GroupMember) -> [DSMenu.Item] {
-        if member.isMine {
-            [
-                DSMenu.Item(constants.photoMenuDeleteTitle, icon: DesignSystemAsset.trash) {
-                    photoMenuTargetId = nil
-                    viewModel.deleteTapped(member)
-                }
-            ]
-        } else {
-            [
-                DSMenu.Item(constants.photoMenuReportTitle, icon: DesignSystemAsset.warningTriangle) {
-                    photoMenuTargetId = nil
-                    viewModel.reportTapped(member)
-                }
-            ]
-        }
-    }
-
-    private func togglePhotoMenu(for member: GroupMember) {
-        withAnimation {
-            photoMenuTargetId = (photoMenuTargetId == member.userId) ? nil : member.userId
-        }
-    }
-
     /// `momogoModalOverlay`는 `Binding<Bool>`을 요구하지만, ViewModel은 삭제 대상 사진 정보까지
     /// 함께 들고 있어야 해서 `deletingPhotoMember: GroupMember?`로 상태를 겸한다. 여기서 Bool로 어댑팅한다.
     private var showsDeletePhotoConfirm: Binding<Bool> {
@@ -358,5 +304,74 @@ public struct GroupDetailView: View {
         pendingPhotoData = nil
 
         Task { await viewModel.uploadCapturedPhoto(photoData) }
+    }
+}
+
+// MARK: - 사진 카드 더보기 메뉴
+
+/// 사진 카드의 케밥 메뉴(신고하기 / 점심 사진 지우기) 표시 로직. 화면 본체와 관심사가 달라
+/// 확장으로 분리했다.
+private extension GroupDetailView {
+    /// `momogoMenuOverlay`(DesignSystem)는 딤 위에 앵커 뷰의 "밝은 사본"을 다시 그려서, 원본은 딤 아래
+    /// 그대로 두고 사본만 밝게 보이게 한다. 나비 버튼처럼 화면에 고정된 앵커 1개에서는 문제없지만,
+    /// 스크롤 가능한 그리드 카드에 붙이면 원본과 사본의 위치가 미세하게 어긋나 배지가 두 개로
+    /// 겹쳐 보이는 버그가 있었다(실측 확인됨). 사본을 아예 그리지 않고 메뉴만 앵커 위치에 띄우는
+    /// 방식으로 바꿔 근본적으로 제거한다 — 대신 원본 배지는 다른 화면처럼 딤에 함께 어두워진다.
+    ///
+    /// 앵커는 호출부(`body`)의 `overlayPreferenceValue`에서 받아 넘긴다. 이 프로퍼티 안에서 직접
+    /// `overlayPreferenceValue`를 부르면 수신자가 `GroupDetailView` 자신이 되어, 자기 오버레이 안에
+    /// 자기를 다시 그리는 무한 재귀(진입 즉시 스택 오버플로)가 된다.
+    @ViewBuilder
+    func photoMenuOverlay(anchor: Anchor<CGRect>?) -> some View {
+        if let anchor, let member = photoMenuTargetMember {
+            ZStack(alignment: .topLeading) {
+                Button {
+                    withAnimation { photoMenuTargetId = nil }
+                } label: {
+                    DesignSystem.Color.black.opacity(0.4).ignoresSafeArea()
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("메뉴 닫기")
+
+                DSMenu(photoMenuItems(for: member))
+                    .visualEffect { content, proxy in
+                        let frame = proxy[anchor]
+                        return content.offset(x: frame.maxX - DSMenu.defaultWidth, y: frame.maxY + 8)
+                    }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .transition(.opacity)
+            .accessibilityAddTraits(.isModal)
+        }
+    }
+
+    var photoMenuTargetMember: GroupMember? {
+        viewModel.members.first { $0.userId == photoMenuTargetId }
+    }
+
+    /// Figma 스펙(2342-29262): 내 사진이면 "점심 사진 지우기", 남의 사진이면 "신고하기" — 항목이
+    /// 소유 여부로 완전히 갈리므로 한 카드에 두 항목이 동시에 뜨는 경우는 없다.
+    func photoMenuItems(for member: GroupMember) -> [DSMenu.Item] {
+        if member.isMine {
+            [
+                DSMenu.Item(constants.photoMenuDeleteTitle, icon: DesignSystemAsset.trash) {
+                    photoMenuTargetId = nil
+                    viewModel.deleteTapped(member)
+                }
+            ]
+        } else {
+            [
+                DSMenu.Item(constants.photoMenuReportTitle, icon: DesignSystemAsset.warningTriangle) {
+                    photoMenuTargetId = nil
+                    viewModel.reportTapped(member)
+                }
+            ]
+        }
+    }
+
+    func togglePhotoMenu(for member: GroupMember) {
+        withAnimation {
+            photoMenuTargetId = (photoMenuTargetId == member.userId) ? nil : member.userId
+        }
     }
 }

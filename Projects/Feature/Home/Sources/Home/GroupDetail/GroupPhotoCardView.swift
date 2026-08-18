@@ -19,6 +19,7 @@ struct GroupPhotoCardView: View {
         let menuButtonPadding: CGFloat = 8
 
         let cameraAccessibilityLabel = "카메라로 촬영하기"
+        let photoAccessibilityLabel = "반응 남기기"
     }
 
     private let constants = Constants()
@@ -33,6 +34,8 @@ struct GroupPhotoCardView: View {
     let onTapMenu: () -> Void
     /// 내 카드인데 아직 사진이 없을 때 카메라 아이콘 탭 콜백. 남의 빈 카드(zzz 아이콘)에는 쓰이지 않는다.
     let onTapCamera: () -> Void
+    /// 사진이 있는 카드의 사진 영역 탭 콜백. 이 멤버의 사진부터 시작하는 반응 화면으로 이동한다.
+    let onTapPhoto: () -> Void
 
     /// 사진이 있는 카드에만 더보기 배지를 노출한다: 남의 사진이면 신고, 내 사진이면 삭제.
     private var showsMenuButton: Bool {
@@ -107,11 +110,17 @@ struct GroupPhotoCardView: View {
         // 문자열을 그대로 캐시 키로 쓰면 재방문할 때마다 캐시 미스가 나 매번 재다운로드하므로,
         // 캐시 키를 photoId로 고정해야 실제로 "재요청 없이 즉시 표시"된다(RemotePhotoSource 참고).
         if let photo = member.photo, let url = URL(string: photo.downloadUrl) {
-            KFImage(source: RemotePhotoSource.make(photoId: photo.photoId, downloadURL: url))
-                .resizable()
-                .fade(duration: 0.2)
-                .placeholder { placeholder }
-                .scaledToFill()
+            // 사진 영역 전체가 반응 화면 진입 버튼이다. 우상단 더보기 배지는 이 뒤에 overlay로
+            // 얹히므로 배지 탭이 이 버튼에 먹히지 않는다.
+            Button(action: onTapPhoto) {
+                KFImage(source: RemotePhotoSource.make(photoId: photo.photoId, downloadURL: url))
+                    .resizable()
+                    .fade(duration: 0.2)
+                    .placeholder { placeholder }
+                    .scaledToFill()
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(constants.photoAccessibilityLabel)
         } else if member.isMine {
             Button(action: onTapCamera) {
                 placeholder

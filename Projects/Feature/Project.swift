@@ -11,7 +11,8 @@ let targets: [Target] = [
             .feature(implements: .splash),
             .feature(implements: .settings),
             .feature(implements: .photo),
-            .feature(implements: .camera)
+            .feature(implements: .camera),
+            .feature(implements: .reaction)
         ]
     ))
 ]

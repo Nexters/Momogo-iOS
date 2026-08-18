@@ -4,6 +4,7 @@ import UIKit
 import Dependencies
 import DesignSystem
 import DomainInterface
+import FeatureReaction
 import SwiftUINavigation
 
 @Observable
@@ -13,6 +14,7 @@ public final class GroupDetailViewModel {
     enum Destination {
         case renameGroup(GroupRenameViewModel)
         case reportPhoto(ReportPhotoViewModel)
+        case reaction(ReactionViewModel)
     }
 
     let groupId: Int
@@ -200,11 +202,47 @@ public final class GroupDetailViewModel {
         )
     }
 
+    /// 반응 화면에서 '신고하기'를 눌렀을 때 push할 신고 화면 ViewModel. 신고 화면은 FeatureHome이
+    /// 소유하므로 FeatureReaction은 대상(`ReactionReportTarget`)만 넘기고, 조립은 여기서 한다.
+    func makeReportPhotoViewModel(
+        for reactionViewModel: ReactionViewModel,
+        target: ReactionReportTarget
+    ) -> ReportPhotoViewModel {
+        ReportPhotoViewModel(
+            groupId: groupId,
+            member: target.member,
+            dateText: reactionViewModel.dateText,
+            onFinish: { reactionViewModel.reportFinished() }
+        )
+    }
+
     /// 사진 카드 더보기 메뉴의 "점심 사진 지우기" 항목. 내 사진에만 노출되므로 `member.isMine`을
     /// 다시 확인하지 않는다. 확인 모달을 띄우기만 하고, 실제 삭제는 `deletePhotoConfirmed()`에서 한다.
     func deleteTapped(_ member: GroupMember) {
         guard member.photo != nil else { return }
         deletingPhotoMember = member
+    }
+
+    /// 사진 카드를 탭하면 그 멤버의 사진부터 시작하는 반응 화면으로 이동한다. 사진이 없는 카드는
+    /// 탭 대상이 아니라(내 카드는 카메라, 남의 카드는 무반응) 여기까지 오지 않는다.
+    func photoTapped(_ member: GroupMember) {
+        guard member.photo != nil else { return }
+
+        destination = .reaction(
+            ReactionViewModel(
+                groupId: groupId,
+                groupName: groupName,
+                dateText: formattedDate,
+                members: members,
+                selectedUserId: member.userId,
+                onPhotoDeleted: { [weak self] in
+                    guard let self else { return }
+                    // 중첩 Task 클로저 안에서는 self 캡처를 명시해야 한다(암시적 캡처 금지).
+                    Task { await self.load() }
+                    onPhotoDeleted()
+                }
+            )
+        )
     }
 
     func deletePhotoCancelled() {
