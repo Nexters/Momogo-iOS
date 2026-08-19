@@ -119,8 +119,8 @@ public final class GroupDetailViewModel {
     }
 
     /// 사진이 있는 멤버마다 반응을 조회해 카드에 띄울 하나를 고른다. 한 사진에 여러 반응이 달릴 수
-    /// 있어(예: 여러 명이 각자 반응) "코멘트가 있는 것 중 내 반응 우선, 없으면 가장 최근 것" 순으로
-    /// 고른다 — 코멘트 없는(이모지만 있는) 반응은 태그에 보여줄 텍스트가 없어 후보에서 제외한다.
+    /// 있어(예: 여러 명이 각자 반응), 정책상 "코멘트가 있는 것 중 가장 최근 것"을 보여준다 —
+    /// 코멘트 없는(이모지만 있는) 반응은 태그에 보여줄 텍스트가 없어 후보에서 제외한다.
     /// 개별 사진 조회가 실패해도 그 사진만 태그 없이 넘어가고, 나머지 그리드 표시는 막지 않는다.
     private func loadReactions() async {
         var updated: [Int: PhotoReaction] = [:]
@@ -138,8 +138,7 @@ public final class GroupDetailViewModel {
     }
 
     private static func featuredReaction(in reactions: [PhotoReaction]) -> PhotoReaction? {
-        let withComment = reactions.filter { !$0.comment.isEmpty }
-        return withComment.first(where: \.isMine) ?? withComment.max { $0.createdAt < $1.createdAt }
+        reactions.filter { !$0.comment.isEmpty }.max { $0.createdAt < $1.createdAt }
     }
 
     /// `GetGroupDetailResponse`는 업로더 수 필드를 내려주지 않아, 오늘 날짜를 보고 있을 때만
