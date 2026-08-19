@@ -75,6 +75,7 @@ struct HomeExampleRootView: View {
             $0.leaveGroupUseCase = .happyPath
             $0.reportPhotoUseCase = .happyPath
             $0.deletePhotoUseCase = .happyPath
+            $0.getPhotoReactionsUseCase = .happyPath
         } operation: {
             HomeView(viewModel: HomeViewModel())
         }

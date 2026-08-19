@@ -26,6 +26,8 @@ public final class GroupDetailViewModel {
     var groupName: String
     private(set) var invitationCode: String?
     var members: [GroupMember] = []
+    /// 사진(`photoId`)별로 카드에 노출할 반응 하나. `loadReactions()`가 `load()` 직후 채운다.
+    var featuredReactionByPhotoId: [Int: PhotoReaction] = [:]
     var selectedDate: Date = GroupDetailViewModel.today
     var isLoading: Bool = false
     var errorMessage: String?
@@ -52,6 +54,8 @@ public final class GroupDetailViewModel {
     @Dependency(\.deletePhotoUseCase) private var deletePhotoUseCase
     @ObservationIgnored
     @Dependency(\.uploadPhotoUseCase) private var uploadPhotoUseCase
+    @ObservationIgnored
+    @Dependency(\.getPhotoReactionsUseCase) private var getPhotoReactionsUseCase
 
     /// 그룹 탈퇴 완료 시 상위(HomeViewModel)에 알려 화면을 되돌리고 목록을 새로고침한다.
     private let onLeave: () -> Void
@@ -108,9 +112,36 @@ public final class GroupDetailViewModel {
             invitationCode = response.invitationCode
             members = response.members
             recalculateTodayPhotoUploaderCountIfNeeded()
+            await loadReactions()
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
         }
+    }
+
+    /// 사진이 있는 멤버마다 반응을 조회해 카드에 띄울 하나를 고른다. 한 사진에 여러 반응이 달릴 수
+    /// 있어(예: 여러 명이 각자 반응) "코멘트가 있는 것 중 내 반응 우선, 없으면 가장 최근 것" 순으로
+    /// 고른다 — 코멘트 없는(이모지만 있는) 반응은 태그에 보여줄 텍스트가 없어 후보에서 제외한다.
+    /// 개별 사진 조회가 실패해도 그 사진만 태그 없이 넘어가고, 나머지 그리드 표시는 막지 않는다.
+    private func loadReactions() async {
+        var updated: [Int: PhotoReaction] = [:]
+        for photoId in members.compactMap(\.photo?.photoId) {
+            do {
+                let response = try await getPhotoReactionsUseCase.execute(
+                    GetPhotoReactionsRequest(groupId: groupId, photoId: photoId)
+                )
+                if let featured = Self.featuredReaction(in: response.reactions) {
+                    updated[photoId] = featured
+                }
+            } catch {
+                continue
+            }
+        }
+        featuredReactionByPhotoId = updated
+    }
+
+    private static func featuredReaction(in reactions: [PhotoReaction]) -> PhotoReaction? {
+        let withComment = reactions.filter { !($0.comment?.isEmpty ?? true) }
+        return withComment.first(where: \.isMine) ?? withComment.max { $0.createdAt < $1.createdAt }
     }
 
     /// `GetGroupDetailResponse`는 업로더 수 필드를 내려주지 않아, 오늘 날짜를 보고 있을 때만
