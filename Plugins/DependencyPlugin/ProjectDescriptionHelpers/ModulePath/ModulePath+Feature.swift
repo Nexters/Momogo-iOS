@@ -9,6 +9,7 @@ public extension ModulePath {
         case settings = "Settings"
         case photo = "Photo"
         case camera = "Camera"
+        case reaction = "Reaction"
 
         public static let name = "Feature"
     }

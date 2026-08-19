@@ -11,9 +11,14 @@ import DomainInterface
 /// 여기서는 항상 테스트 더블로 주입해 실제 로컬 저장을 전혀 거치지 않는다.
 @MainActor
 struct HomeViewModelTests {
+    private enum Constants {
+        static let myPhotosDate = "2026-08-12"
+    }
+
     private func withMockedDependencies(
         groups: [GroupSummary] = [],
         visits: [Int: String] = [:],
+        myPhotos: [MyPhoto] = [],
         onMarkVisited: @escaping @Sendable (Int, String?) -> Void = { _, _ in },
         operation: () async throws -> Void
     ) async rethrows {
@@ -21,6 +26,11 @@ struct HomeViewModelTests {
             $0.getGroupsUseCase = GetGroupsUseCase { GetGroupsResponse(groups: groups) }
             $0.getGroupVisitsUseCase = GetGroupVisitsUseCase { visits }
             $0.markGroupVisitedUseCase = MarkGroupVisitedUseCase(execute: onMarkVisited)
+            // 홈 상단 최근 사진 미리보기용. 빈 목록이면 `resolveRecentPhoto`가 즉시 nil을 반환해
+            // `getGroupDetailUseCase`까지 타지 않는다.
+            $0.getMyPhotosUseCase = GetMyPhotosUseCase { _ in
+                GetMyPhotosResponse(date: Constants.myPhotosDate, photos: myPhotos)
+            }
         } operation: {
             try await operation()
         }
