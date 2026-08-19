@@ -74,6 +74,7 @@ public struct ReactionView<ReportDestination: View>: View {
         }
         .momogoBottomSheetOverlay(isPresented: $viewModel.isModeSheetPresented) { modeSheet }
         .momogoModalOverlay(isPresented: showsDeleteConfirm) { deleteConfirmModal }
+        .task { await viewModel.load() }
     }
 
     /// 카드 1장이 화면 폭을 꽉 채우는 가로 페이저. `safeAreaPadding`으로 좌우 16pt를 빼고
@@ -105,7 +106,7 @@ public struct ReactionView<ReportDestination: View>: View {
             modeTitle: viewModel.modeTitle,
             isEnabled: viewModel.isReactionEnabled,
             onTapMode: viewModel.modeTapped,
-            onTapEmoji: viewModel.emojiTapped
+            onTapEmoji: { emoji in Task { await viewModel.emojiTapped(emoji) } }
         )
         .padding(.horizontal, constants.buttonBarHorizontalPadding)
         .padding(.top, constants.buttonBarTopPadding)

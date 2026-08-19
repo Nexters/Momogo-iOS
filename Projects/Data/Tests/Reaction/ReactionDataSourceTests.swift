@@ -4,63 +4,57 @@ import Testing
 @testable import Data
 
 struct ReactionDataSourceTests {
-    @Test("반응 추가 성공 시 응답을 반환한다")
-    func add_success_returnsResponse() async throws {
+    @Test("반응 추가 성공 시 응답 파싱 없이 완료된다")
+    func add_success_doesNotThrow() async throws {
         let dataSource = withDependencies {
-            $0.networkClient = NetworkClient { _ in
-                Foundation.Data(#"""
-                {
-                  "groupId": 10,
-                  "member": { "id": 1, "nickname": "엄마" },
-                  "reactions": [{ "type": "HEART", "comment": "예쁘다", "memberId": 2, "nickname": "아빠" }],
-                  "reactionCounts": [{ "type": "HEART", "count": 1 }]
-                }
-                """#.utf8)
-            }
+            $0.networkClient = NetworkClient { _ in Foundation.Data() }
         } operation: {
             ReactionDataSource.liveValue
         }
 
-        let response = try await dataSource.add(
-            10, 1, AddReactionRequestDTO(type: "HEART", comment: "예쁘다", date: "2026-07-25 14:30:00.123456+00")
+        try await dataSource.add(
+            10,
+            7,
+            AddReactionRequestDTO(concept: "YOUNG_CREATOR_CREW", emoji: "DELICIOUS", comment: "야르~")
         )
-
-        #expect(response.groupId == 10)
-        #expect(response.reactionCounts.first?.count == 1)
     }
 
-    @Test("응답 디코딩 실패 시 decodingFailed를 던진다")
-    func add_invalidJSON_throwsDecodingFailed() async throws {
+    @Test("서버 에러는 그대로 전파된다")
+    func add_serverError_throws() async throws {
         let dataSource = withDependencies {
-            $0.networkClient = NetworkClient { _ in Foundation.Data(#"{"unexpected":"field"}"#.utf8) }
+            $0.networkClient = NetworkClient { _ in throw NetworkError.serverError(statusCode: 400, problem: nil) }
         } operation: {
             ReactionDataSource.liveValue
         }
 
         await #expect(throws: NetworkError.self) {
-            _ = try await dataSource.add(
-                10, 1, AddReactionRequestDTO(type: "HEART", comment: nil, date: "2026-07-25 14:30:00.123456+00")
+            try await dataSource.add(
+                10,
+                7,
+                AddReactionRequestDTO(concept: "YOUNG_CREATOR_CREW", emoji: "DELICIOUS", comment: "야르~")
             )
         }
     }
 
-    @Test("반응 페이지 조회 성공 시 응답을 반환한다")
-    func page_success_returnsResponse() async throws {
+    @Test("반응 목록 조회 성공 시 응답을 반환한다")
+    func list_success_returnsResponse() async throws {
         let dataSource = withDependencies {
             $0.networkClient = NetworkClient { _ in
                 Foundation.Data(#"""
-                {"groupId":10,"member":{"id":1,"nickname":"엄마"},
-                "reactions":[{"type":"HEART","comment":"예쁘다","memberId":2,"nickname":"아빠",
-                "createdAt":"2026-07-25T14:30:00+09:00"}],
-                "reactionCounts":[{"type":"HEART","count":1}]}
+                {"photoId":7,"groupId":10,"reactions":[{
+                    "reactionId":901,"userId":2,"nickname":"길동",
+                    "concept":"YOUNG_CREATOR_CREW","emoji":"DELICIOUS","comment":"야르~",
+                    "createdAt":"2026-08-08T14:30:00.123456","mine":false
+                }]}
                 """#.utf8)
             }
         } operation: {
             ReactionDataSource.liveValue
         }
 
-        let response = try await dataSource.page(10, 1, "2026-07-25")
+        let response = try await dataSource.list(10, 7)
 
-        #expect(response.reactions.first?.createdAt == "2026-07-25T14:30:00+09:00")
+        #expect(response.reactions.first?.reactionId == 901)
+        #expect(response.reactions.first?.mine == false)
     }
 }

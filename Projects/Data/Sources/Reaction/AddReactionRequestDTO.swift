@@ -1,13 +1,14 @@
 import Foundation
 
+/// 필드명은 실제 요청으로 확인됐다 (`concept`/`emoji`/`comment`).
 public struct AddReactionRequestDTO: Encodable, Sendable {
-    public let type: String
-    public let comment: String?
-    public let date: String
+    public let concept: String
+    public let emoji: String
+    public let comment: String
 
-    public init(type: String, comment: String?, date: String) {
-        self.type = type
+    public init(concept: String, emoji: String, comment: String) {
+        self.concept = concept
+        self.emoji = emoji
         self.comment = comment
-        self.date = date
     }
 }
