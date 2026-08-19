@@ -162,10 +162,10 @@ private struct MarqueeCommentText: View {
 
 #Preview {
     VStack(alignment: .leading, spacing: 12) {
-        PhotoReactionTag(icon: DesignSystemAsset.reactionDelicious, comment: "짧은 코멘트")
-        PhotoReactionTag(icon: DesignSystemAsset.reactionHot, comment: "매워보여")
-        PhotoReactionTag(icon: DesignSystemAsset.reactionFlex, comment: "짧은 코멘트")
-        PhotoReactionTag(icon: DesignSystemAsset.reactionHmm, comment: "길게 쓴 코멘트는 이렇게 흘러요")
+        PhotoReactionTag(icon: DesignSystemAsset.illustImojiDrool, comment: "짧은 코멘트")
+        PhotoReactionTag(icon: DesignSystemAsset.illustImojiHot, comment: "매워보여")
+        PhotoReactionTag(icon: DesignSystemAsset.illustImojiMoney, comment: "짧은 코멘트")
+        PhotoReactionTag(icon: DesignSystemAsset.illustImojiThinking, comment: "길게 쓴 코멘트는 이렇게 흘러요")
             .frame(width: 164, alignment: .trailing)
     }
     .padding()

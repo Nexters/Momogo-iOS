@@ -32,7 +32,7 @@ struct GroupPhotoCardView: View {
     private let constants = Constants()
 
     let member: GroupMember
-    /// 이 카드(멤버 사진)에 남겨진 반응 중 화면에 노출할 하나. 코멘트가 없으면 태그를 띄우지 않는다.
+    /// 이 카드(멤버 사진)에 남겨진 반응 중 화면에 노출할 하나. 코멘트가 빈 문자열이면 태그를 띄우지 않는다.
     let reaction: PhotoReaction?
     /// 반응 태그가 놓일 코너를 카드마다 랜덤으로 고른다("재밌을 것 같다"는 사용자 요청).
     /// 카드 identity(멤버)가 유지되는 동안은 값이 고정돼, 메뉴 토글 등 리렌더에서 위치가 튀지 않는다.
@@ -64,8 +64,8 @@ struct GroupPhotoCardView: View {
                     }
                 }
                 .overlay(alignment: reactionTagCorner.alignment) {
-                    if let reaction, let comment = reaction.comment, !comment.isEmpty {
-                        PhotoReactionTag(icon: reaction.emoji.icon, comment: comment)
+                    if let reaction, !reaction.comment.isEmpty {
+                        PhotoReactionTag(icon: reaction.emoji.icon, comment: reaction.comment)
                             .padding(reactionTagPadding)
                     }
                 }
@@ -207,15 +207,15 @@ private enum ReactionTagCorner: CaseIterable {
     }
 }
 
-extension PhotoReactionEmoji {
-    /// Figma(node 2107:49877, `Illust_Imoji` 4종)를 flatten해 추가한 에셋과 매핑한다.
+extension CommentEmoji {
+    /// FeatureReaction이 쓰는 `illust-imoji-*` 에셋(Figma `Illust_Imoji` 4종)을 그대로 재사용한다.
     /// Domain은 DesignSystem을 모르므로 이 매핑은 Feature에 둔다.
     var icon: DesignSystemImages {
         switch self {
-        case .delicious: DesignSystemAsset.reactionDelicious
-        case .hot: DesignSystemAsset.reactionHot
-        case .flex: DesignSystemAsset.reactionFlex
-        case .hmm: DesignSystemAsset.reactionHmm
+        case .delicious: DesignSystemAsset.illustImojiDrool
+        case .hot: DesignSystemAsset.illustImojiHot
+        case .flex: DesignSystemAsset.illustImojiMoney
+        case .hmm: DesignSystemAsset.illustImojiThinking
         }
     }
 }

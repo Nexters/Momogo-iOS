@@ -55,7 +55,7 @@ public final class GroupDetailViewModel {
     @ObservationIgnored
     @Dependency(\.uploadPhotoUseCase) private var uploadPhotoUseCase
     @ObservationIgnored
-    @Dependency(\.getPhotoReactionsUseCase) private var getPhotoReactionsUseCase
+    @Dependency(\.getReactionsUseCase) private var getReactionsUseCase
 
     /// 그룹 탈퇴 완료 시 상위(HomeViewModel)에 알려 화면을 되돌리고 목록을 새로고침한다.
     private let onLeave: () -> Void
@@ -126,10 +126,8 @@ public final class GroupDetailViewModel {
         var updated: [Int: PhotoReaction] = [:]
         for photoId in members.compactMap(\.photo?.photoId) {
             do {
-                let response = try await getPhotoReactionsUseCase.execute(
-                    GetPhotoReactionsRequest(groupId: groupId, photoId: photoId)
-                )
-                if let featured = Self.featuredReaction(in: response.reactions) {
+                let reactions = try await getReactionsUseCase.execute(groupId, photoId)
+                if let featured = Self.featuredReaction(in: reactions) {
                     updated[photoId] = featured
                 }
             } catch {
@@ -140,7 +138,7 @@ public final class GroupDetailViewModel {
     }
 
     private static func featuredReaction(in reactions: [PhotoReaction]) -> PhotoReaction? {
-        let withComment = reactions.filter { !($0.comment?.isEmpty ?? true) }
+        let withComment = reactions.filter { !$0.comment.isEmpty }
         return withComment.first(where: \.isMine) ?? withComment.max { $0.createdAt < $1.createdAt }
     }
 
