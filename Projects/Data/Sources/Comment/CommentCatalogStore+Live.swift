@@ -10,17 +10,18 @@ import DomainInterface
 private enum CommentCatalogDefaults {
     static let key = "momogo.comment.catalog.v1"
 
+    /// `Record`의 항목 하나. 타입 중첩을 1단계로 유지하려고 `Record` 밖으로 뺐다.
+    private struct SetRecord: Codable {
+        let concept: String
+        let emoji: String
+        let contents: [String]
+    }
+
     /// 온디스크 스키마. `CommentCatalog`(Domain 모델)를 그대로 Codable로 만들지 않고 별도로 두는
     /// 이유는, 스키마가 Domain 타입 리팩터링에 끌려다니면 프로퍼티 이름 하나 바꿔도 전 사용자
     /// 캐시가 조용히 무효화되기 때문이다. concept/emoji는 rawValue(String)로 저장해, 미래에
     /// enum 케이스가 늘어도 과거에 저장된 값의 디코딩이 실패하지 않게 한다.
     private struct Record: Codable {
-        struct SetRecord: Codable {
-            let concept: String
-            let emoji: String
-            let contents: [String]
-        }
-
         let revision: String?
         let sets: [SetRecord]
     }
@@ -52,7 +53,7 @@ private enum CommentCatalogDefaults {
         let record = Record(
             revision: catalog.revision,
             sets: catalog.sets.map {
-                Record.SetRecord(concept: $0.concept.rawValue, emoji: $0.emoji.rawValue, contents: $0.contents)
+                SetRecord(concept: $0.concept.rawValue, emoji: $0.emoji.rawValue, contents: $0.contents)
             }
         )
         guard let data = try? JSONEncoder().encode(record) else { return }

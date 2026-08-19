@@ -474,12 +474,7 @@ private struct InputGroupPreview: View {
         }
     }
 
-    private func row(
-        label: String,
-        text: String,
-        state: DSTextField.State,
-        isDisabled: Bool = false
-    ) -> some View {
+    private func row(label: String, text: String, state: DSTextField.State, isDisabled: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .momogoTypography(.xsMedium)

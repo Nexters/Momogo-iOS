@@ -1,8 +1,8 @@
 import Dependencies
 import DomainInterface
 import FeatureGroup
-import SwiftUINavigation
 import SwiftUI
+import SwiftUINavigation
 
 @Observable
 @MainActor

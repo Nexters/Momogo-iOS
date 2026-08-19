@@ -53,7 +53,7 @@ public final class SplashViewModel {
             forceUpdateStoreURL = url
             return
         }
-        onFinish(await destination)
+        await onFinish(destination)
     }
 
     /// 이미 진행 중이면(예: start()가 재호출된 경우) 다시 시작하지 않는다. 타임아웃을 두지 않는 건
