@@ -17,9 +17,15 @@ public final class SplashViewModel {
     @Dependency(\.checkSessionUseCase) private var checkSessionUseCase
     @ObservationIgnored
     @Dependency(\.checkAppVersionUseCase) private var checkAppVersionUseCase
+    @ObservationIgnored
+    @Dependency(\.syncCommentsUseCase) private var syncCommentsUseCase
 
     /// non-nil이면 강제 업데이트 모달을 띄우고 onFinish를 호출하지 않아 앱 진입이 차단된다.
     private(set) var forceUpdateStoreURL: URL?
+
+    /// 리액션 문구 카탈로그 동기화 태스크. 스플래시가 끝나도 취소하지 않고 백그라운드로 계속 둔다
+    /// (테스트에서 완료를 기다릴 수 있도록 핸들만 보관).
+    @ObservationIgnored private(set) var commentSyncTask: Task<Void, Never>?
 
     private let onFinish: (SplashDestination) -> Void
 
@@ -31,6 +37,11 @@ public final class SplashViewModel {
     /// 두 체크는 동시에 시작하지만, 강제 업데이트 여부는 세션 체크를 기다리지 않고 확인되는 대로 즉시 반영한다.
     /// (세션 체크가 느려서 이미 알고 있는 차단 결정이 늦게 반영되는 것을 막기 위함)
     func start() async {
+        // 문구 카탈로그 동기화는 화면 진입을 막지 않는 백그라운드 작업이라 await하지 않는다.
+        // `async let`을 쓰면 이 함수가 2초 뒤 리턴할 때 스코프 종료로 암묵 취소되므로 반드시
+        // 비구조적 Task로 띄운다.
+        startCommentSync()
+
         let checkSessionUseCase = checkSessionUseCase
         let checkAppVersionUseCase = checkAppVersionUseCase
 
@@ -43,6 +54,15 @@ public final class SplashViewModel {
             return
         }
         onFinish(await destination)
+    }
+
+    /// 이미 진행 중이면(예: start()가 재호출된 경우) 다시 시작하지 않는다. 타임아웃을 두지 않는 건
+    /// UI를 막지 않는 작업이라 "느리지만 성공했을 응답"을 버릴 이유가 없기 때문이다(URLSession 기본
+    /// 타임아웃에 위임). deinit에서 취소하지 않는다 — 스플래시가 사라져도 계속 달리는 게 의도된 동작이다.
+    private func startCommentSync() {
+        guard commentSyncTask == nil else { return }
+        let syncCommentsUseCase = syncCommentsUseCase
+        commentSyncTask = Task { try? await syncCommentsUseCase.execute() }
     }
 
     /// 강제 업데이트 모달의 "확인" 버튼 액션. 스토어로 이동한 뒤에도 모달은 닫히지 않아 진입 차단이 유지된다.

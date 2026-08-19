@@ -17,6 +17,7 @@ struct FeatureSplashTests {
                 execute: { AppVersionCheckResult(isForceUpdateRequired: false, updateURL: nil) }
             )
             $0.checkSessionUseCase = CheckSessionUseCase(execute: { .home })
+            $0.syncCommentsUseCase = SyncCommentsUseCase(execute: {})
         } operation: {
             SplashViewModel(onFinish: { finished = $0 })
         }
@@ -37,6 +38,7 @@ struct FeatureSplashTests {
                 execute: { AppVersionCheckResult(isForceUpdateRequired: true, updateURL: storeURL) }
             )
             $0.checkSessionUseCase = CheckSessionUseCase(execute: { .home })
+            $0.syncCommentsUseCase = SyncCommentsUseCase(execute: {})
         } operation: {
             SplashViewModel(onFinish: { finished = $0 })
         }
@@ -56,6 +58,7 @@ struct FeatureSplashTests {
                 execute: { AppVersionCheckResult(isForceUpdateRequired: true, updateURL: nil) }
             )
             $0.checkSessionUseCase = CheckSessionUseCase(execute: { .onboarding })
+            $0.syncCommentsUseCase = SyncCommentsUseCase(execute: {})
         } operation: {
             SplashViewModel(onFinish: { finished = $0 })
         }
@@ -75,6 +78,7 @@ struct FeatureSplashTests {
                 execute: { throw SplashTestError.networkFailed }
             )
             $0.checkSessionUseCase = CheckSessionUseCase(execute: { .home })
+            $0.syncCommentsUseCase = SyncCommentsUseCase(execute: {})
         } operation: {
             SplashViewModel(onFinish: { finished = $0 })
         }
