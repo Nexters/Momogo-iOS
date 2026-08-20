@@ -122,22 +122,30 @@ public final class GroupDetailViewModel {
     /// 있어(예: 여러 명이 각자 반응), 정책상 "코멘트가 있는 것 중 가장 최근 것"을 보여준다 —
     /// 코멘트 없는(이모지만 있는) 반응은 태그에 보여줄 텍스트가 없어 후보에서 제외한다.
     /// 개별 사진 조회가 실패해도 그 사진만 태그 없이 넘어가고, 나머지 그리드 표시는 막지 않는다.
+    /// 사진마다 순차 호출하면 인원 수만큼 왕복이 누적돼 그룹상세 진입이 느려지므로, 병렬로 조회해
+    /// 전체 대기시간을 가장 느린 요청 1개 수준으로 줄인다.
     private func loadReactions() async {
-        var updated: [Int: PhotoReaction] = [:]
-        for photoId in members.compactMap(\.photo?.photoId) {
-            do {
-                let reactions = try await getReactionsUseCase.execute(groupId, photoId)
-                if let featured = Self.featuredReaction(in: reactions) {
-                    updated[photoId] = featured
+        let getReactionsUseCase = getReactionsUseCase // self 캡처 없이 TaskGroup에 넘기기 위해 로컬로 복사
+        let groupId = groupId
+        let photoIds = members.compactMap(\.photo?.photoId)
+
+        let results = await withTaskGroup(of: (Int, PhotoReaction?).self) { group in
+            for photoId in photoIds {
+                group.addTask {
+                    guard let reactions = try? await getReactionsUseCase.execute(groupId, photoId) else {
+                        return (photoId, nil)
+                    }
+                    return (photoId, Self.featuredReaction(in: reactions))
                 }
-            } catch {
-                continue
+            }
+            return await group.reduce(into: [Int: PhotoReaction]()) { partialResult, result in
+                partialResult[result.0] = result.1
             }
         }
-        featuredReactionByPhotoId = updated
+        featuredReactionByPhotoId = results
     }
 
-    private static func featuredReaction(in reactions: [PhotoReaction]) -> PhotoReaction? {
+    private nonisolated static func featuredReaction(in reactions: [PhotoReaction]) -> PhotoReaction? {
         reactions.filter { !$0.comment.isEmpty }.max { $0.createdAt < $1.createdAt }
     }
 
