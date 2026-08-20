@@ -162,9 +162,13 @@ public final class ReactionViewModel {
     private func appendMyReaction(emoji: ReactionEmoji, comment: String, toItemId id: Int) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
 
+        // 서버는 멤버 목록을 "나 → 닉네임순"으로 내려주므로 items 안에는 항상 isMine == true인
+        // 항목(나 자신)이 존재한다. 못 찾는 비정상 상태에 대비해 빈 문자열로 안전하게 폴백한다.
+        let myNickname = items.first(where: { $0.member.isMine })?.member.nickname ?? ""
+
         items[index].reactions.append(
             ReactionLogEntry(
-                nickname: ReactionLogEntry.myDisplayName,
+                nickname: myNickname,
                 isMine: true,
                 emoji: emoji,
                 comment: comment

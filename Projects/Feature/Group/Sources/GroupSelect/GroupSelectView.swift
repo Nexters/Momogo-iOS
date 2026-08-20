@@ -5,7 +5,6 @@ import SwiftUINavigation
 
 public struct GroupSelectView: View {
     @Bindable private var viewModel: GroupSelectViewModel
-    @Environment(\.dismiss) private var dismiss
 
     public init(viewModel: GroupSelectViewModel) {
         self.viewModel = viewModel
@@ -13,9 +12,7 @@ public struct GroupSelectView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            DSTopNavigationBar(leading: {
-                DSBackButton(action: { dismiss() })
-            })
+            DSTopNavigationBar()
 
             VStack(alignment: .leading, spacing: 24) {
                 Text("\(viewModel.nickname)님,\n어느 것부터 시작할까요?")
@@ -53,6 +50,8 @@ public struct GroupSelectView: View {
         .ignoresSafeArea(edges: .bottom)
         .background(DesignSystem.Color.gray900.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        // 회원가입 직후 화면. 스와이프 백으로 닉네임 입력으로 되돌아가면 회원가입이 중복 호출될 수 있어 막는다.
+        .navigationBarBackButtonHidden(true)
         .navigationDestination(item: $viewModel.destination.groupName) { groupNameViewModel in
             GroupNameView(viewModel: groupNameViewModel)
         }

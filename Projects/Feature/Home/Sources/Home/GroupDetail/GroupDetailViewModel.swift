@@ -29,6 +29,9 @@ public final class GroupDetailViewModel {
     /// 사진(`photoId`)별로 카드에 노출할 반응 하나. `loadReactions()`가 `load()` 직후 채운다.
     var featuredReactionByPhotoId: [Int: PhotoReaction] = [:]
     var selectedDate: Date = GroupDetailViewModel.today
+    /// 그룹이 생성된 날짜(자정 기준). 이전 날짜 이동 하한을 계산하는 데 쓰인다. 생성일 정보가
+    /// 없으면(파싱 실패 등) nil로 두고 제한하지 않는다.
+    private let groupCreatedAtDay: Date?
     var isLoading: Bool = false
     var errorMessage: String?
 
@@ -69,6 +72,7 @@ public final class GroupDetailViewModel {
         groupId: Int,
         groupName: String,
         todayPhotoUploaderCount: Int,
+        groupCreatedAt: String? = nil,
         onLeave: @escaping () -> Void = {},
         onPhotoDeleted: @escaping () -> Void = {},
         onPhotoUploaded: @escaping () -> Void = {}
@@ -76,6 +80,9 @@ public final class GroupDetailViewModel {
         self.groupId = groupId
         self.groupName = groupName
         self.todayPhotoUploaderCount = todayPhotoUploaderCount
+        groupCreatedAtDay = groupCreatedAt
+            .map { String($0.prefix(10)) }
+            .flatMap { Self.apiDateFormatter.date(from: $0) }
         self.onLeave = onLeave
         self.onPhotoDeleted = onPhotoDeleted
         self.onPhotoUploaded = onPhotoUploaded
@@ -93,6 +100,11 @@ public final class GroupDetailViewModel {
     /// 날짜 변경 완료 시 노출되고, '오늘' 태그를 누르면 오늘 날짜로 원복되며 함께 숨김 처리된다.
     var showsTodayTag: Bool { !isToday }
     var isNextDayDisabled: Bool { isToday }
+    /// 그룹이 생성된 날짜보다 이전으로는 넘어갈 수 없다. 생성일 정보가 없으면(예: 방금 만든 그룹) 제한하지 않는다.
+    var isPreviousDayDisabled: Bool {
+        guard let groupCreatedAtDay else { return false }
+        return Self.calendar.isDate(selectedDate, inSameDayAs: groupCreatedAtDay)
+    }
 
     var formattedDate: String {
         Self.displayDateFormatter.string(from: selectedDate)
@@ -159,7 +171,9 @@ public final class GroupDetailViewModel {
     }
 
     func previousDayTapped() {
-        guard let newDate = Self.calendar.date(byAdding: .day, value: -1, to: selectedDate) else { return }
+        guard !isPreviousDayDisabled,
+              let newDate = Self.calendar.date(byAdding: .day, value: -1, to: selectedDate)
+        else { return }
         selectedDate = newDate
         Task { await load() }
     }

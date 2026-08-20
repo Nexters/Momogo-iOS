@@ -5,16 +5,16 @@ import DomainInterface
 import FeatureGroup
 import SwiftUINavigation
 
-struct NicknameView: View {
+public struct NicknameView: View {
     @Bindable private var viewModel: NicknameViewModel
     @FocusState private var isNicknameFieldFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
-    init(viewModel: NicknameViewModel) {
+    public init(viewModel: NicknameViewModel) {
         self.viewModel = viewModel
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(spacing: 0) {
             DSTopNavigationBar(leading: {
                 DSBackButton(action: { dismiss() })
@@ -44,7 +44,7 @@ struct NicknameView: View {
                 if viewModel.isLoading {
                     ProgressView()
                 } else {
-                    Text("다음으로")
+                    Text("이 닉네임으로 시작하기")
                 }
             }
             .buttonStyle(.momogoButton(kind: .solid, tone: .primary, size: .xl, isFullWidth: true))
@@ -74,6 +74,6 @@ struct NicknameView: View {
     }
 
     private var fieldComment: String? {
-        viewModel.isLengthExceeded ? NicknamePolicy.lengthErrorMessage : viewModel.errorMessage
+        viewModel.isLengthExceeded ? NicknamePolicy.lengthErrorMessage : nil
     }
 }

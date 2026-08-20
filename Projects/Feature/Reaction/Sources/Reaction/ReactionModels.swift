@@ -186,10 +186,6 @@ public enum ReactionMode: String, CaseIterable, Identifiable, Sendable {
 
 /// '받은 리액션' 로그 한 줄(누가, 어떤 이모지로, 어떤 코멘트를 남겼는지).
 public struct ReactionLogEntry: Identifiable, Equatable, Sendable {
-    /// 내가 남긴 리액션의 표기명(Figma TagL Variant3). 서버 연동 전에는 내 닉네임을 알 수 없어
-    /// 이 값을 `nickname`으로도 그대로 쓴다.
-    static let myDisplayName = "나"
-
     public let id: UUID
     public let nickname: String
     public let isMine: Bool
@@ -210,7 +206,9 @@ public struct ReactionLogEntry: Identifiable, Equatable, Sendable {
         self.comment = comment
     }
 
-    var displayName: String { isMine ? Self.myDisplayName : nickname }
+    /// 서버가 `isMine` 여부와 무관하게 항상 실제 닉네임을 내려주므로, 본인 반응이라도 그대로
+    /// 닉네임을 표시한다(과거엔 "나"로 하드코딩되어 있었음).
+    var displayName: String { nickname }
 }
 
 /// 가로 페이저 카드 1장 = 그룹원 1명의 그날 사진과 그 사진이 받은 리액션 로그.

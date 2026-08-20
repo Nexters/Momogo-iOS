@@ -58,10 +58,11 @@ struct ReactionViewModelTests {
         }
     }
 
-    @Test("친구가 올린 사진에서는 리액션이 가능하고, 이모지를 누르면 '나'의 로그가 맨 아래에 붙는다")
+    @Test("친구가 올린 사진에서는 리액션이 가능하고, 이모지를 누르면 내 닉네임의 로그가 맨 아래에 붙는다")
     func emojiTapAppendsMyReaction() async {
         let viewModel = makeViewModel(selectedUserId: Constants.friendUserId)
         let before = viewModel.selectedItem?.reactions.count ?? 0
+        let myNickname = Self.members.first(where: { $0.isMine })?.nickname
 
         #expect(viewModel.isReactionEnabled)
 
@@ -71,7 +72,7 @@ struct ReactionViewModelTests {
         #expect(reactions.count == before + 1)
         #expect(reactions.last?.isMine == true)
         #expect(reactions.last?.emoji == .hot)
-        #expect(reactions.last?.displayName == ReactionLogEntry.myDisplayName)
+        #expect(reactions.last?.displayName == myNickname)
         #expect(ReactionEmoji.hot.fallbackYoungCrackComments.contains(reactions.last?.comment ?? ""))
     }
 

@@ -80,6 +80,10 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
     /// 활성 사진이 없으면 nil. 고정폭 ISO-8601 형식이라 사전순 비교가 곧 시간순 비교이므로,
     /// Date로 파싱하지 않고 문자열째로 들고 있다가 대소 비교만 한다(`hasNewPhoto` 참고).
     public let latestUploadAt: String?
+    /// 그룹 생성 시각(Asia/Seoul, 타임존 표기 없는 서버 원본 문자열). 상세 화면에서 이전 날짜 이동
+    /// 하한(그룹 생성일 이전으로 못 넘어가게)을 계산하는 데 쓰인다. mock/test에서 넘기지 않아도
+    /// 컴파일이 깨지지 않도록 optional + 기본값으로 둔다.
+    public let createdAt: String?
 
     public var id: Int { groupId }
 
@@ -90,7 +94,8 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
         todayPhotoUploaderCount: Int,
         members: [GroupMember] = [],
         todayPhotoUploaded: Bool = false,
-        latestUploadAt: String? = nil
+        latestUploadAt: String? = nil,
+        createdAt: String? = nil
     ) {
         self.groupId = groupId
         self.groupName = groupName
@@ -99,6 +104,7 @@ public struct GroupSummary: Sendable, Equatable, Identifiable {
         self.members = members
         self.todayPhotoUploaded = todayPhotoUploaded
         self.latestUploadAt = latestUploadAt
+        self.createdAt = createdAt
     }
 
     /// 마지막으로 그룹을 봤을 때의 `latestUploadAt` 스냅샷과 비교해 새 사진 여부를 판정한다.

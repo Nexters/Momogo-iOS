@@ -54,7 +54,22 @@ struct GroupPhotoCardView: View {
         member.photo != nil
     }
 
+    /// 카메라 placeholder 카드(내 카드 + 사진 없음)만 이미지 영역이 아니라 카드 전체(이미지+닉네임)를
+    /// 터치 가능하게 한다(Figma "그룹상세_기본" 스펙). Button 중첩을 피하려고 `imageContent`
+    /// 내부의 Button은 제거하고 이 바깥 Button 하나로만 감싼다.
     var body: some View {
+        if member.isMine, member.photo == nil {
+            Button(action: onTapCamera) {
+                cardContent
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(constants.cameraAccessibilityLabel)
+        } else {
+            cardContent
+        }
+    }
+
+    private var cardContent: some View {
         VStack(spacing: constants.contentSpacing) {
             imageContent
                 .aspectRatio(1, contentMode: .fit)
@@ -164,11 +179,9 @@ struct GroupPhotoCardView: View {
             .buttonStyle(.plain)
             .accessibilityLabel(constants.photoAccessibilityLabel)
         } else if member.isMine {
-            Button(action: onTapCamera) {
-                placeholder
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(constants.cameraAccessibilityLabel)
+            // 카드 전체(이미지+닉네임)를 감싸는 Button이 body에 있으므로 여기서는 중첩 Button 없이
+            // placeholder만 반환한다.
+            placeholder
         } else {
             placeholder
         }
