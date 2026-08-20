@@ -80,7 +80,7 @@ public final class GroupDetailViewModel {
         self.groupId = groupId
         self.groupName = groupName
         self.todayPhotoUploaderCount = todayPhotoUploaderCount
-        self.groupCreatedAtDay = groupCreatedAt
+        groupCreatedAtDay = groupCreatedAt
             .map { String($0.prefix(10)) }
             .flatMap { Self.apiDateFormatter.date(from: $0) }
         self.onLeave = onLeave
