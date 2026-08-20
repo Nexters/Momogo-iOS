@@ -105,7 +105,11 @@ public struct GroupDetailView: View {
         .momogoLoadingOverlay(isPresented: viewModel.isBusy)
         // 로딩 오버레이가 화면을 덮어 탭은 막지만, 인터랙티브 스와이프 백 제스처는 별개로 계속 동작하므로 같이 막는다.
         .navigationBarBackButtonHidden(viewModel.isBusy)
-        .task { await viewModel.load() }
+        .task {
+            await viewModel.load()
+            // APNs 도입 전 임시 조치(#90). `.task` 취소 시 폴링 루프도 함께 정리된다.
+            await viewModel.startPolling()
+        }
         .navigationDestination(item: $viewModel.destination.renameGroup) { renameViewModel in
             GroupRenameView(viewModel: renameViewModel)
         }
