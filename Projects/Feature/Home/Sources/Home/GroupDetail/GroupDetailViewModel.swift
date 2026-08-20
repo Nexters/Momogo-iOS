@@ -154,6 +154,8 @@ public final class GroupDetailViewModel {
                 partialResult[result.0] = result.1
             }
         }
+        // 폴링이 주기적으로 도는 만큼, 값이 같으면 대입하지 않아 불필요한 갱신을 막는다.
+        guard featuredReactionByPhotoId != results else { return }
         featuredReactionByPhotoId = results
     }
 
@@ -363,4 +365,49 @@ public final class GroupDetailViewModel {
         formatter.dateFormat = "M월 d일 (E)"
         return formatter
     }()
+}
+
+// MARK: - 임시 폴링(#90)
+
+/// APNs 도입 전까지 남이 올린 사진이 실시간으로 보이지 않는 문제를 메우는 임시 조치.
+/// APNs 전환 시 이 extension을 통째로 제거한다.
+extension GroupDetailViewModel {
+    private static let pollingInterval: Duration = .seconds(10)
+
+    /// `GroupDetailView.task`가 이 루프를 소유하므로 화면을 벗어나면 자동으로 취소된다.
+    func startPolling() async {
+        while true {
+            // 취소되면 sleep이 던지고 여기서 루프를 끝낸다. `try?`로 삼키면 취소 후 sleep이
+            // 즉시 반환되면서 while이 무한 스핀하므로 반드시 빠져나가야 한다.
+            do { try await Task.sleep(for: Self.pollingInterval) } catch { return }
+
+            // 백그라운드에서는 요청을 보내지 않는다. iOS가 프로세스를 suspend하면 sleep도 함께
+            // 멈추지만, suspend 전 잠깐의 유예시간 동안은 루프가 계속 돌 수 있어 명시적으로 막는다.
+            guard UIApplication.shared.applicationState == .active else { continue }
+            // 과거 날짜에는 새 업로드가 생기지 않는다. 루프는 유지해 오늘로 돌아오면 바로 재개된다.
+            guard isToday else { continue }
+            // 최초 로드·업로드·삭제·탈퇴가 진행 중이면 그 결과를 덮어쓰지 않도록 한 틱 건너뛴다.
+            guard !isBusy else { continue }
+
+            await refreshSilently()
+        }
+    }
+
+    /// 로딩 오버레이 없이 사진과 반응만 조용히 갱신한다. `load()`를 그대로 쓰면 `isLoading` →
+    /// `isBusy` → `momogoLoadingOverlay`가 폴링 주기마다 깜빡이고 뒤로가기(`navigationBarBackButtonHidden`)
+    /// 까지 주기적으로 막힌다. 실패는 무시한다 — 다음 틱이 곧 다시 시도한다.
+    private func refreshSilently() async {
+        guard let response = try? await getGroupDetailUseCase.execute(
+            GetGroupDetailRequest(groupId: groupId, date: nil) // isToday일 때만 호출된다
+        ) else { return }
+
+        // presigned downloadUrl은 조회할 때마다 서명이 바뀌어(RemotePhotoSource 참고) members를
+        // 그대로 대입하면 내용이 같아도 매 틱 그리드가 다시 그려지고 KFImage도 소스 교체로 깜빡인다.
+        // photoId 목록만 비교하면 새 사진·사진 삭제·멤버 증감이 모두 잡힌다.
+        if members.map(\.photo?.photoId) != response.members.map(\.photo?.photoId) {
+            members = response.members
+            recalculateTodayPhotoUploaderCountIfNeeded() // "오늘 N명 업로드" 카운트도 함께 갱신
+        }
+        await loadReactions()
+    }
 }
