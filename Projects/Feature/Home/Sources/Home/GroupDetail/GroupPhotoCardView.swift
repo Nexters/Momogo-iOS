@@ -17,6 +17,13 @@ struct GroupPhotoCardView: View {
         /// Figma 스펙(케밥메뉴): 사진 위쪽에 깔리는 어두운 그라디언트 띠 높이.
         let menuGradientHeight: CGFloat = 42
         let menuButtonPadding: CGFloat = 8
+        /// 케밥 배지(항상 우상단)와 반응 태그가 같은 코너로 배정됐을 때만 그 아래로 쌓기 위한
+        /// 상단 여백. menuButtonPadding(8) + PhotoMenuBadge 지름(20) + 배지-태그 간격(8) = 36.
+        /// (±2° 회전에 따른 좌표 오차는 8pt 간격이면 무시할 수준이라 감수한다.)
+        let reactionTagTopTrailingPadding: CGFloat = 36
+        /// 우상단을 제외한 나머지 3개 코너(좌상단/좌하단/우하단)에 쓰는 기본 여백 — 케밥 배지
+        /// 자체 여백(menuButtonPadding)과 통일해 시각적으로 어색하지 않게 맞춘다.
+        let reactionTagEdgePadding: CGFloat = 8
 
         let cameraAccessibilityLabel = "카메라로 촬영하기"
         let photoAccessibilityLabel = "반응 남기기"
@@ -25,6 +32,11 @@ struct GroupPhotoCardView: View {
     private let constants = Constants()
 
     let member: GroupMember
+    /// 이 카드(멤버 사진)에 남겨진 반응 중 화면에 노출할 하나. 코멘트가 빈 문자열이면 태그를 띄우지 않는다.
+    let reaction: PhotoReaction?
+    /// 반응 태그가 놓일 코너를 카드마다 랜덤으로 고른다("재밌을 것 같다"는 사용자 요청).
+    /// 카드 identity(멤버)가 유지되는 동안은 값이 고정돼, 메뉴 토글 등 리렌더에서 위치가 튀지 않는다.
+    @State private var reactionTagCorner = ReactionTagCorner.allCases.randomElement() ?? .topTrailing
     /// Figma 스펙: 카드가 (row+col) 짝/홀에 따라 ±2도씩 번갈아 기울어져 폴라로이드처럼 보인다.
     let rotationDegrees: Double
     /// 이 카드의 더보기 메뉴가 현재 열려 있는지. 열려 있을 때만 이 카드의 배지에 `.dsMenuAnchor()`를
@@ -51,7 +63,13 @@ struct GroupPhotoCardView: View {
                         menuGradientOverlay
                     }
                 }
-                // 그라디언트는 사진과 함께 회전해야 하므로(Figma에서 한 그룹으로 묶여 같이 기운다)
+                .overlay(alignment: reactionTagCorner.alignment) {
+                    if let reaction, !reaction.comment.isEmpty {
+                        PhotoReactionTag(icon: reaction.emoji.icon, comment: reaction.comment)
+                            .padding(reactionTagPadding)
+                    }
+                }
+                // 그라디언트·반응 태그는 사진과 함께 회전해야 하므로(Figma에서 한 그룹으로 묶여 같이 기운다)
                 // clipShape·rotationEffect 이전에 얹는다.
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r12))
                 .rotationEffect(.degrees(rotationDegrees))
@@ -75,6 +93,30 @@ struct GroupPhotoCardView: View {
                     .momogoTypography(.smSemistrong)
                     .foregroundStyle(DesignSystem.Color.gray50)
             }
+        }
+    }
+
+    /// 코너별 여백. 우상단만 케밥 배지 아래로 쌓기 위한 특수 상단 여백을 쓰고, 나머지 3개
+    /// 코너는 케밥 배지와 겹치지 않아 균일한 기본 여백만 적용한다.
+    private var reactionTagPadding: EdgeInsets {
+        switch reactionTagCorner {
+        case .topLeading:
+            EdgeInsets(
+                top: constants.reactionTagEdgePadding, leading: constants.reactionTagEdgePadding, bottom: 0, trailing: 0
+            )
+        case .topTrailing:
+            EdgeInsets(
+                top: constants.reactionTagTopTrailingPadding, leading: 0, bottom: 0,
+                trailing: constants.reactionTagEdgePadding
+            )
+        case .bottomLeading:
+            EdgeInsets(
+                top: 0, leading: constants.reactionTagEdgePadding, bottom: constants.reactionTagEdgePadding, trailing: 0
+            )
+        case .bottomTrailing:
+            EdgeInsets(
+                top: 0, leading: 0, bottom: constants.reactionTagEdgePadding, trailing: constants.reactionTagEdgePadding
+            )
         }
     }
 
@@ -147,6 +189,34 @@ struct GroupPhotoCardView: View {
                 RoundedRectangle(cornerRadius: DesignSystem.Radius.r12)
                     .strokeBorder(Color.white.opacity(constants.borderOpacity), lineWidth: constants.borderLineWidth)
             }
+    }
+}
+
+/// 반응 태그가 놓일 코너. 케밥 배지가 항상 우상단을 차지하므로, 우상단으로 뽑혔을 때만
+/// `GroupPhotoCardView.reactionTagPadding`이 그 아래로 쌓는 특수 여백을 쓴다.
+private enum ReactionTagCorner: CaseIterable {
+    case topLeading, topTrailing, bottomLeading, bottomTrailing
+
+    var alignment: Alignment {
+        switch self {
+        case .topLeading: .topLeading
+        case .topTrailing: .topTrailing
+        case .bottomLeading: .bottomLeading
+        case .bottomTrailing: .bottomTrailing
+        }
+    }
+}
+
+extension CommentEmoji {
+    /// FeatureReaction이 쓰는 `illust-imoji-*` 에셋(Figma `Illust_Imoji` 4종)을 그대로 재사용한다.
+    /// Domain은 DesignSystem을 모르므로 이 매핑은 Feature에 둔다.
+    var icon: DesignSystemImages {
+        switch self {
+        case .delicious: DesignSystemAsset.illustImojiDrool
+        case .hot: DesignSystemAsset.illustImojiHot
+        case .flex: DesignSystemAsset.illustImojiMoney
+        case .hmm: DesignSystemAsset.illustImojiThinking
+        }
     }
 }
 

@@ -84,6 +84,7 @@ public struct GroupDetailView: View {
                     ForEach(Array(viewModel.members.enumerated()), id: \.element.id) { index, member in
                         GroupPhotoCardView(
                             member: member,
+                            reaction: member.photo.flatMap { viewModel.featuredReactionByPhotoId[$0.photoId] },
                             rotationDegrees: rotationDegrees(forIndex: index),
                             isMenuAnchor: photoMenuTargetId == member.userId,
                             onTapMenu: { togglePhotoMenu(for: member) },

@@ -26,6 +26,8 @@ public final class GroupDetailViewModel {
     var groupName: String
     private(set) var invitationCode: String?
     var members: [GroupMember] = []
+    /// 사진(`photoId`)별로 카드에 노출할 반응 하나. `loadReactions()`가 `load()` 직후 채운다.
+    var featuredReactionByPhotoId: [Int: PhotoReaction] = [:]
     var selectedDate: Date = GroupDetailViewModel.today
     var isLoading: Bool = false
     var errorMessage: String?
@@ -52,6 +54,8 @@ public final class GroupDetailViewModel {
     @Dependency(\.deletePhotoUseCase) private var deletePhotoUseCase
     @ObservationIgnored
     @Dependency(\.uploadPhotoUseCase) private var uploadPhotoUseCase
+    @ObservationIgnored
+    @Dependency(\.getReactionsUseCase) private var getReactionsUseCase
 
     /// 그룹 탈퇴 완료 시 상위(HomeViewModel)에 알려 화면을 되돌리고 목록을 새로고침한다.
     private let onLeave: () -> Void
@@ -108,9 +112,41 @@ public final class GroupDetailViewModel {
             invitationCode = response.invitationCode
             members = response.members
             recalculateTodayPhotoUploaderCountIfNeeded()
+            await loadReactions()
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
         }
+    }
+
+    /// 사진이 있는 멤버마다 반응을 조회해 카드에 띄울 하나를 고른다. 한 사진에 여러 반응이 달릴 수
+    /// 있어(예: 여러 명이 각자 반응), 정책상 "코멘트가 있는 것 중 가장 최근 것"을 보여준다 —
+    /// 코멘트 없는(이모지만 있는) 반응은 태그에 보여줄 텍스트가 없어 후보에서 제외한다.
+    /// 개별 사진 조회가 실패해도 그 사진만 태그 없이 넘어가고, 나머지 그리드 표시는 막지 않는다.
+    /// 사진마다 순차 호출하면 인원 수만큼 왕복이 누적돼 그룹상세 진입이 느려지므로, 병렬로 조회해
+    /// 전체 대기시간을 가장 느린 요청 1개 수준으로 줄인다.
+    private func loadReactions() async {
+        let getReactionsUseCase = getReactionsUseCase // self 캡처 없이 TaskGroup에 넘기기 위해 로컬로 복사
+        let groupId = groupId
+        let photoIds = members.compactMap(\.photo?.photoId)
+
+        let results = await withTaskGroup(of: (Int, PhotoReaction?).self) { group in
+            for photoId in photoIds {
+                group.addTask {
+                    guard let reactions = try? await getReactionsUseCase.execute(groupId, photoId) else {
+                        return (photoId, nil)
+                    }
+                    return (photoId, Self.featuredReaction(in: reactions))
+                }
+            }
+            return await group.reduce(into: [Int: PhotoReaction]()) { partialResult, result in
+                partialResult[result.0] = result.1
+            }
+        }
+        featuredReactionByPhotoId = results
+    }
+
+    private nonisolated static func featuredReaction(in reactions: [PhotoReaction]) -> PhotoReaction? {
+        reactions.filter { !$0.comment.isEmpty }.max { $0.createdAt < $1.createdAt }
     }
 
     /// `GetGroupDetailResponse`는 업로더 수 필드를 내려주지 않아, 오늘 날짜를 보고 있을 때만
