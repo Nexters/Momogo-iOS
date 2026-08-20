@@ -74,7 +74,8 @@ struct GroupRepositoryLiveTests {
                         todayPhotoUploaderCount: 2,
                         members: [GroupMemberStatusDTO(userId: 1, nickname: "엄마", mine: true, photo: nil)],
                         todayPhotoUploaded: true,
-                        latestUploadAt: "2026-08-12T09:30:00.000000"
+                        latestUploadAt: "2026-08-12T09:30:00.000000",
+                        createdAt: "2026-08-01T09:00:00.000000"
                     )
                 ])
             }
@@ -90,6 +91,7 @@ struct GroupRepositoryLiveTests {
         #expect(response.groups[0].members == [GroupMember(userId: 1, nickname: "엄마", isMine: true)])
         #expect(response.groups[0].todayPhotoUploaded)
         #expect(response.groups[0].latestUploadAt == "2026-08-12T09:30:00.000000")
+        #expect(response.groups[0].createdAt == "2026-08-01T09:00:00.000000")
     }
 
     @Test("getGroupDetail은 DTO를 도메인 모델로 매핑하고 mine 플래그를 isMine으로 전달한다")

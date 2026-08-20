@@ -194,7 +194,9 @@ public struct GroupDetailView: View {
                     .frame(width: constants.dateArrowIconSize, height: constants.dateArrowIconSize)
                     .frame(width: constants.dateArrowTapAreaSize, height: constants.dateArrowTapAreaSize)
                     .foregroundStyle(DesignSystem.Color.gray700)
+                    .opacity(viewModel.isPreviousDayDisabled ? constants.dateArrowDisabledOpacity : 1)
             }
+            .disabled(viewModel.isPreviousDayDisabled)
             Text(viewModel.formattedDate)
                 .momogoTypography(.mdSemistrong)
                 .foregroundStyle(DesignSystem.Color.gray50)

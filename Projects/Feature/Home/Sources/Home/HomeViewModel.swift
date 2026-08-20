@@ -68,6 +68,10 @@ public final class HomeViewModel {
             groupId: response.groupId,
             groupName: response.groupName,
             todayPhotoUploaderCount: 0,
+            // 방금 생성된 그룹이라 CreateGroupResponse에는 생성 시각이 없다. 실제로 지금 막
+            // 생성됐으므로 현재 시각을 그대로 써도 정확하다("이전 날짜로 못 넘어감" 하한 계산은
+            // 앞 10자(yyyy-MM-dd)만 파싱하므로 포맷 불일치는 문제되지 않는다).
+            groupCreatedAt: ISO8601DateFormatter().string(from: Date()),
             onLeave: { [weak self] in self?.destination = nil },
             onPhotoDeleted: { [weak self] in Task { await self?.load() } },
             onPhotoUploaded: { [weak self] in Task { await self?.load() } }
@@ -180,6 +184,7 @@ public final class HomeViewModel {
                 groupId: group.groupId,
                 groupName: group.groupName,
                 todayPhotoUploaderCount: group.todayPhotoUploaderCount,
+                groupCreatedAt: group.createdAt,
                 onLeave: { [weak self] in self?.destination = nil },
                 onPhotoDeleted: { [weak self] in Task { await self?.load() } },
                 onPhotoUploaded: { [weak self] in Task { await self?.load() } }
