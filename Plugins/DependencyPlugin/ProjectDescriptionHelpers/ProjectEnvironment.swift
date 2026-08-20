@@ -12,7 +12,7 @@ public struct ProjectEnvironment {
 
 public let env = ProjectEnvironment(
     appName: "Momogo",
-    appVersion: "1.0.0",
+    appVersion: "1.1.0",
     organizationName: "Momogo",
     bundleIDPrefix: "com.mogumogu.momogo",
     deploymentTargets: .iOS("17.0"),
