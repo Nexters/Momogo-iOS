@@ -79,7 +79,7 @@ public struct GroupDetailView: View {
             navigationBar
             dateBadge
 
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: columns, spacing: constants.gridSpacing) {
                     ForEach(Array(viewModel.members.enumerated()), id: \.element.id) { index, member in
                         GroupPhotoCardView(
