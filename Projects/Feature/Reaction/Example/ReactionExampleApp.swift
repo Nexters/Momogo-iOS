@@ -18,6 +18,11 @@ struct ReactionExampleApp: App {
     init() {
         prepareDependencies {
             $0.deletePhotoUseCase = .happyPath
+            // 이 데모 앱은 Data/Domain 모듈을 링크하지 않아 liveValue가 없다. override하지 않으면
+            // 이모지 탭마다 unimplemented testValue가 호출된다. 빈 배열을 반환해 항상 폴백 문구를 쓰게 한다.
+            $0.getCommentsUseCase = GetCommentsUseCase(execute: { _, _ in [] })
+            $0.addReactionUseCase = .happyPath
+            $0.getReactionsUseCase = GetReactionsUseCase(execute: { _, _ in [] })
         }
     }
 

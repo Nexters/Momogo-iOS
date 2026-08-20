@@ -7,19 +7,19 @@ extension ReactionDataSource: DependencyKey {
         @Dependency(\.networkClient) var networkClient
 
         return ReactionDataSource(
-            add: { groupId, memberId, request in
-                try await networkClient
-                    .requestDecodable(ReactionTargetType.add(groupId: groupId, memberId: memberId, request: request))
+            add: { groupId, photoId, request in
+                _ = try await networkClient
+                    .request(ReactionTargetType.add(groupId: groupId, photoId: photoId, request: request))
             },
-            page: { groupId, memberId, date in
+            list: { groupId, photoId in
                 try await networkClient
-                    .requestDecodable(ReactionTargetType.page(groupId: groupId, memberId: memberId, date: date))
+                    .requestDecodable(ReactionTargetType.list(groupId: groupId, photoId: photoId))
             }
         )
     }
 
     public static let testValue = ReactionDataSource(
         add: unimplemented("\(Self.self).add"),
-        page: unimplemented("\(Self.self).page")
+        list: unimplemented("\(Self.self).list")
     )
 }

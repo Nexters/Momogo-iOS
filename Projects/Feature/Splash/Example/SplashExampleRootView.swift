@@ -89,6 +89,9 @@ struct SplashExampleRootView: View {
             $0.checkAppVersionUseCase = CheckAppVersionUseCase(
                 execute: { try await scenario.checkAppVersion() }
             )
+            // 이 데모 앱은 Data/Domain 모듈을 링크하지 않아 liveValue가 없다. override하지 않으면
+            // 백그라운드 문구 동기화 Task가 unimplemented testValue를 호출하게 된다.
+            $0.syncCommentsUseCase = SyncCommentsUseCase(execute: {})
         } operation: {
             // 강제 업데이트로 차단되는 시나리오는 onFinish가 호출되지 않아 이 화면에 머문다.
             // "다시 선택"은 실제 앱에는 없는, 데모 전용 탈출구다.

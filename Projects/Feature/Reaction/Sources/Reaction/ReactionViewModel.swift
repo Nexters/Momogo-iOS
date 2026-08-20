@@ -4,22 +4,16 @@ import Dependencies
 import DesignSystem
 import DomainInterface
 
-/// 반응 화면. 리액션 조회/등록 API가 아직 없어 로그는 목 데이터로 채우고, 이모지 탭은 로컬 상태만
-/// 갱신한다(모드별 코멘트 프리셋에서 랜덤 추첨). 사진 삭제는 이미 있는 UseCase를 그대로 쓴다.
+/// 반응 화면. 리액션 등록·조회 모두 API로 처리한다(문구는 서버 카탈로그 우선, 없으면 클라이언트
+/// 폴백 프리셋에서 랜덤 추첨). 화면 진입 시 `load()`가 사진별 리액션을 병렬로 불러오고, 등록은
+/// 성공 시 로컬에 즉시 반영한다(등록 직후 다시 조회하지 않는다 — 이미 로컬에 반영돼 있어 불필요).
+/// 사진 삭제는 이미 있는 UseCase를 그대로 쓴다.
 @Observable
 @MainActor
 public final class ReactionViewModel {
     private enum Constants {
         static let deleteSuccessMessage = "사진을 삭제했어요"
         static let errorMessage = "잠시 후 다시 시도해주세요."
-
-        /// 목 로그 한 벌의 개수. 스크롤·Gradient·스크롤바가 보일 만큼은 채운다.
-        static let mockReactionCount = 8
-        /// 이 배수의 userId는 로그를 비워 둬, Example/그룹상세에서 엠티뷰 상태도 함께 확인할 수 있게 한다.
-        static let mockEmptyUserIdMultiple = 3
-        /// 두 줄 래핑 레이아웃(Figma TagL Variant2)을 항상 확인할 수 있도록, 이 인덱스의 줄에는
-        /// 후보 중 가장 긴 코멘트를 넣는다.
-        static let mockLongestCommentIndex = 0
     }
 
     public let groupId: Int
@@ -46,6 +40,17 @@ public final class ReactionViewModel {
 
     @ObservationIgnored
     @Dependency(\.deletePhotoUseCase) private var deletePhotoUseCase
+    @ObservationIgnored
+    @Dependency(\.getCommentsUseCase) private var getCommentsUseCase
+    @ObservationIgnored
+    @Dependency(\.addReactionUseCase) private var addReactionUseCase
+    @ObservationIgnored
+    @Dependency(\.getReactionsUseCase) private var getReactionsUseCase
+
+    /// 리액션 등록 중인 아이템(사진)의 id 집합. 화면 전체를 막는 Bool이 아니라 아이템 단위로 두는
+    /// 이유는, 페이저를 스와이프하며 여러 사진에 빠르게 반응하는 게 이 화면의 자연스러운 사용
+    /// 패턴이라 화면 전체를 막으면 무관한 다른 사진의 탭까지 아무 신호 없이 무시되기 때문이다.
+    private var registeringItemIds: Set<Int> = []
 
     /// 사진 삭제 성공 시 상위(그룹상세)에 알려 목록을 다시 조회하게 한다.
     private let onPhotoDeleted: () -> Void
@@ -62,8 +67,45 @@ public final class ReactionViewModel {
         self.groupName = groupName
         self.dateText = dateText
         self.onPhotoDeleted = onPhotoDeleted
-        items = members.map { ReactionPhotoItem(member: $0, reactions: Self.mockReactions(for: $0, in: members)) }
+        items = members.map { ReactionPhotoItem(member: $0) }
         selectedItemId = selectedUserId
+    }
+
+    /// 화면 진입 시 사진이 있는 멤버 각각의 리액션을 병렬로 불러온다. `ReactionView`의 `.task`에서 호출한다.
+    func load() async {
+        let getReactionsUseCase = getReactionsUseCase // self 캡처 없이 TaskGroup에 넘기기 위해 로컬로 복사
+        let groupId = groupId
+
+        await withTaskGroup(of: (Int, [ReactionLogEntry]).self) { group in
+            for item in items {
+                guard let photoId = item.member.photo?.photoId else { continue }
+                group.addTask {
+                    let reactions = await (try? getReactionsUseCase.execute(groupId, photoId)) ?? []
+                    // 서버가 이미 등록순으로 정렬해서 내려주므로 클라이언트에서 다시 정렬하지 않는다.
+                    let entries = reactions.map {
+                        ReactionLogEntry(
+                            nickname: $0.nickname,
+                            isMine: $0.isMine,
+                            emoji: ReactionEmoji(catalogKey: $0.emoji),
+                            comment: $0.comment
+                        )
+                    }
+                    return (item.id, entries)
+                }
+            }
+            for await (itemId, entries) in group {
+                guard let index = items.firstIndex(where: { $0.id == itemId }) else { continue }
+                // 화면 진입 직후 이 사진에 대한 등록(POST)이 조회(GET)보다 먼저 성공하면, 로컬에는
+                // 이미 내 리액션이 붙어 있다. 통째로 덮어쓰면 그게 사라진 것처럼 보이므로, fetch 결과에
+                // 없는 "내 리액션"만 골라 뒤에 살려 붙인다. 안정적인 서버 id가 로컬 항목엔 없어
+                // (emoji, comment) 내용 일치로 판단한다.
+                let fetchedMineKeys = Set(entries.filter(\.isMine).map { "\($0.emoji.rawValue)|\($0.comment)" })
+                let localOnlyMine = items[index].reactions.filter {
+                    $0.isMine && !fetchedMineKeys.contains("\($0.emoji.rawValue)|\($0.comment)")
+                }
+                items[index].reactions = entries + localOnlyMine
+            }
+        }
     }
 
     var selectedItem: ReactionPhotoItem? {
@@ -81,13 +123,44 @@ public final class ReactionViewModel {
 
     // MARK: - 리액션 남기기
 
-    /// 이모지를 누르면 현재 모드의 코멘트 후보에서 하나를 뽑아 로그에 바로 붙인다. Figma의 로그는
-    /// 아래가 최신인 채팅형 정렬이라(컨테이너 bottom 정렬 + 진입 시 최하단) 새 리액션도 맨 아래로 붙는다.
-    func emojiTapped(_ emoji: ReactionEmoji) {
+    /// 이모지를 누르면 현재 모드의 코멘트 후보에서 하나를 뽑아 서버에 등록하고, 성공했을 때만
+    /// 로그에 붙인다(비관적 업데이트 — 요청 스펙이 아직 미확인이라, 실패를 낙관적 UI로 가리면
+    /// "등록이 하나도 안 되고 있다"는 사실을 놓치기 쉽다). Figma의 로그는 아래가 최신인 채팅형
+    /// 정렬이라(컨테이너 bottom 정렬 + 진입 시 최하단) 새 리액션도 맨 아래로 붙는다.
+    func emojiTapped(_ emoji: ReactionEmoji) async {
         guard isReactionEnabled,
-              let index = items.firstIndex(where: { $0.id == selectedItemId }),
-              let comment = mode.comments(for: emoji).randomElement()
+              let item = selectedItem,
+              !registeringItemIds.contains(item.id),
+              let photoId = item.member.photo?.photoId,
+              let concept = mode.catalogConcept,
+              let comment = mode.comments(for: emoji, serverContents: serverContents(for: emoji)).randomElement()
         else { return }
+
+        registeringItemIds.insert(item.id)
+        defer { registeringItemIds.remove(item.id) }
+
+        do {
+            try await addReactionUseCase.execute(
+                AddReactionRequest(
+                    groupId: groupId,
+                    photoId: photoId,
+                    concept: concept,
+                    emoji: emoji.catalogKey,
+                    comment: comment
+                )
+            )
+            // await 도중 페이저가 스와이프돼 selectedItemId가 바뀔 수 있어, 탭 시점에 캡처한
+            // item.id로 다시 찾아 붙인다 — selectedItemId를 다시 읽으면 엉뚱한 카드에 붙을 수 있다.
+            appendMyReaction(emoji: emoji, comment: comment, toItemId: item.id)
+        } catch {
+            DSTopToastWindowPresenter.shared.show(
+                DSTopToastContent(message: Constants.errorMessage, tone: .error)
+            )
+        }
+    }
+
+    private func appendMyReaction(emoji: ReactionEmoji, comment: String, toItemId id: Int) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
 
         items[index].reactions.append(
             ReactionLogEntry(
@@ -97,6 +170,15 @@ public final class ReactionViewModel {
                 comment: comment
             )
         )
+    }
+
+    /// 스플래시에서 미리 채워둔 문구 카탈로그를 탭 시점에 조회한다. init 시점 스냅샷을 쓰지 않는
+    /// 이유는, 스플래시 동기화가 이 화면이 뜬 뒤에 끝나도 다음 탭부터 바로 반영되게 하기 위해서다.
+    /// 모드에 서버 매핑이 없으면(`ReactionMode.catalogConcept`, 현재는 영크크 모드만 있음) 조회
+    /// 자체를 하지 않고 빈 배열을 반환해 폴백으로 넘어간다.
+    private func serverContents(for emoji: ReactionEmoji) -> [String] {
+        guard let concept = mode.catalogConcept else { return [] }
+        return getCommentsUseCase.execute(concept, emoji.catalogKey)
     }
 
     // MARK: - 모드 변경
@@ -181,33 +263,5 @@ public final class ReactionViewModel {
                 photo: nil
             )
         )
-    }
-
-    /// 리액션 조회 API가 없어 UI 확인용으로 채우는 임시 로그. API 연동 시 제거한다.
-    private static func mockReactions(for member: GroupMember, in members: [GroupMember]) -> [ReactionLogEntry] {
-        guard member.photo != nil,
-              !member.userId.isMultiple(of: Constants.mockEmptyUserIdMultiple)
-        else { return [] }
-
-        let authors = members.filter { $0.userId != member.userId }
-        guard !authors.isEmpty else { return [] }
-
-        return (0 ..< Constants.mockReactionCount).compactMap { index in
-            let author = authors[index % authors.count]
-            let emoji = ReactionEmoji.allCases[index % ReactionEmoji.allCases.count]
-            let comments = emoji.youngCrackComments
-            guard !comments.isEmpty else { return nil }
-
-            let comment = index == Constants.mockLongestCommentIndex
-                ? comments.max { $0.count < $1.count } ?? comments[0]
-                : comments[index % comments.count]
-
-            return ReactionLogEntry(
-                nickname: author.nickname,
-                isMine: author.isMine,
-                emoji: emoji,
-                comment: comment
-            )
-        }
     }
 }

@@ -44,6 +44,8 @@ struct ReactionViewModelTests {
     ) -> ReactionViewModel {
         withDependencies {
             $0.deletePhotoUseCase = DeletePhotoUseCase { _ in }
+            $0.getCommentsUseCase = GetCommentsUseCase(execute: { _, _ in [] })
+            $0.addReactionUseCase = AddReactionUseCase { _ in }
         } operation: {
             ReactionViewModel(
                 groupId: Constants.groupId,
@@ -57,30 +59,30 @@ struct ReactionViewModelTests {
     }
 
     @Test("친구가 올린 사진에서는 리액션이 가능하고, 이모지를 누르면 '나'의 로그가 맨 아래에 붙는다")
-    func emojiTapAppendsMyReaction() {
+    func emojiTapAppendsMyReaction() async {
         let viewModel = makeViewModel(selectedUserId: Constants.friendUserId)
         let before = viewModel.selectedItem?.reactions.count ?? 0
 
         #expect(viewModel.isReactionEnabled)
 
-        viewModel.emojiTapped(.hot)
+        await viewModel.emojiTapped(.hot)
 
         let reactions = viewModel.selectedItem?.reactions ?? []
         #expect(reactions.count == before + 1)
         #expect(reactions.last?.isMine == true)
         #expect(reactions.last?.emoji == .hot)
         #expect(reactions.last?.displayName == ReactionLogEntry.myDisplayName)
-        #expect(ReactionEmoji.hot.youngCrackComments.contains(reactions.last?.comment ?? ""))
+        #expect(ReactionEmoji.hot.fallbackYoungCrackComments.contains(reactions.last?.comment ?? ""))
     }
 
     @Test("내 사진에서는 버튼 바가 비활성이고 이모지 탭이 무시된다")
-    func myPhotoDisablesReaction() {
+    func myPhotoDisablesReaction() async {
         let viewModel = makeViewModel(selectedUserId: Constants.myUserId)
         let before = viewModel.selectedItem?.reactions.count ?? 0
 
         #expect(!viewModel.isReactionEnabled)
 
-        viewModel.emojiTapped(.drool)
+        await viewModel.emojiTapped(.drool)
 
         #expect(viewModel.selectedItem?.reactions.count == before)
     }
@@ -122,9 +124,9 @@ struct ReactionViewModelTests {
 
     @Test("이후 버전 모드는 코멘트 후보가 없어 이모지를 눌러도 로그가 늘지 않는다")
     func unavailableModeHasNoComments() {
-        #expect(ReactionMode.oldCrack.comments(for: .drool).isEmpty)
-        #expect(ReactionMode.nagging.comments(for: .thinking).isEmpty)
-        #expect(!ReactionMode.youngCrack.comments(for: .money).isEmpty)
+        #expect(ReactionMode.oldCrack.comments(for: .drool, serverContents: []).isEmpty)
+        #expect(ReactionMode.nagging.comments(for: .thinking, serverContents: []).isEmpty)
+        #expect(!ReactionMode.youngCrack.comments(for: .money, serverContents: []).isEmpty)
     }
 
     @Test("남의 사진 신고를 누르면 신고 대상이 세팅되고, 완료 시 해제된다")

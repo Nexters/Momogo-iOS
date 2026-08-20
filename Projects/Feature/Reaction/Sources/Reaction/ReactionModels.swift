@@ -23,8 +23,10 @@ private enum Constants {
     static let friendEmptyMessage = "아래 이모지를 눌러 첫 리액션을 남겨주세요!\n어떤 코멘트가 나올까요?"
     static let friendNotUploadedMessage = "아직 친구가 점심을 올리지 않았어요!"
 
-    /// 이모지별 '영크크 모드' 코멘트 후보. 서버가 내려주지 않고 클라이언트가 고정 보유하는 목록이다.
-    static let droolComments = [
+    /// 이모지별 '영크크 모드' 코멘트 후보. 서버 카탈로그(`/init/comments`)를 못 받았을 때만 쓰는
+    /// 최후 폴백이다 — 카탈로그가 비었거나(최초 실행, 네트워크 실패), 아직 서버 매핑이 없는
+    /// 콘셉트·이모지 조합(§`ReactionMode.catalogConcept`/`ReactionEmoji.catalogKey` 참고)에서 쓰인다.
+    static let fallbackDroolComments = [
         "야르~",
         "대 존 맛",
         "JMT",
@@ -40,7 +42,7 @@ private enum Constants {
         "메뉴 선정 감다살",
         "이 집 좀 치네"
     ]
-    static let hotComments = [
+    static let fallbackHotComments = [
         "매워보여",
         "맵짱님 멋있어요",
         "맵찔이는 포기",
@@ -53,7 +55,7 @@ private enum Constants {
         "혀 초비상",
         "RED RED"
     ]
-    static let moneyComments = [
+    static let fallbackMoneyComments = [
         "와 얼마냐",
         "Flex~",
         "역시 부자다",
@@ -67,7 +69,7 @@ private enum Constants {
         "자본력 무엇",
         "메뉴에서 자본력이 느껴짐;;"
     ]
-    static let thinkingComments = [
+    static let fallbackThinkingComments = [
         "뭘 먹은거임?",
         "이걸 왜 먹음?",
         "왜 먹는거임?",
@@ -110,13 +112,34 @@ public enum ReactionEmoji: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// '영크크 모드'에서 뽑는 코멘트 후보.
-    var youngCrackComments: [String] {
+    /// '영크크 모드'에서 뽑는 코멘트 후보(서버 카탈로그가 비었을 때의 폴백).
+    var fallbackYoungCrackComments: [String] {
         switch self {
-        case .drool: Constants.droolComments
-        case .hot: Constants.hotComments
-        case .money: Constants.moneyComments
-        case .thinking: Constants.thinkingComments
+        case .drool: Constants.fallbackDroolComments
+        case .hot: Constants.fallbackHotComments
+        case .money: Constants.fallbackMoneyComments
+        case .thinking: Constants.fallbackThinkingComments
+        }
+    }
+
+    /// 서버 문구 카탈로그의 이모지 키. 리액션 등록·조회 API의 `emoji` 필드도 같은 값을 쓴다(실제
+    /// 요청·응답으로 확인됨).
+    var catalogKey: CommentEmoji {
+        switch self {
+        case .drool: .delicious
+        case .hot: .hot
+        case .money: .flex
+        case .thinking: .hmm
+        }
+    }
+
+    /// `catalogKey`의 역방향 — 조회 응답의 서버 이모지 값을 클라이언트 이모지로 되돌린다. 4종 전사 매핑.
+    init(catalogKey: CommentEmoji) {
+        switch catalogKey {
+        case .delicious: self = .drool
+        case .hot: self = .hot
+        case .flex: self = .money
+        case .hmm: self = .thinking
         }
     }
 }
@@ -144,9 +167,20 @@ public enum ReactionMode: String, CaseIterable, Identifiable, Sendable {
 
     var isAvailable: Bool { self == .youngCrack }
 
-    /// 1차 버전은 영크크 모드만 쓸 수 있어, 나머지 모드는 후보 문구가 없다.
-    func comments(for emoji: ReactionEmoji) -> [String] {
-        isAvailable ? emoji.youngCrackComments : []
+    /// 서버 문구 카탈로그의 콘셉트 키. rawValue가 확인된 조합(현재는 youngCrack↔YOUNG_CREATOR_CREW)만
+    /// 값이 있다.
+    var catalogConcept: CommentConcept? {
+        switch self {
+        case .youngCrack: .youngCreatorCrew
+        case .oldCrack, .nagging: nil
+        }
+    }
+
+    /// 1차 버전은 영크크 모드만 쓸 수 있어, 나머지 모드는 후보 문구가 없다. 서버 카탈로그에 이
+    /// 조합의 문구가 있으면 그걸 쓰고, 없으면(카탈로그 미확보·미매핑 조합 등) 폴백으로 넘어간다.
+    func comments(for emoji: ReactionEmoji, serverContents: [String]) -> [String] {
+        guard isAvailable else { return [] }
+        return serverContents.isEmpty ? emoji.fallbackYoungCrackComments : serverContents
     }
 }
 
