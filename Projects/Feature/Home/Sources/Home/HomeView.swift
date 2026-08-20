@@ -51,10 +51,6 @@ public struct HomeView: View {
                     hasNewPhoto: viewModel.hasNewPhoto,
                     onGroupTap: viewModel.groupTapped
                 )
-
-                if !isGroupEmpty {
-                    ReactionCardView(posterCount: viewModel.todayPosterCount)
-                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)

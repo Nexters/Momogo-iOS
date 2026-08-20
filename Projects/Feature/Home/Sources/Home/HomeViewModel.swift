@@ -89,11 +89,6 @@ public final class HomeViewModel {
         destination = .settings(SettingsViewModel(onSessionEnded: onLogout))
     }
 
-    /// 내 그룹들에서 오늘 사진을 올린 인원 수의 합. 그룹 목록 API가 인원 자체가 아닌 그룹별 집계 수치만 제공한다.
-    var todayPosterCount: Int {
-        groups.reduce(0) { $0 + $1.todayPhotoUploaderCount }
-    }
-
     /// `onFinish`가 self를 강하게 잡으면 `HomeViewModel → destination → GroupNameViewModel → onFinish → HomeViewModel`
     /// 순환이 생긴다. 기존 플로우들은 상위에서 받은 `onFinish`를 그대로 넘기기만 해 순환이 없었지만,
     /// 홈은 클로저를 직접 만들어 자식에게 주는 첫 화면이라 여기서 끊어야 한다.
