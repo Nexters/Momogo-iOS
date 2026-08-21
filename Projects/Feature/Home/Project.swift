@@ -14,7 +14,8 @@ let project = Project.makeModule(
                 .feature(implements: .group),
                 .feature(implements: .settings),
                 .feature(implements: .camera),
-                .feature(implements: .photo)
+                .feature(implements: .photo),
+                .feature(implements: .reaction)
             ]
         )),
         .feature(tests: .home, factory: .init(

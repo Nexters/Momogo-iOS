@@ -38,7 +38,7 @@ public struct HomeView: View {
             VStack(alignment: .leading, spacing: 24) {
                 TodayCardView(
                     hasGroups: !isGroupEmpty,
-                    recentPhotoURL: viewModel.recentPhotoURL,
+                    recentPhoto: viewModel.recentPhoto,
                     onTapAddGroup: toggleAddGroupMenu,
                     onTapSettings: viewModel.settingsTapped,
                     onTapShoot: presentCamera,
@@ -48,12 +48,9 @@ public struct HomeView: View {
                 GroupListSection(
                     groups: viewModel.groups,
                     isEmpty: isGroupEmpty,
-                    onTapGroup: viewModel.groupTapped
+                    hasNewPhoto: viewModel.hasNewPhoto,
+                    onGroupTap: viewModel.groupTapped
                 )
-
-                if !isGroupEmpty {
-                    ReactionCardView(posterCount: viewModel.todayPosterCount)
-                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)

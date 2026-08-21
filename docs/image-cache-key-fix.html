@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>이미지 캐시 키를 presigned URL 대신 photoId로 고정했다</title>
+<style>
+  :root {
+    --paper: #eef1f4;
+    --paper-raised: #ffffff;
+    --ink: #1b2430;
+    --ink-dim: #57616f;
+    --line: #c7d0da;
+    --brass: #a9660f;
+    --hit: #167a5c;
+    --miss: #c13b33;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --font-serif: "Iowan Old Style", "Charter", Georgia, "Noto Serif KR", serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #12151a;
+      --paper-raised: #1b1f26;
+      --ink: #e7eaee;
+      --ink-dim: #93a0ae;
+      --line: #2a313b;
+      --brass: #e7a94a;
+      --hit: #3ed9a8;
+      --miss: #f1746b;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    line-height: 1.7;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--brass); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: center top;
+    border-bottom: 1px solid var(--line);
+    padding: 72px 24px 48px;
+  }
+  .masthead-inner { max-width: 760px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 20px;
+  }
+  .eyebrow .dot { color: var(--brass); }
+
+  h1 {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(1.7rem, 4.4vw, 2.5rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+
+  .dek {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--ink-dim);
+    max-width: 58ch;
+    margin: 0 0 28px;
+  }
+  .dek code { color: var(--ink); }
+
+  .statusrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    background: var(--paper-raised);
+  }
+  .chip.brass { color: var(--brass); border-color: color-mix(in srgb, var(--brass) 45%, var(--line)); }
+
+  /* ---------- sections ---------- */
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin: 0 0 10px;
+  }
+
+  h2 {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+
+  p { margin: 0 0 16px; max-width: 62ch; }
+  p:last-child { margin-bottom: 0; }
+  .lede { font-size: 1.05rem; color: var(--ink); }
+
+  strong { color: var(--ink); }
+  .muted { color: var(--ink-dim); }
+
+  code, .mono {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+  }
+  p code, li code {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.4em;
+  }
+
+  ul.plain { margin: 0 0 16px; padding-left: 1.3em; max-width: 62ch; }
+  ul.plain li { margin-bottom: 8px; }
+  ul.plain li:last-child { margin-bottom: 0; }
+
+  /* ---------- terminal block ---------- */
+  .term {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 0 0 16px;
+  }
+  .term-bar {
+    display: flex; gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .term-bar span { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+  .term pre {
+    margin: 0;
+    padding: 16px 18px 18px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.65;
+    white-space: pre;
+    color: var(--ink-dim);
+  }
+  .term pre .hit { color: var(--hit); font-weight: 600; }
+  .term pre .path { color: var(--ink); }
+  .term pre .note { color: var(--ink-dim); font-style: italic; }
+
+  /* ---------- key comparison cards ---------- */
+  .keygrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin: 0 0 8px;
+  }
+  @media (min-width: 620px) {
+    .keygrid { grid-template-columns: 1fr 1fr; }
+  }
+  .keycard {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--miss);
+    border-radius: 8px;
+    padding: 18px 18px 16px;
+  }
+  .keycard.ok { border-left-color: var(--hit); }
+  .keycard .kc-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+  }
+  .keycard .kc-key {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    word-break: break-all;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .keycard .kc-key .sig { color: var(--miss); }
+  .keycard .kc-key .fixed { color: var(--ink); }
+  .keycard .kc-verdict {
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--miss);
+  }
+  .keycard.ok .kc-verdict { color: var(--hit); }
+
+  /* ---------- diagram ---------- */
+  figure { margin: 0 0 8px; }
+  .diagram-frame {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 8px;
+    overflow-x: auto;
+  }
+  svg.diagram { display: block; margin: 0 auto; max-width: 100%; height: auto; color: var(--ink-dim); }
+  svg.diagram text { font-family: var(--font-mono); fill: currentColor; }
+  svg.diagram .node-box { fill: var(--paper-raised); stroke: var(--line); stroke-width: 1.4; }
+  svg.diagram .node-title { fill: var(--ink); font-weight: 600; }
+  svg.diagram .lead { stroke: var(--brass); }
+  svg.diagram .lead-fill { fill: var(--brass); }
+  svg.diagram .lead-text { fill: var(--brass); font-weight: 700; }
+  svg.diagram .quiet { stroke: var(--ink-dim); opacity: 0.55; }
+  svg.diagram .quiet-text { fill: var(--ink-dim); opacity: 0.75; }
+  figcaption {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    margin-top: 12px;
+    max-width: 62ch;
+  }
+
+  /* ---------- flow strip ---------- */
+  .flowstrip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0 4px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+  .flowstrip .step {
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    border-radius: 7px;
+    padding: 9px 13px;
+    color: var(--ink-dim);
+  }
+  .flowstrip .step.origin { border-color: color-mix(in srgb, var(--brass) 50%, var(--line)); color: var(--ink); }
+  .flowstrip .step.origin .tag { color: var(--brass); }
+  .flowstrip .arrow { color: var(--ink-dim); opacity: 0.6; }
+  .flowstrip .tag { display: block; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 3px; }
+
+  /* ---------- changes table ---------- */
+  .tablewrap { overflow-x: auto; margin: 0 0 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    font-weight: 600;
+  }
+  td.file { font-family: var(--font-mono); font-size: 0.84rem; color: var(--ink); white-space: nowrap; }
+  td.new .file::after {
+    content: "신규";
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--brass);
+    border: 1px solid color-mix(in srgb, var(--brass) 45%, var(--line));
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 8px;
+    letter-spacing: 0.04em;
+  }
+  td.desc { color: var(--ink-dim); font-size: 0.92rem; }
+
+  /* ---------- footer ---------- */
+  footer {
+    padding: 40px 24px 48px;
+    max-width: 760px;
+    margin: 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow"><span class="dot">●</span> MOMOGO iOS · Issue #80 · fix/080-image-caching</p>
+    <h1>이미지 캐시 키를 presigned URL 대신 photoId로 고정했다</h1>
+    <p class="dek">서버가 매 요청마다 서명을 새로 굽는 presigned URL 때문에, Kingfisher가 캐싱을 하고도 매번 재다운로드하던 문제. 캐시 키를 URL에서 <code>photoId</code>로 옮겨 고쳤다.</p>
+    <div class="statusrow">
+      <span class="chip brass">커밋 완료</span>
+      <span class="chip">PR 대기</span>
+      <span class="chip">Kingfisher 7.12.0</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <p class="section-label">증상</p>
+    <h2>오늘 화면을 나갔다 돌아오면, 사진이 처음부터 다시 로딩된다</h2>
+    <p class="lede">그룹상세에서 어제 날짜를 봤다가 오늘로 돌아오면 이미 봤던 사진인데도 매번 다시 받아온다. Kingfisher가 캐싱 라이브러리인데 왜 캐싱이 안 되는지가 출발점이었다.</p>
+  </section>
+
+  <section>
+    <p class="section-label">원인 — 실측</p>
+    <h2>서버는 같은 사진에 매번 다른 서명을 붙여 내려준다</h2>
+    <p>그룹상세를 오늘 → 어제 → 오늘로 왕복하며 서버 응답을 그대로 찍어봤다. 같은 <code>photoId=4</code>인데, 6초 차이의 두 응답이 내려준 <code>downloadUrl</code>은 오브젝트 경로만 같고 쿼리스트링(서명)이 다르다.</p>
+
+    <div class="term">
+      <div class="term-bar"><span></span><span></span><span></span></div>
+      <pre>photoId=4, 1차 <span class="note">(02:19:49)</span>
+  <span class="path">.../users/7/2026-08-17/64b5ce52-…-70307353d654.jpg</span>
+  ?X-Amz-Date=20260816T161949Z
+  &amp;X-Amz-Signature=fb9b8a4a944903c4a619c9759d5bd1c27aaf093…
+
+photoId=4, 2차 <span class="note">(02:19:55, 6초 뒤)</span>
+  <span class="path">.../users/7/2026-08-17/64b5ce52-…-70307353d654.jpg</span>
+  ?X-Amz-Date=20260816T161955Z
+  &amp;X-Amz-Signature=403c348be7d16d4d756fb735779b699270b669e…</pre>
+    </div>
+
+    <p class="muted">Cloudflare R2 presigned URL이라 <code>X-Amz-Expires=900</code>(15분)짜리 서명을 호출할 때마다 새로 굽는다. 오브젝트 경로(=photoId)는 고정, 서명만 매번 다르다.</p>
+    <p>그런데 Kingfisher(7.12.0)는 기본적으로 <strong>URL 문자열 전체</strong>를 캐시 키로 쓴다. 서명이 바뀌면 문자열이 달라지니, 같은 사진이어도 매번 "처음 보는 키"로 취급돼 무조건 미스가 난다.</p>
+  </section>
+
+  <section>
+    <p class="section-label">해결</p>
+    <h2>캐시 키를 URL에서 photoId로 옮긴다</h2>
+    <p>새 헬퍼 하나로 캐시 키 포맷을 한 곳에서 강제한다. 이미지를 그리는 3곳(그룹상세 그리드, 신고 화면, 홈 최근사진) 전부 이걸 거치게 했다.</p>
+
+    <div class="term">
+      <div class="term-bar"><span></span><span></span><span></span></div>
+      <pre>enum RemotePhotoSource {
+    static func make(photoId: Int, downloadURL: URL) -&gt; Source {
+        downloadURL.convertToSource(overrideCacheKey: "photo-\(photoId)")
+    }
+}</pre>
+    </div>
+
+    <div class="keygrid">
+      <div class="keycard">
+        <p class="kc-label">캐시 키 — 수정 전</p>
+        <p class="kc-key">1차 = <span class="fixed">…</span><span class="sig">fb9b8a4a…</span><br>2차 = <span class="fixed">…</span><span class="sig">403c348b…</span></p>
+        <p class="kc-verdict">1차 ≠ 2차 → 미스, 재다운로드</p>
+      </div>
+      <div class="keycard ok">
+        <p class="kc-label">캐시 키 — 수정 후</p>
+        <p class="kc-key">1차 = <span class="fixed">photo-4</span><br>2차 = <span class="fixed">photo-4</span></p>
+        <p class="kc-verdict">1차 = 2차 → 히트, 즉시 표시</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">동작 원리</p>
+    <h2>조회·저장은 항상 cacheKey, 네트워크만 downloadURL</h2>
+    <p>Kingfisher 소스(<code>KingfisherManager.swift</code>, <code>ImageCache.swift</code>)를 직접 따라가 보면, 캐시 조회와 저장 양쪽 다 <code>source.cacheKey</code>만 쓴다. <code>downloadURL</code>은 캐시가 완전히 비어있을 때 실제로 파일을 받아오는 주소로만 쓰인다 — 그래서 서명이 매번 달라도 무관하다.</p>
+
+    <figure>
+      <div class="diagram-frame">
+        <svg class="diagram" viewBox="0 0 900 320" role="img" aria-label="KFImage가 렌더될 때마다 Source의 cacheKey로만 캐시를 조회·저장하고, downloadURL은 캐시가 미스일 때만 실제 네트워크 요청에 쓰인다">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+            </marker>
+            <marker id="arrowLead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="lead-fill"></path>
+            </marker>
+          </defs>
+
+          <!-- 1. KFImage -->
+          <rect class="node-box" x="16" y="132" width="150" height="56" rx="8"></rect>
+          <text class="node-title" x="91" y="156" font-size="12.5" text-anchor="middle">KFImage</text>
+          <text class="quiet-text" x="91" y="173" font-size="10.5" text-anchor="middle">렌더될 때마다</text>
+
+          <!-- 2. Source -->
+          <rect class="node-box" x="226" y="120" width="192" height="80" rx="8"></rect>
+          <text class="node-title" x="322" y="144" font-size="12.5" text-anchor="middle">Source</text>
+          <text class="lead-text" x="322" y="163" font-size="11" text-anchor="middle">cacheKey = "photo-4"</text>
+          <text class="quiet-text" x="322" y="180" font-size="10.5" text-anchor="middle">downloadURL = 서명 URL</text>
+
+          <!-- 3. 캐시 조회 -->
+          <rect class="node-box" x="478" y="132" width="176" height="56" rx="8"></rect>
+          <text class="node-title" x="566" y="153" font-size="12.5" text-anchor="middle">캐시 조회</text>
+          <text class="quiet-text" x="566" y="170" font-size="10" text-anchor="middle">(cacheKey로 메모리→디스크)</text>
+
+          <!-- 4. 표시 (merge) -->
+          <rect class="node-box" x="806" y="132" width="78" height="56" rx="8"></rect>
+          <text class="node-title" x="845" y="165" font-size="12.5" text-anchor="middle">표시</text>
+
+          <!-- 5. 네트워크 다운로드 (miss branch) -->
+          <rect class="node-box" x="478" y="244" width="200" height="56" rx="8"></rect>
+          <text class="node-title" x="578" y="266" font-size="12.5" text-anchor="middle">네트워크 다운로드</text>
+          <text class="quiet-text" x="578" y="283" font-size="10" text-anchor="middle">(downloadURL로 요청)</text>
+
+          <!-- 6. 저장 -->
+          <rect class="node-box" x="726" y="244" width="150" height="56" rx="8"></rect>
+          <text class="node-title" x="801" y="266" font-size="12.5" text-anchor="middle">저장</text>
+          <text class="quiet-text" x="801" y="283" font-size="10" text-anchor="middle">(cacheKey로)</text>
+
+          <!-- arrows -->
+          <line x1="166" y1="160" x2="222" y2="160" class="quiet" stroke-width="1.6" marker-end="url(#arrow)"></line>
+
+          <line x1="322" y1="200" x2="322" y2="210" class="lead" stroke-width="0"></line>
+          <path d="M 322 200 L 322 132" class="lead" fill="none" stroke-width="1.8" marker-end="url(#arrowLead)"></path>
+          <text class="lead-text" x="340" y="120" font-size="10.5">cacheKey로 조회</text>
+
+          <path d="M 322 200 L 322 260 L 474 260" class="quiet" fill="none" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="quiet-text" x="326" y="228" font-size="10">miss일 때만 downloadURL 전달</text>
+
+          <path d="M 654 145 L 802 145" class="lead" fill="none" stroke-width="1.8" marker-end="url(#arrowLead)"></path>
+          <text class="lead-text" x="700" y="135" font-size="11" text-anchor="middle">hit</text>
+
+          <path d="M 566 188 L 566 218 L 566 218" class="quiet" fill="none" stroke-width="0"></path>
+          <path d="M 540 188 C 540 218, 500 218, 500 244" class="quiet" fill="none" stroke-width="1.6" marker-end="url(#arrow)"></path>
+          <text class="quiet-text" x="452" y="218" font-size="10" text-anchor="middle">miss</text>
+
+          <path d="M 678 272 L 722 272" class="quiet" fill="none" stroke-width="1.6" marker-end="url(#arrow)"></path>
+
+          <path d="M 801 244 C 801 210, 845 210, 845 192" class="quiet" fill="none" stroke-width="1.6" marker-end="url(#arrow)"></path>
+        </svg>
+      </div>
+      <figcaption>Source가 들고 있는 cacheKey는 조회·저장 양쪽에 쓰이고(브래스 화살표), downloadURL은 미스가 확정된 뒤 실제 다운로드 한 번에만 쓰인다(회색 화살표). 서명이 매번 달라져도 왼쪽 경로는 영향을 안 받는다.</figcaption>
+    </figure>
+
+    <p class="muted">저장 위치까지 보면 더 명확하다 — 메모리는 <code>NSCache&lt;NSString, …&gt;</code>에 <code>"photo-4"</code> 문자열을 그대로 키로 쓰고, 디스크는 그 문자열을 MD5 해시한 값을 파일명으로 쓴다. 둘 다 <code>downloadURL</code>은 계산에 아예 관여하지 않는다.</p>
+  </section>
+
+  <section>
+    <p class="section-label">왜 안전한가</p>
+    <h2>photoId는 삭제 전까지 내용이 안 바뀌는 값이다</h2>
+    <p>키를 photoId로 영구 고정해도 되는 이유는 만료 정책이 아니라 <strong>photoId가 가리키는 이미지가 절대 제자리에서 바뀌지 않기 때문</strong>이다. 두 가지 근거를 코드에서 확인했다.</p>
+    <ul class="plain">
+      <li><strong>삭제는 실제로 "지우기"가 아니라 연결 해제다.</strong> <code>DELETE /groups/{groupId}/photos/{photoId}</code> — 그룹에서만 떼어낼 뿐, photo 레코드 자체는 서버에 남는다.</li>
+      <li><strong>재업로드는 항상 새 photoId를 받는다.</strong> photoId는 업로드 3단계 중 마지막 confirm 응답에서만 발급된다 — 앞 두 단계엔 아예 존재하지 않는 값이다.</li>
+    </ul>
+
+    <div class="flowstrip">
+      <div class="step"><span>POST /photos/upload-urls</span><span class="tag">presigned PUT URL 발급</span></div>
+      <span class="arrow">→</span>
+      <div class="step"><span>PUT (R2)</span><span class="tag">바이너리 업로드</span></div>
+      <span class="arrow">→</span>
+      <div class="step origin"><span>POST /photos</span><span class="tag">photoId 발급 (여기서만)</span></div>
+    </div>
+    <p class="muted" style="margin-top:12px;">objectKey에도 랜덤 해시가 들어가 같은 경로가 재사용될 수 없다. 재업로드=새 photoId라는 전제가 코드로 보장된다.</p>
+  </section>
+
+  <section>
+    <p class="section-label">실측 검증</p>
+    <h2>같은 화면을 두 번 왕복해도 네트워크는 한 번만 탔다</h2>
+    <p>수정한 빌드를 실기기에 올려 그룹상세를 오늘 → 어제 → 오늘로 왕복시키고, <code>KFImage</code>의 <code>onSuccess</code> 콜백이 주는 실제 <code>cacheType</code>을 찍었다(검증 뒤 제거).</p>
+
+    <div class="term">
+      <div class="term-bar"><span></span><span></span><span></span></div>
+      <pre>02:09:45  GET <span class="path">/groups/141?date=2026-08-16</span>   200   어제로 이동
+02:09:48  GET <span class="path">/groups/141</span>                    200   오늘로 복귀
+          <span class="hit">[ImageCacheProbe] photoId=38 cacheType=memory</span></pre>
+    </div>
+    <p class="muted">같은 왕복을 6초 뒤 한 번 더 반복해도 결과는 동일하게 <span class="hit" style="font-family:var(--font-mono); font-weight:600;">cacheType=memory</span>였다 — 서버가 그사이 새로 서명한 <code>downloadUrl</code>을 내려줬는데도, 이미지 다운로드는 한 번도 다시 일어나지 않았다.</p>
+  </section>
+
+  <section>
+    <p class="section-label">변경 파일</p>
+    <h2>Feature/Home 모듈 7개 파일</h2>
+    <p>원격 이미지를 그리는 지점은 프로젝트 전체에서 이 3곳뿐이라, 변경도 <code>Feature/Home</code> 안에서 끝난다.</p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>파일</th><th>변경</th></tr>
+        </thead>
+        <tbody>
+          <tr class="new"><td class="file">Common/RemotePhotoSource.swift</td><td class="desc">캐시 키를 photoId로 고정하는 헬퍼</td></tr>
+          <tr><td class="file">HomeViewModel.swift</td><td class="desc"><code>RecentPhoto</code>(photoId+url) 도입, URL만 남기던 지점 제거</td></tr>
+          <tr><td class="file">HomeView.swift</td><td class="desc"><code>TodayCardView</code>에 넘기는 값 교체</td></tr>
+          <tr><td class="file">Today/TodayCardView.swift</td><td class="desc"><code>AsyncImage</code> → <code>KFImage(source:)</code></td></tr>
+          <tr><td class="file">GroupDetail/GroupPhotoCardView.swift</td><td class="desc"><code>KFImage(url)</code> → <code>KFImage(source:)</code></td></tr>
+          <tr><td class="file">GroupDetail/ReportPhotoViewModel.swift</td><td class="desc"><code>photoId</code> 접근제어 완화</td></tr>
+          <tr><td class="file">GroupDetail/ReportPhotoView.swift</td><td class="desc"><code>KFImage(url)</code> → <code>KFImage(source:)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span>fix/080-image-caching</span>
+  <span>commit 1d6a1b3</span>
+</footer>
+
+</body>
+</html>

@@ -16,7 +16,17 @@ public final class HomeViewModel {
     /// 최초 로드 완료 여부. `groups.isEmpty`만으로는 로드 전 초기값과 실제 빈 상태를 구분할 수 없다.
     private(set) var hasLoaded: Bool = false
     var isCameraPresented: Bool = false
-    var recentPhotoURL: URL?
+    var recentPhoto: RecentPhoto?
+
+    /// 최근 사진 썸네일. Kingfisher 캐시 키를 photoId로 고정하려면(`RemotePhotoSource`) URL만으로는
+    /// 부족해 photoId를 함께 들고 다닌다.
+    struct RecentPhoto: Equatable {
+        let photoId: Int
+        let url: URL
+    }
+
+    /// groupId → 마지막으로 본 시점의 latestUploadAt 스냅샷. New 배지 판정에 쓰인다.
+    private var visits: [Int: String] = [:]
 
     /// 그룹 생성/참여 플로우의 push 상태.
     ///
@@ -37,6 +47,10 @@ public final class HomeViewModel {
     @Dependency(\.getMyPhotosUseCase) private var getMyPhotosUseCase
     @ObservationIgnored
     @Dependency(\.getGroupDetailUseCase) private var getGroupDetailUseCase
+    @ObservationIgnored
+    @Dependency(\.getGroupVisitsUseCase) private var getGroupVisitsUseCase
+    @ObservationIgnored
+    @Dependency(\.markGroupVisitedUseCase) private var markGroupVisitedUseCase
 
     private let onLogout: () -> Void
 
@@ -54,6 +68,10 @@ public final class HomeViewModel {
             groupId: response.groupId,
             groupName: response.groupName,
             todayPhotoUploaderCount: 0,
+            // 방금 생성된 그룹이라 CreateGroupResponse에는 생성 시각이 없다. 실제로 지금 막
+            // 생성됐으므로 현재 시각을 그대로 써도 정확하다("이전 날짜로 못 넘어감" 하한 계산은
+            // 앞 10자(yyyy-MM-dd)만 파싱하므로 포맷 불일치는 문제되지 않는다).
+            groupCreatedAt: ISO8601DateFormatter().string(from: Date()),
             onLeave: { [weak self] in self?.destination = nil },
             onPhotoDeleted: { [weak self] in Task { await self?.load() } },
             onPhotoUploaded: { [weak self] in Task { await self?.load() } }
@@ -69,29 +87,10 @@ public final class HomeViewModel {
         case groupDetail(GroupDetailViewModel)
     }
 
-    func groupTapped(_ group: GroupSummary) {
-        guard destination == nil else { return }
-        destination = .groupDetail(
-            GroupDetailViewModel(
-                groupId: group.groupId,
-                groupName: group.groupName,
-                todayPhotoUploaderCount: group.todayPhotoUploaderCount,
-                onLeave: { [weak self] in self?.destination = nil },
-                onPhotoDeleted: { [weak self] in Task { await self?.load() } },
-                onPhotoUploaded: { [weak self] in Task { await self?.load() } }
-            )
-        )
-    }
-
     func settingsTapped() {
         guard destination == nil else { return }
         // 탈퇴 완료 시에도 기존 로그아웃 경로(onLogout → 온보딩 복귀)를 그대로 태운다.
         destination = .settings(SettingsViewModel(onSessionEnded: onLogout))
-    }
-
-    /// 내 그룹들에서 오늘 사진을 올린 인원 수의 합. 그룹 목록 API가 인원 자체가 아닌 그룹별 집계 수치만 제공한다.
-    var todayPosterCount: Int {
-        groups.reduce(0) { $0 + $1.todayPhotoUploaderCount }
     }
 
     /// `onFinish`가 self를 강하게 잡으면 `HomeViewModel → destination → GroupNameViewModel → onFinish → HomeViewModel`
@@ -103,7 +102,7 @@ public final class HomeViewModel {
         guard destination == nil else { return }
         destination = .groupName(GroupNameViewModel(onFinish: { [weak self] response in
             guard let self else { return }
-            self.destination = .groupDetail(self.makeGroupDetailViewModel(for: response))
+            destination = .groupDetail(makeGroupDetailViewModel(for: response))
         }))
     }
 
@@ -129,21 +128,22 @@ public final class HomeViewModel {
 
         do {
             groups = try await groupsResult.groups
+            visits = getGroupVisitsUseCase.execute()
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
         }
 
         // 최근 사진은 홈 상단의 장식용 미리보기라 실패해도 그룹 로드 자체를 막지 않는다.
-        // 다만 실패 시 이전 URL을 남기면 삭제된 사진이 계속 보일 수 있어 nil로 되돌린다.
-        let photos = (try? await myPhotosResult.photos) ?? []
-        recentPhotoURL = await resolveRecentPhotoURL(from: photos)
+        // 다만 실패 시 이전 값을 남기면 삭제된 사진이 계속 보일 수 있어 nil로 되돌린다.
+        let photos = await (try? myPhotosResult.photos) ?? []
+        recentPhoto = await resolveRecentPhoto(from: photos)
     }
 
     /// `/photos/me`는 그룹에서 내려진(삭제된) 사진도 계속 반환할 수 있고, 그룹 목록(`GET /groups`)은
     /// 멤버별 사진을 주지 않는다(그룹 상세 응답 전용 필드라 목록엔 항상 비어 있음). 그래서 오늘 내가
     /// 사진을 올린 그룹(`todayPhotoUploaded`)의 상세만 조회해 "지금도 그룹에 걸려 있는 내 사진 id"를
     /// 모은 뒤, 최신순인 `/photos/me`와 교집합해 가장 최근 것을 고른다.
-    private func resolveRecentPhotoURL(from photos: [MyPhoto]) async -> URL? {
+    private func resolveRecentPhoto(from photos: [MyPhoto]) async -> RecentPhoto? {
         let activeGroupIds = groups.filter(\.todayPhotoUploaded).map(\.groupId)
         guard !activeGroupIds.isEmpty, !photos.isEmpty else { return nil }
 
@@ -162,6 +162,33 @@ public final class HomeViewModel {
 
         return photos
             .first { activePhotoIds.contains($0.photoId) }
-            .flatMap { URL(string: $0.downloadUrl) }
+            .flatMap { photo in URL(string: photo.downloadUrl).map { RecentPhoto(photoId: photo.photoId, url: $0) } }
+    }
+
+    /// 그룹에 마지막으로 본 뒤 새 사진이 올라왔는지. 카드의 New 배지 표시 여부에 쓰인다.
+    func hasNewPhoto(_ group: GroupSummary) -> Bool {
+        group.hasNewPhoto(lastSeenUploadAt: visits[group.groupId])
+    }
+
+    /// 그룹 카드를 탭했을 때 방문을 기록하고 상세 화면으로 이동한다.
+    func groupTapped(_ group: GroupSummary) {
+        guard destination == nil else { return }
+        markGroupVisitedUseCase.execute(group.groupId, group.latestUploadAt)
+        // 재조회 없이 배지가 즉시 사라지도록 낙관적으로 갱신한다. latestUploadAt이 nil이면 그대로
+        // 대입할 경우 딕셔너리에서 키가 삭제되어 기존 방문 기록이 사라지므로, nil일 때는 건드리지 않는다.
+        if let latestUploadAt = group.latestUploadAt {
+            visits[group.groupId] = latestUploadAt
+        }
+        destination = .groupDetail(
+            GroupDetailViewModel(
+                groupId: group.groupId,
+                groupName: group.groupName,
+                todayPhotoUploaderCount: group.todayPhotoUploaderCount,
+                groupCreatedAt: group.createdAt,
+                onLeave: { [weak self] in self?.destination = nil },
+                onPhotoDeleted: { [weak self] in Task { await self?.load() } },
+                onPhotoUploaded: { [weak self] in Task { await self?.load() } }
+            )
+        )
     }
 }

@@ -5,38 +5,48 @@ import DomainInterface
 
 struct GroupCardView: View {
     let group: GroupSummary
-    let action: () -> Void
+    let hasNewPhoto: Bool
+    let onTap: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 8) {
+        Button(action: onTap) { card }
+            .buttonStyle(.plain)
+    }
+
+    private var card: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
                     Text(group.groupName)
                         .momogoTypography(.lgSemistrong)
                         .foregroundStyle(DesignSystem.Color.white)
 
-                    memberDots
+                    if hasNewPhoto {
+                        DSBadge.new
+                            .accessibilityLabel("새 사진 있음")
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
 
-                // Figma 스펙: 아이콘 자체는 9.2x16이지만 24x24 탭 슬롯 안에 중앙 정렬되어 있어, 카드
-                // 오른쪽 여백(pr-12 + 슬롯 인셋)만큼 자연스러운 여유가 생긴다. 색상은 원본 SVG의 실제
-                // fill(#464443=gray700)을 따른다 — gray400은 스펙보다 밝다.
-                Image(asset: DesignSystemAsset.chevronRightFill)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 9, height: 16)
-                    .foregroundStyle(DesignSystem.Color.gray700)
-                    .frame(width: 24, height: 24)
+                memberDots
             }
-            .padding(.leading, 24)
-            .padding(.trailing, 12)
-            .padding(.vertical, 20)
-            .background(DesignSystem.Color.gray800)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
-            .momogoShadow()
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            // Figma 스펙: 아이콘 자체는 9.2x16이지만 24x24 탭 슬롯 안에 중앙 정렬되어 있어, 카드
+            // 오른쪽 여백(pr-12 + 슬롯 인셋)만큼 자연스러운 여유가 생긴다. 색상은 원본 SVG의 실제
+            // fill(#464443=gray700)을 따른다 — gray400은 스펙보다 밝다.
+            Image(asset: DesignSystemAsset.chevronRightFill)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 9, height: 16)
+                .foregroundStyle(DesignSystem.Color.gray700)
+                .frame(width: 24, height: 24)
         }
-        .buttonStyle(.plain)
+        .padding(.leading, 24)
+        .padding(.trailing, 12)
+        .padding(.vertical, 20)
+        .background(DesignSystem.Color.gray800)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.r16))
+        .momogoShadow()
     }
 
     /// 멤버별 업로드 여부 데이터가 없어, 그룹 인원 수만큼 점을 그리고 앞쪽 `todayPhotoUploaderCount`개를

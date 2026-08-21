@@ -4,6 +4,7 @@ import UIKit
 import Dependencies
 import DesignSystem
 import DomainInterface
+import FeatureReaction
 import SwiftUINavigation
 
 @Observable
@@ -13,6 +14,7 @@ public final class GroupDetailViewModel {
     enum Destination {
         case renameGroup(GroupRenameViewModel)
         case reportPhoto(ReportPhotoViewModel)
+        case reaction(ReactionViewModel)
     }
 
     let groupId: Int
@@ -24,7 +26,12 @@ public final class GroupDetailViewModel {
     var groupName: String
     private(set) var invitationCode: String?
     var members: [GroupMember] = []
+    /// 사진(`photoId`)별로 카드에 노출할 반응 하나. `loadReactions()`가 `load()` 직후 채운다.
+    var featuredReactionByPhotoId: [Int: PhotoReaction] = [:]
     var selectedDate: Date = GroupDetailViewModel.today
+    /// 그룹이 생성된 날짜(자정 기준). 이전 날짜 이동 하한을 계산하는 데 쓰인다. 생성일 정보가
+    /// 없으면(파싱 실패 등) nil로 두고 제한하지 않는다.
+    private let groupCreatedAtDay: Date?
     var isLoading: Bool = false
     var errorMessage: String?
 
@@ -50,6 +57,8 @@ public final class GroupDetailViewModel {
     @Dependency(\.deletePhotoUseCase) private var deletePhotoUseCase
     @ObservationIgnored
     @Dependency(\.uploadPhotoUseCase) private var uploadPhotoUseCase
+    @ObservationIgnored
+    @Dependency(\.getReactionsUseCase) private var getReactionsUseCase
 
     /// 그룹 탈퇴 완료 시 상위(HomeViewModel)에 알려 화면을 되돌리고 목록을 새로고침한다.
     private let onLeave: () -> Void
@@ -63,6 +72,7 @@ public final class GroupDetailViewModel {
         groupId: Int,
         groupName: String,
         todayPhotoUploaderCount: Int,
+        groupCreatedAt: String? = nil,
         onLeave: @escaping () -> Void = {},
         onPhotoDeleted: @escaping () -> Void = {},
         onPhotoUploaded: @escaping () -> Void = {}
@@ -70,6 +80,9 @@ public final class GroupDetailViewModel {
         self.groupId = groupId
         self.groupName = groupName
         self.todayPhotoUploaderCount = todayPhotoUploaderCount
+        groupCreatedAtDay = groupCreatedAt
+            .map { String($0.prefix(10)) }
+            .flatMap { Self.apiDateFormatter.date(from: $0) }
         self.onLeave = onLeave
         self.onPhotoDeleted = onPhotoDeleted
         self.onPhotoUploaded = onPhotoUploaded
@@ -87,6 +100,11 @@ public final class GroupDetailViewModel {
     /// 날짜 변경 완료 시 노출되고, '오늘' 태그를 누르면 오늘 날짜로 원복되며 함께 숨김 처리된다.
     var showsTodayTag: Bool { !isToday }
     var isNextDayDisabled: Bool { isToday }
+    /// 그룹이 생성된 날짜보다 이전으로는 넘어갈 수 없다. 생성일 정보가 없으면(예: 방금 만든 그룹) 제한하지 않는다.
+    var isPreviousDayDisabled: Bool {
+        guard let groupCreatedAtDay else { return false }
+        return Self.calendar.isDate(selectedDate, inSameDayAs: groupCreatedAtDay)
+    }
 
     var formattedDate: String {
         Self.displayDateFormatter.string(from: selectedDate)
@@ -106,9 +124,43 @@ public final class GroupDetailViewModel {
             invitationCode = response.invitationCode
             members = response.members
             recalculateTodayPhotoUploaderCountIfNeeded()
+            await loadReactions()
         } catch {
             errorMessage = "잠시 후 다시 시도해주세요."
         }
+    }
+
+    /// 사진이 있는 멤버마다 반응을 조회해 카드에 띄울 하나를 고른다. 한 사진에 여러 반응이 달릴 수
+    /// 있어(예: 여러 명이 각자 반응), 정책상 "코멘트가 있는 것 중 가장 최근 것"을 보여준다 —
+    /// 코멘트 없는(이모지만 있는) 반응은 태그에 보여줄 텍스트가 없어 후보에서 제외한다.
+    /// 개별 사진 조회가 실패해도 그 사진만 태그 없이 넘어가고, 나머지 그리드 표시는 막지 않는다.
+    /// 사진마다 순차 호출하면 인원 수만큼 왕복이 누적돼 그룹상세 진입이 느려지므로, 병렬로 조회해
+    /// 전체 대기시간을 가장 느린 요청 1개 수준으로 줄인다.
+    private func loadReactions() async {
+        let getReactionsUseCase = getReactionsUseCase // self 캡처 없이 TaskGroup에 넘기기 위해 로컬로 복사
+        let groupId = groupId
+        let photoIds = members.compactMap(\.photo?.photoId)
+
+        let results = await withTaskGroup(of: (Int, PhotoReaction?).self) { group in
+            for photoId in photoIds {
+                group.addTask {
+                    guard let reactions = try? await getReactionsUseCase.execute(groupId, photoId) else {
+                        return (photoId, nil)
+                    }
+                    return (photoId, Self.featuredReaction(in: reactions))
+                }
+            }
+            return await group.reduce(into: [Int: PhotoReaction]()) { partialResult, result in
+                partialResult[result.0] = result.1
+            }
+        }
+        // 폴링이 주기적으로 도는 만큼, 값이 같으면 대입하지 않아 불필요한 갱신을 막는다.
+        guard featuredReactionByPhotoId != results else { return }
+        featuredReactionByPhotoId = results
+    }
+
+    private nonisolated static func featuredReaction(in reactions: [PhotoReaction]) -> PhotoReaction? {
+        reactions.filter { !$0.comment.isEmpty }.max { $0.createdAt < $1.createdAt }
     }
 
     /// `GetGroupDetailResponse`는 업로더 수 필드를 내려주지 않아, 오늘 날짜를 보고 있을 때만
@@ -121,7 +173,9 @@ public final class GroupDetailViewModel {
     }
 
     func previousDayTapped() {
-        guard let newDate = Self.calendar.date(byAdding: .day, value: -1, to: selectedDate) else { return }
+        guard !isPreviousDayDisabled,
+              let newDate = Self.calendar.date(byAdding: .day, value: -1, to: selectedDate)
+        else { return }
         selectedDate = newDate
         Task { await load() }
     }
@@ -200,11 +254,47 @@ public final class GroupDetailViewModel {
         )
     }
 
+    /// 반응 화면에서 '신고하기'를 눌렀을 때 push할 신고 화면 ViewModel. 신고 화면은 FeatureHome이
+    /// 소유하므로 FeatureReaction은 대상(`ReactionReportTarget`)만 넘기고, 조립은 여기서 한다.
+    func makeReportPhotoViewModel(
+        for reactionViewModel: ReactionViewModel,
+        target: ReactionReportTarget
+    ) -> ReportPhotoViewModel {
+        ReportPhotoViewModel(
+            groupId: groupId,
+            member: target.member,
+            dateText: reactionViewModel.dateText,
+            onFinish: { reactionViewModel.reportFinished() }
+        )
+    }
+
     /// 사진 카드 더보기 메뉴의 "점심 사진 지우기" 항목. 내 사진에만 노출되므로 `member.isMine`을
     /// 다시 확인하지 않는다. 확인 모달을 띄우기만 하고, 실제 삭제는 `deletePhotoConfirmed()`에서 한다.
     func deleteTapped(_ member: GroupMember) {
         guard member.photo != nil else { return }
         deletingPhotoMember = member
+    }
+
+    /// 사진 카드를 탭하면 그 멤버의 사진부터 시작하는 반응 화면으로 이동한다. 사진이 없는 카드는
+    /// 탭 대상이 아니라(내 카드는 카메라, 남의 카드는 무반응) 여기까지 오지 않는다.
+    func photoTapped(_ member: GroupMember) {
+        guard member.photo != nil else { return }
+
+        destination = .reaction(
+            ReactionViewModel(
+                groupId: groupId,
+                groupName: groupName,
+                dateText: formattedDate,
+                members: members,
+                selectedUserId: member.userId,
+                onPhotoDeleted: { [weak self] in
+                    guard let self else { return }
+                    // 중첩 Task 클로저 안에서는 self 캡처를 명시해야 한다(암시적 캡처 금지).
+                    Task { await self.load() }
+                    onPhotoDeleted()
+                }
+            )
+        )
     }
 
     func deletePhotoCancelled() {
@@ -275,4 +365,49 @@ public final class GroupDetailViewModel {
         formatter.dateFormat = "M월 d일 (E)"
         return formatter
     }()
+}
+
+// MARK: - 임시 폴링(#90)
+
+/// APNs 도입 전까지 남이 올린 사진이 실시간으로 보이지 않는 문제를 메우는 임시 조치.
+/// APNs 전환 시 이 extension을 통째로 제거한다.
+extension GroupDetailViewModel {
+    private static let pollingInterval: Duration = .seconds(10)
+
+    /// `GroupDetailView.task`가 이 루프를 소유하므로 화면을 벗어나면 자동으로 취소된다.
+    func startPolling() async {
+        while true {
+            // 취소되면 sleep이 던지고 여기서 루프를 끝낸다. `try?`로 삼키면 취소 후 sleep이
+            // 즉시 반환되면서 while이 무한 스핀하므로 반드시 빠져나가야 한다.
+            do { try await Task.sleep(for: Self.pollingInterval) } catch { return }
+
+            // 백그라운드에서는 요청을 보내지 않는다. iOS가 프로세스를 suspend하면 sleep도 함께
+            // 멈추지만, suspend 전 잠깐의 유예시간 동안은 루프가 계속 돌 수 있어 명시적으로 막는다.
+            guard UIApplication.shared.applicationState == .active else { continue }
+            // 과거 날짜에는 새 업로드가 생기지 않는다. 루프는 유지해 오늘로 돌아오면 바로 재개된다.
+            guard isToday else { continue }
+            // 최초 로드·업로드·삭제·탈퇴가 진행 중이면 그 결과를 덮어쓰지 않도록 한 틱 건너뛴다.
+            guard !isBusy else { continue }
+
+            await refreshSilently()
+        }
+    }
+
+    /// 로딩 오버레이 없이 사진과 반응만 조용히 갱신한다. `load()`를 그대로 쓰면 `isLoading` →
+    /// `isBusy` → `momogoLoadingOverlay`가 폴링 주기마다 깜빡이고 뒤로가기(`navigationBarBackButtonHidden`)
+    /// 까지 주기적으로 막힌다. 실패는 무시한다 — 다음 틱이 곧 다시 시도한다.
+    private func refreshSilently() async {
+        guard let response = try? await getGroupDetailUseCase.execute(
+            GetGroupDetailRequest(groupId: groupId, date: nil) // isToday일 때만 호출된다
+        ) else { return }
+
+        // presigned downloadUrl은 조회할 때마다 서명이 바뀌어(RemotePhotoSource 참고) members를
+        // 그대로 대입하면 내용이 같아도 매 틱 그리드가 다시 그려지고 KFImage도 소스 교체로 깜빡인다.
+        // photoId 목록만 비교하면 새 사진·사진 삭제·멤버 증감이 모두 잡힌다.
+        if members.map(\.photo?.photoId) != response.members.map(\.photo?.photoId) {
+            members = response.members
+            recalculateTodayPhotoUploaderCountIfNeeded() // "오늘 N명 업로드" 카운트도 함께 갱신
+        }
+        await loadReactions()
+    }
 }

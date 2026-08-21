@@ -43,7 +43,8 @@ final class ReportPhotoViewModel {
     @Dependency(\.reportPhotoUseCase) private var reportPhotoUseCase
 
     private let groupId: Int
-    private let photoId: Int
+    /// 뷰가 Kingfisher 캐시 키(RemotePhotoSource)를 구성하는 데 필요해 private을 뗀다.
+    let photoId: Int
     /// 신고 완료 시 상위(GroupDetailViewModel)에 알려 화면을 되돌린다.
     private let onFinish: () -> Void
 

@@ -1,12 +1,13 @@
 import Dependencies
+import DesignSystem
 import DomainInterface
 import FeatureGroup
-import SwiftUINavigation
 import SwiftUI
+import SwiftUINavigation
 
 @Observable
 @MainActor
-final class NicknameViewModel {
+public final class NicknameViewModel {
     var nickname: String = "" {
         didSet {
             let sanitized = NicknamePolicy.sanitize(nickname)
@@ -18,14 +19,13 @@ final class NicknameViewModel {
 
     var destination: Destination?
     var isLoading: Bool = false
-    var errorMessage: String?
 
     @ObservationIgnored
     @Dependency(\.signUpUseCase) private var signUpUseCase
 
     private let onFinish: (CreateGroupResponse?) -> Void
 
-    init(onFinish: @escaping (CreateGroupResponse?) -> Void) {
+    public init(onFinish: @escaping (CreateGroupResponse?) -> Void) {
         self.onFinish = onFinish
     }
 
@@ -46,7 +46,7 @@ final class NicknameViewModel {
         guard !isLoading, isNextEnabled else { return }
 
         isLoading = true
-        errorMessage = nil
+        DSTopToastWindowPresenter.shared.dismiss()
 
         Task {
             defer { isLoading = false }
@@ -55,7 +55,9 @@ final class NicknameViewModel {
                 _ = try await signUpUseCase.execute(nickname)
                 destination = .groupSelect(GroupSelectViewModel(nickname: nickname, onFinish: onFinish))
             } catch {
-                errorMessage = "잠시 후 다시 시도해주세요."
+                DSTopToastWindowPresenter.shared.show(
+                    DSTopToastContent(message: "잠시 후 다시 시도해주세요.", tone: .error)
+                )
             }
         }
     }

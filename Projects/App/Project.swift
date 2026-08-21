@@ -91,7 +91,10 @@ let project = Project.makeModule(
                 configurations: [
                     .debug(
                         name: .dev,
-                        settings: ["ASSETCATALOG_COMPILER_APPICON_NAME": "AppIconDev"],
+                        settings: [
+                            "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIconDev",
+                            "PRODUCT_BUNDLE_IDENTIFIER": "\(env.bundleIDPrefix).dev"
+                        ],
                         xcconfig: .relativeToRoot("Projects/App/Config/DEV.xcconfig")
                     ),
                     .release(
