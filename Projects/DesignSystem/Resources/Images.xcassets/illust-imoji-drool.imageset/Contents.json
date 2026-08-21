@@ -1,8 +1,14 @@
 {
   "images" : [
-    { "filename" : "illust-imoji-drool.svg", "idiom" : "universal" }
+    {
+      "filename" : "illust-imoji-drool.svg",
+      "idiom" : "universal"
+    }
   ],
-  "info" : { "author" : "xcode", "version" : 1 },
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
   "properties" : {
     "preserves-vector-representation" : true,
     "template-rendering-intent" : "original"
