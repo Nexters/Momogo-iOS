@@ -1,10 +1,23 @@
 {
   "images" : [
-    { "filename" : "illust-imoji-drool.svg", "idiom" : "universal" }
+    {
+      "filename" : "illust-imoji-drool.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "illust-imoji-drool@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "illust-imoji-drool@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
   ],
-  "info" : { "author" : "xcode", "version" : 1 },
-  "properties" : {
-    "preserves-vector-representation" : true,
-    "template-rendering-intent" : "original"
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
   }
 }
